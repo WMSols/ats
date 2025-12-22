@@ -9,9 +9,10 @@ class AdminManageAdminsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdminMainLayout(
-      title: AppTexts.manageAdmins,
-      child: Center(
+    return Scaffold(
+      backgroundColor: AppColors.lightBackground,
+      appBar: AppAppBar(title: AppTexts.manageAdmins),
+      body: Center(
         child: Text(
           AppTexts.manageAdminsToBeImplemented,
           style: AppTextStyles.bodyText(context),

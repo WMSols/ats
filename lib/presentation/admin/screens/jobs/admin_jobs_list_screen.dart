@@ -16,63 +16,60 @@ class AdminJobsListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<AdminJobsController>();
 
-    return AdminMainLayout(
-      title: AppTexts.jobs,
-      actions: [
-        IconButton(
-          icon: Icon(
-            Iconsax.add,
-            size: AppResponsive.iconSize(context),
-            color: AppColors.primary,
+    return Scaffold(
+      backgroundColor: AppColors.lightBackground,
+      appBar: AppAppBar(
+        title: AppTexts.jobs,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Iconsax.add,
+              size: AppResponsive.iconSize(context),
+              color: AppColors.primary,
+            ),
+            onPressed: () => Get.toNamed(AppConstants.routeAdminJobCreate),
           ),
-          onPressed: () => Get.toNamed(AppConstants.routeAdminJobCreate),
-        ),
-      ],
-      child: Obx(() => controller.jobs.isEmpty
+        ],
+      ),
+      body: Obx(() => controller.jobs.isEmpty
           ? AppEmptyState(
               message: AppTexts.noJobsAvailable,
               icon: Iconsax.briefcase,
             )
           : ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
+              padding: AppSpacing.padding(context),
               itemCount: controller.jobs.length,
               itemBuilder: (context, index) {
                 final job = controller.jobs[index];
-                return Padding(
-                  padding: EdgeInsets.only(
-                    bottom: AppResponsive(context).scaleSize(0.015),
-                  ),
-                  child: AppListCard(
-                    title: job.title,
-                    subtitle: job.hospitalName,
-                    icon: Iconsax.briefcase,
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            Iconsax.edit,
-                            size: AppResponsive.iconSize(context),
-                            color: AppColors.information,
-                          ),
-                          onPressed: () {
-                            controller.selectJob(job);
-                            Get.toNamed(AppConstants.routeAdminJobEdit);
-                          },
+                return AppListCard(
+                  title: job.title,
+                  subtitle: job.hospitalName,
+                  icon: Iconsax.briefcase,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Iconsax.edit,
+                          size: AppResponsive.iconSize(context),
+                          color: AppColors.information,
                         ),
-                        IconButton(
-                          icon: Icon(
-                            Iconsax.trash,
-                            size: AppResponsive.iconSize(context),
-                            color: AppColors.error,
-                          ),
-                          onPressed: () => controller.deleteJob(job.jobId),
+                        onPressed: () {
+                          controller.selectJob(job);
+                          Get.toNamed(AppConstants.routeAdminJobEdit);
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Iconsax.trash,
+                          size: AppResponsive.iconSize(context),
+                          color: AppColors.error,
                         ),
-                      ],
-                    ),
-                    onTap: null,
+                        onPressed: () => controller.deleteJob(job.jobId),
+                      ),
+                    ],
                   ),
+                  onTap: null,
                 );
               },
             )),

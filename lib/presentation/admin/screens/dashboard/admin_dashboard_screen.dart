@@ -16,15 +16,13 @@ class AdminDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<AdminDashboardController>();
 
-    return AdminMainLayout(
-      title: AppTexts.adminDashboard,
-      child: GridView.count(
+    return Scaffold(
+      backgroundColor: AppColors.lightBackground,
+      appBar: AppAppBar(title: AppTexts.adminDashboard),
+      body: GridView.count(
         crossAxisCount: AppResponsive.isMobile(context) ? 2 : 4,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+        padding: AppSpacing.padding(context),
         childAspectRatio: 1.2,
-        mainAxisSpacing: AppResponsive(context).scaleSize(0.02),
-        crossAxisSpacing: AppResponsive(context).scaleSize(0.02),
         children: [
           AppDashboardCard(
             title: AppTexts.pendingApplications,

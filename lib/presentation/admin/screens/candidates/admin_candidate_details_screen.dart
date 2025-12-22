@@ -17,9 +17,10 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<AdminCandidatesController>();
 
-    return AdminMainLayout(
-      title: AppTexts.candidateDetails,
-      child: Obx(() {
+    return Scaffold(
+      backgroundColor: AppColors.lightBackground,
+      appBar: AppAppBar(title: AppTexts.candidateDetails),
+      body: Obx(() {
         final candidate = controller.selectedCandidate.value;
         if (candidate == null) {
           return AppEmptyState(
@@ -28,34 +29,32 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
           );
         }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Iconsax.sms,
-                  size: AppResponsive.iconSize(context),
-                  color: AppColors.primary,
-                ),
-                AppSpacing.horizontal(context, 0.01),
-                Text(
-                  '${AppTexts.email}: ${candidate.email}',
-                  style: AppTextStyles.heading(context),
-                ),
-              ],
-            ),
-            AppSpacing.vertical(context, 0.03),
-            Text(
-              AppTexts.applications,
-              style: AppTextStyles.headline(context),
-            ),
-            AppSpacing.vertical(context, 0.01),
-            ...controller.candidateApplications.map((app) => Padding(
-                  padding: EdgeInsets.only(
-                    bottom: AppResponsive(context).scaleSize(0.015),
+        return SingleChildScrollView(
+          padding: AppSpacing.padding(context),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Iconsax.sms,
+                    size: AppResponsive.iconSize(context),
+                    color: AppColors.primary,
                   ),
-                  child: AppListCard(
+                  AppSpacing.horizontal(context, 0.01),
+                  Text(
+                    '${AppTexts.email}: ${candidate.email}',
+                    style: AppTextStyles.heading(context),
+                  ),
+                ],
+              ),
+              AppSpacing.vertical(context, 0.03),
+              Text(
+                AppTexts.applications,
+                style: AppTextStyles.headline(context),
+              ),
+              AppSpacing.vertical(context, 0.01),
+              ...controller.candidateApplications.map((app) => AppListCard(
                     key: ValueKey('application_${app.applicationId}'),
                     title: '${AppTexts.applicationStatus} ${app.applicationId}',
                     subtitle: '${AppTexts.status}: ${app.status}',
@@ -88,19 +87,14 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
                       ],
                     ),
                     onTap: null,
-                  ),
-                )),
-            AppSpacing.vertical(context, 0.03),
-            Text(
-              AppTexts.documents,
-              style: AppTextStyles.headline(context),
-            ),
-            AppSpacing.vertical(context, 0.01),
-            ...controller.candidateDocuments.map((doc) => Padding(
-                  padding: EdgeInsets.only(
-                    bottom: AppResponsive(context).scaleSize(0.015),
-                  ),
-                  child: AppListCard(
+                  )),
+              AppSpacing.vertical(context, 0.03),
+              Text(
+                AppTexts.documents,
+                style: AppTextStyles.headline(context),
+              ),
+              AppSpacing.vertical(context, 0.01),
+              ...controller.candidateDocuments.map((doc) => AppListCard(
                     key: ValueKey('document_${doc.candidateDocId}'),
                     title: doc.documentName,
                     subtitle: '${AppTexts.status}: ${doc.status}',
@@ -133,9 +127,9 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
                       ],
                     ),
                     onTap: null,
-                  ),
-                )),
-          ],
+                  )),
+            ],
+          ),
         );
       }),
     );
