@@ -45,35 +45,9 @@ class _AdminCreateDocumentTypeScreenState extends State<AdminCreateDocumentTypeS
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              AppTextField(
-                controller: titleController,
-                labelText: 'Document Title',
-                prefixIcon: Iconsax.document_text,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Document title is required';
-                  }
-                  if (value.trim().length < 3) {
-                    return 'Document title must be at least 3 characters';
-                  }
-                  return null;
-                },
-              ),
-              AppSpacing.vertical(context, 0.02),
-              AppTextField(
-                controller: descriptionController,
-                labelText: AppTexts.description,
-                prefixIcon: Iconsax.document_text_1,
-                maxLines: 5,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Description is required';
-                  }
-                  if (value.trim().length < 10) {
-                    return 'Description must be at least 10 characters';
-                  }
-                  return null;
-                },
+              AppDocumentFormFields(
+                titleController: titleController,
+                descriptionController: descriptionController,
               ),
               AppSpacing.vertical(context, 0.03),
               Obx(() => AppButton(
@@ -84,7 +58,7 @@ class _AdminCreateDocumentTypeScreenState extends State<AdminCreateDocumentTypeS
                         controller.createDocumentType(
                           name: titleController.text.trim(),
                           description: descriptionController.text.trim(),
-                          isRequired: false, // Default to false as per user request
+                          isRequired: false,
                         );
                       }
                     },
@@ -97,4 +71,3 @@ class _AdminCreateDocumentTypeScreenState extends State<AdminCreateDocumentTypeS
     );
   }
 }
-

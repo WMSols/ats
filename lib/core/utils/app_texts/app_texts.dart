@@ -54,6 +54,19 @@ class AppTexts {
   static const String jobUpdated = "Job updated successfully";
   static const String jobDeleted = "Job deleted successfully";
   static const String jobNotFound = "Job not found";
+  static const String searchJobs = "Search jobs by title or description...";
+  static const String all = "All";
+  static const String open = "Open";
+  static const String closed = "Closed";
+  static const String requiredDocuments = "Required Documents";
+  static const String noDocumentsAvailable = "No documents available. Create documents first.";
+  static const String noRequiredDocuments = "No required documents";
+  static const String deleteJob = "Delete Job";
+  static const String deleteJobConfirmation = "Are you sure you want to delete";
+  static const String deleteJobWarning = "This action cannot be undone.";
+  static const String closeJob = "Close Job";
+  static const String openJob = "Open Job";
+  static const String noJobsFound = "No jobs found matching your filters";
 
   // Applications
   static const String noApplicationsYet = "No applications yet";
@@ -81,6 +94,9 @@ class AppTexts {
   static const String documentTypeDeleted = "Document type deleted successfully";
   static const String name = "Name";
   static const String isRequired = "Required";
+  static const String documentTitle = "Document Title";
+  static const String searchDocuments = "Search documents by title or description...";
+  static const String noDocumentsFound = "No documents found matching your search";
 
   // Candidates
   static const String candidates = "Candidates";
@@ -106,6 +122,13 @@ class AppTexts {
   static const String firstNameMinLength = "First name must be at least 2 characters";
   static const String lastNameRequired = "Last name is required";
   static const String lastNameMinLength = "Last name must be at least 2 characters";
+  static const String jobTitleRequired = "Job title is required";
+  static const String jobTitleMinLength = "Job title must be at least 3 characters";
+  static const String descriptionRequired = "Description is required";
+  static const String descriptionMinLength = "Description must be at least 10 characters";
+  static const String requirementsRequired = "Requirements are required";
+  static const String documentTitleRequired = "Document title is required";
+  static const String documentTitleMinLength = "Document title must be at least 3 characters";
 
   // Common
   static const String cancel = "Cancel";

@@ -21,56 +21,35 @@ class AdminDocumentTypesScreen extends StatelessWidget {
       child: Column(
         children: [
           // Search and Create Section
-          Container(
-            padding: AppSpacing.padding(context),
-            decoration: BoxDecoration(
-              color: AppColors.lightBackground,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.grey.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: AppTextField(
-                    hintText: 'Search documents by title or description...',
-                    prefixIcon: Iconsax.search_normal,
-                    onChanged: (value) => controller.setSearchQuery(value),
-                  ),
-                ),
-                AppSpacing.horizontal(context, 0.02),
-                AppButton(
-                  text: AppTexts.createDocumentType,
-                  icon: Iconsax.add,
-                  onPressed: () {
-                    Get.toNamed(AppConstants.routeAdminCreateDocumentType);
-                  },
-                  isFullWidth: false,
-                ),
-              ],
-            ),
+          AppSearchCreateBar(
+            searchHint: AppTexts.searchDocuments,
+            createButtonText: AppTexts.createDocumentType,
+            createButtonIcon: Iconsax.add,
+            onSearchChanged: (value) => controller.setSearchQuery(value),
+            onCreatePressed: () {
+              Get.toNamed(AppConstants.routeAdminCreateDocumentType);
+            },
           ),
           // Documents List
           Expanded(
             child: Obx(() {
-              if (controller.filteredDocumentTypes.isEmpty) {
+              final filteredDocs = controller.filteredDocumentTypes.toList();
+              final allDocs = controller.documentTypes.toList();
+              
+              if (filteredDocs.isEmpty) {
                 return AppEmptyState(
-                  message: controller.documentTypes.isEmpty
+                  message: allDocs.isEmpty
                       ? AppTexts.noDocumentTypesAvailable
-                      : 'No documents found matching your search',
+                      : AppTexts.noDocumentsFound,
                   icon: Iconsax.document_text,
                 );
               }
 
               return ListView.builder(
                 padding: AppSpacing.padding(context),
-                itemCount: controller.filteredDocumentTypes.length,
+                itemCount: filteredDocs.length,
                 itemBuilder: (context, index) {
-                  final docType = controller.filteredDocumentTypes[index];
+                  final docType = filteredDocs[index];
                   return AppListCard(
                     title: docType.name,
                     subtitle: docType.description,

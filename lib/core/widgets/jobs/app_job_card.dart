@@ -1,0 +1,95 @@
+import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:ats/core/constants/app_constants.dart';
+import 'package:ats/core/utils/app_texts/app_texts.dart';
+import 'package:ats/core/utils/app_spacing/app_spacing.dart';
+import 'package:ats/core/utils/app_colors/app_colors.dart';
+import 'package:ats/core/utils/app_responsive/app_responsive.dart';
+import 'package:ats/core/widgets/app_widgets.dart';
+import 'package:ats/domain/entities/job_entity.dart';
+
+class AppJobCard extends StatelessWidget {
+  final JobEntity job;
+  final int applicationCount;
+  final VoidCallback? onTap;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+  final VoidCallback? onStatusToggle;
+
+  const AppJobCard({
+    super.key,
+    required this.job,
+    required this.applicationCount,
+    this.onTap,
+    this.onEdit,
+    this.onDelete,
+    this.onStatusToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppListCard(
+      title: job.title,
+      subtitle: _buildSubtitle(context),
+      icon: Iconsax.briefcase,
+      trailing: _buildTrailing(context),
+      onTap: onTap,
+    );
+  }
+
+  String _buildSubtitle(BuildContext context) {
+    final description = job.description.length > 50
+        ? job.description.substring(0, 50) + '...'
+        : job.description;
+    return '$description\n${AppTexts.applications}: $applicationCount';
+  }
+
+  Widget _buildTrailing(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AppStatusChip(
+          status: job.status,
+          customText: job.status == AppConstants.jobStatusOpen
+              ? AppTexts.open
+              : AppTexts.closed,
+        ),
+        AppSpacing.horizontal(context, 0.01),
+        IconButton(
+          icon: Icon(
+            job.status == AppConstants.jobStatusOpen
+                ? Iconsax.eye_slash
+                : Iconsax.eye,
+            size: AppResponsive.iconSize(context),
+            color: job.status == AppConstants.jobStatusOpen
+                ? AppColors.warning
+                : AppColors.success,
+          ),
+          tooltip: job.status == AppConstants.jobStatusOpen
+              ? AppTexts.closeJob
+              : AppTexts.openJob,
+          onPressed: onStatusToggle,
+        ),
+        AppSpacing.horizontal(context, 0.01),
+        IconButton(
+          icon: Icon(
+            Iconsax.edit,
+            size: AppResponsive.iconSize(context),
+            color: AppColors.information,
+          ),
+          onPressed: onEdit,
+        ),
+        AppSpacing.horizontal(context, 0.01),
+        IconButton(
+          icon: Icon(
+            Iconsax.trash,
+            size: AppResponsive.iconSize(context),
+            color: AppColors.error,
+          ),
+          onPressed: onDelete,
+        ),
+      ],
+    );
+  }
+}
+
