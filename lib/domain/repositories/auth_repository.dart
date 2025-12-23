@@ -8,6 +8,7 @@ abstract class AuthRepository {
     required String password,
     required String firstName,
     required String lastName,
+    required String role,
   });
 
   Future<Either<Failure, UserEntity>> signIn({

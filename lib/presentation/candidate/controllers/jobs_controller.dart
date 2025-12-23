@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/domain/repositories/auth_repository.dart';
@@ -24,6 +25,10 @@ class JobsController extends GetxController {
   final getJobsUseCase = GetJobsUseCase(Get.find<JobRepository>());
   final createApplicationUseCase = CreateApplicationUseCase(Get.find<ApplicationRepository>());
 
+  // Stream subscriptions
+  StreamSubscription<List<JobEntity>>? _jobsSubscription;
+  StreamSubscription<List<ApplicationEntity>>? _applicationsSubscription;
+
   @override
   void onInit() {
     super.onInit();
@@ -31,21 +36,43 @@ class JobsController extends GetxController {
     loadApplications();
   }
 
+  @override
+  void onClose() {
+    // Cancel all stream subscriptions to prevent permission errors after sign-out
+    _jobsSubscription?.cancel();
+    _applicationsSubscription?.cancel();
+    super.onClose();
+  }
+
   void loadJobs() {
-    jobRepository.streamJobs(status: AppConstants.jobStatusOpen).listen((jobsList) {
-      jobs.value = jobsList;
-    });
+    _jobsSubscription?.cancel(); // Cancel previous subscription if exists
+    _jobsSubscription = jobRepository.streamJobs(status: AppConstants.jobStatusOpen).listen(
+      (jobsList) {
+        jobs.value = jobsList;
+      },
+      onError: (error) {
+        // Silently handle permission errors (user might have signed out)
+        // Don't show errors for permission-denied as it's expected after sign-out
+      },
+    );
   }
 
   void loadApplications() {
     final currentUser = authRepository.getCurrentUser();
     if (currentUser == null) return;
 
-    applicationRepository
+    _applicationsSubscription?.cancel(); // Cancel previous subscription if exists
+    _applicationsSubscription = applicationRepository
         .streamApplications(candidateId: currentUser.userId)
-        .listen((appsList) {
-      applications.value = appsList;
-    });
+        .listen(
+      (appsList) {
+        applications.value = appsList;
+      },
+      onError: (error) {
+        // Silently handle permission errors (user might have signed out)
+        // Don't show errors for permission-denied as it's expected after sign-out
+      },
+    );
   }
 
   void selectJob(JobEntity job) {

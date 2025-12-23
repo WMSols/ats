@@ -23,6 +23,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String firstName,
     required String lastName,
+    required String role,
   }) async {
     try {
       // Create Firebase Auth user
@@ -40,17 +41,30 @@ class AuthRepositoryImpl implements AuthRepository {
       await firestoreDataSource.createUser(
         userId: userId,
         email: email,
-        role: AppConstants.roleCandidate,
+        role: role,
       );
 
-      // Create candidate profile
-      final profileId = await firestoreDataSource.createCandidateProfile(
-        userId: userId,
-        firstName: firstName,
-        lastName: lastName,
-        phone: '',
-        address: '',
-      );
+      String? profileId;
+
+      // Create profile based on role
+      if (role == AppConstants.roleAdmin) {
+        // Create admin profile
+        profileId = await firestoreDataSource.createAdminProfile(
+          userId: userId,
+          firstName: firstName,
+          lastName: lastName,
+          accessLevel: AppConstants.accessLevelRecruiter, // Default access level
+        );
+      } else {
+        // Create candidate profile
+        profileId = await firestoreDataSource.createCandidateProfile(
+          userId: userId,
+          firstName: firstName,
+          lastName: lastName,
+          phone: '',
+          address: '',
+        );
+      }
 
       // Update user with profileId
       await firestoreDataSource.updateUser(
@@ -67,7 +81,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final userModel = UserModel(
         userId: userId,
         email: email,
-        role: AppConstants.roleCandidate,
+        role: role,
         profileId: profileId,
         createdAt: DateTime.now(),
       );
@@ -96,9 +110,45 @@ class AuthRepositoryImpl implements AuthRepository {
         return const Left(AuthFailure('Sign in failed'));
       }
 
-      final userData = await firestoreDataSource.getUser(currentUser.uid);
+      // Add a delay to ensure Firebase Auth token is fully propagated
+      // This helps avoid permission errors immediately after sign-in
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // Retry logic for reading user data (in case of timing issues)
+      Map<String, dynamic>? userData;
+      int retries = 3;
+      Exception? lastException;
+      
+      for (int i = 0; i < retries; i++) {
+        try {
+          userData = await firestoreDataSource.getUser(currentUser.uid);
+          if (userData != null) break;
+        } on ServerException catch (e) {
+          lastException = e;
+          // If it's a permission error and we have retries left, wait and retry
+          if (i < retries - 1 && (e.message.contains('permission') || e.message.contains('Permission'))) {
+            await Future.delayed(Duration(milliseconds: 200 * (i + 1)));
+            continue;
+          }
+          // If no more retries, break and handle error below
+          break;
+        } catch (e) {
+          // For other exceptions, don't retry
+          lastException = e is Exception ? e : Exception(e.toString());
+          break;
+        }
+        // If userData is null but no error, wait a bit and retry
+        if (userData == null && i < retries - 1) {
+          await Future.delayed(Duration(milliseconds: 200 * (i + 1)));
+        }
+      }
+      
       if (userData == null) {
-        return const Left(AuthFailure('User data not found'));
+        if (lastException is ServerException) {
+          // Re-throw ServerException to be handled by outer catch
+          throw lastException;
+        }
+        return const Left(AuthFailure('User data not found. Please contact support.'));
       }
 
       final userModel = UserModel(
@@ -112,6 +162,12 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(userModel.toEntity());
     } on AuthException catch (e) {
       return Left(AuthFailure(e.message));
+    } on ServerException catch (e) {
+      // Handle Firestore permission errors
+      if (e.message.contains('permission') || e.message.contains('Permission')) {
+        return const Left(AuthFailure('Permission denied. Please try again or contact support.'));
+      }
+      return Left(AuthFailure('Database error: ${e.message}'));
     } catch (e) {
       return Left(AuthFailure('An unexpected error occurred: $e'));
     }
@@ -121,6 +177,9 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> signOut() async {
     try {
       await authDataSource.signOut();
+      // Add a small delay to ensure Firebase Auth state is fully cleared
+      // This helps avoid issues when signing in again immediately
+      await Future.delayed(const Duration(milliseconds: 200));
       return const Right(null);
     } on AuthException catch (e) {
       return Left(AuthFailure(e.message));
@@ -132,18 +191,26 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Stream<UserEntity?> get authStateChanges {
     return authDataSource.authStateChanges.asyncMap((firebaseUser) async {
+      // If user is null (signed out), return null immediately
+      // Don't try to read from Firestore when user is signed out
       if (firebaseUser == null) return null;
 
-      final userData = await firestoreDataSource.getUser(firebaseUser.uid);
-      if (userData == null) return null;
+      try {
+        final userData = await firestoreDataSource.getUser(firebaseUser.uid);
+        if (userData == null) return null;
 
-      return UserModel(
-        userId: firebaseUser.uid,
-        email: userData['email'] ?? firebaseUser.email ?? '',
-        role: userData['role'] ?? AppConstants.roleCandidate,
-        profileId: userData['profileId'],
-        createdAt: DateTime.now(),
-      ).toEntity();
+        return UserModel(
+          userId: firebaseUser.uid,
+          email: userData['email'] ?? firebaseUser.email ?? '',
+          role: userData['role'] ?? AppConstants.roleCandidate,
+          profileId: userData['profileId'],
+          createdAt: DateTime.now(),
+        ).toEntity();
+      } catch (e) {
+        // If there's a permission error (user signed out during read), return null
+        // This prevents errors when user signs out while stream is active
+        return null;
+      }
     });
   }
 

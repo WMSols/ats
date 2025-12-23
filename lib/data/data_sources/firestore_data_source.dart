@@ -41,6 +41,23 @@ abstract class FirestoreDataSource {
 
   Stream<Map<String, dynamic>?> streamCandidateProfile(String userId);
 
+  // Admin Profiles
+  Future<String> createAdminProfile({
+    required String userId,
+    required String firstName,
+    required String lastName,
+    required String accessLevel,
+  });
+
+  Future<Map<String, dynamic>?> getAdminProfile(String profileId);
+
+  Future<Map<String, dynamic>?> getAdminProfileByUserId(String userId);
+
+  Future<void> updateAdminProfile({
+    required String profileId,
+    required Map<String, dynamic> data,
+  });
+
   // Jobs
   Future<String> createJob({
     required String title,
@@ -272,6 +289,77 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.isNotEmpty ? snapshot.docs.first.data() : null);
+  }
+
+  @override
+  Future<String> createAdminProfile({
+    required String userId,
+    required String firstName,
+    required String lastName,
+    required String accessLevel,
+  }) async {
+    try {
+      final docRef = await firestore
+          .collection(AppConstants.adminProfilesCollection)
+          .add({
+        'userId': userId,
+        'firstName': firstName,
+        'lastName': lastName,
+        'accessLevel': accessLevel,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (e) {
+      throw ServerException('Failed to create admin profile: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getAdminProfile(String profileId) async {
+    try {
+      final doc = await firestore
+          .collection(AppConstants.adminProfilesCollection)
+          .doc(profileId)
+          .get();
+      if (doc.exists) {
+        return doc.data();
+      }
+      return null;
+    } catch (e) {
+      throw ServerException('Failed to get admin profile: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getAdminProfileByUserId(String userId) async {
+    try {
+      final querySnapshot = await firestore
+          .collection(AppConstants.adminProfilesCollection)
+          .where('userId', isEqualTo: userId)
+          .limit(1)
+          .get();
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first.data();
+      }
+      return null;
+    } catch (e) {
+      throw ServerException('Failed to get admin profile: $e');
+    }
+  }
+
+  @override
+  Future<void> updateAdminProfile({
+    required String profileId,
+    required Map<String, dynamic> data,
+  }) async {
+    try {
+      await firestore
+          .collection(AppConstants.adminProfilesCollection)
+          .doc(profileId)
+          .update(data);
+    } catch (e) {
+      throw ServerException('Failed to update admin profile: $e');
+    }
   }
 
   @override

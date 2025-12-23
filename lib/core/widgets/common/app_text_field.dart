@@ -118,6 +118,18 @@ class _AppTextFieldState extends State<AppTextField> {
     // Always use internal controller to avoid disposal errors
     // It's synced with external controller via listener
     
+    // Ensure sync is up to date before building
+    // This helps when controller is recreated after sign-out
+    if (_externalController != null && widget.controller != null) {
+      try {
+        if (_internalController.text != _externalController!.text) {
+          _internalController.text = _externalController!.text;
+        }
+      } catch (e) {
+        // External controller disposed, ignore
+      }
+    }
+    
     return TextField(
       controller: _internalController,
       obscureText: widget.obscureText,

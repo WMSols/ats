@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:ats/domain/repositories/auth_repository.dart';
 import 'package:ats/domain/repositories/document_repository.dart';
@@ -19,6 +20,10 @@ class DocumentsController extends GetxController {
 
   final uploadDocumentUseCase = UploadDocumentUseCase(Get.find<DocumentRepository>());
 
+  // Stream subscriptions
+  StreamSubscription<List<DocumentTypeEntity>>? _documentTypesSubscription;
+  StreamSubscription<List<CandidateDocumentEntity>>? _candidateDocumentsSubscription;
+
   @override
   void onInit() {
     super.onInit();
@@ -26,21 +31,43 @@ class DocumentsController extends GetxController {
     loadCandidateDocuments();
   }
 
+  @override
+  void onClose() {
+    // Cancel all stream subscriptions to prevent permission errors after sign-out
+    _documentTypesSubscription?.cancel();
+    _candidateDocumentsSubscription?.cancel();
+    super.onClose();
+  }
+
   void loadDocumentTypes() {
-    documentRepository.streamDocumentTypes().listen((types) {
-      documentTypes.value = types;
-    });
+    _documentTypesSubscription?.cancel(); // Cancel previous subscription if exists
+    _documentTypesSubscription = documentRepository.streamDocumentTypes().listen(
+      (types) {
+        documentTypes.value = types;
+      },
+      onError: (error) {
+        // Silently handle permission errors (user might have signed out)
+        // Don't show errors for permission-denied as it's expected after sign-out
+      },
+    );
   }
 
   void loadCandidateDocuments() {
     final currentUser = authRepository.getCurrentUser();
     if (currentUser == null) return;
 
-    documentRepository
+    _candidateDocumentsSubscription?.cancel(); // Cancel previous subscription if exists
+    _candidateDocumentsSubscription = documentRepository
         .streamCandidateDocuments(currentUser.userId)
-        .listen((docs) {
-      candidateDocuments.value = docs;
-    });
+        .listen(
+      (docs) {
+        candidateDocuments.value = docs;
+      },
+      onError: (error) {
+        // Silently handle permission errors (user might have signed out)
+        // Don't show errors for permission-denied as it's expected after sign-out
+      },
+    );
   }
 
   bool hasDocument(String docTypeId) {

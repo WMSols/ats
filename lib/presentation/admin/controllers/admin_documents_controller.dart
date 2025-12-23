@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:ats/domain/repositories/document_repository.dart';
 import 'package:ats/domain/entities/document_type_entity.dart';
@@ -11,16 +12,32 @@ class AdminDocumentsController extends GetxController {
   final errorMessage = ''.obs;
   final documentTypes = <DocumentTypeEntity>[].obs;
 
+  // Stream subscription
+  StreamSubscription<List<DocumentTypeEntity>>? _documentTypesSubscription;
+
   @override
   void onInit() {
     super.onInit();
     loadDocumentTypes();
   }
 
+  @override
+  void onClose() {
+    // Cancel stream subscription to prevent permission errors after sign-out
+    _documentTypesSubscription?.cancel();
+    super.onClose();
+  }
+
   void loadDocumentTypes() {
-    documentRepository.streamDocumentTypes().listen((types) {
-      documentTypes.value = types;
-    });
+    _documentTypesSubscription?.cancel(); // Cancel previous subscription if exists
+    _documentTypesSubscription = documentRepository.streamDocumentTypes().listen(
+      (types) {
+        documentTypes.value = types;
+      },
+      onError: (error) {
+        // Silently handle permission errors
+      },
+    );
   }
 
   Future<void> createDocumentType({

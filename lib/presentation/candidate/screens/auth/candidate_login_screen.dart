@@ -14,7 +14,12 @@ class CandidateLoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Ensure controller is fresh - this simulates app restart behavior after sign-out
+    // The controller is deleted on sign-out, so Get.find() will create a fresh instance via lazyPut
     final controller = Get.find<AuthController>();
+    
+    // Use controller instance as key to force widget recreation when controller is recreated
+    final controllerKey = controller.hashCode;
 
     return AppAuthLayout(
       title: AppTexts.candidateLogin,
@@ -27,14 +32,15 @@ class CandidateLoginScreen extends StatelessWidget {
       },
       formFields: [
         AppTextField(
+          key: ValueKey('candidate_login_email_$controllerKey'), // Force recreation when controller changes
           controller: controller.emailController,
           labelText: AppTexts.email,
           prefixIcon: Iconsax.sms,
           keyboardType: TextInputType.emailAddress,
-          onChanged: (_) {
-            if (controller.emailError.value != null) {
-              controller.validateEmail(controller.emailController.text);
-            }
+          onChanged: (value) {
+            // Always validate on change to clear errors when user types
+            // Use the value parameter directly instead of reading from controller
+            controller.validateEmail(value);
           },
         ),
         Obx(
@@ -48,14 +54,15 @@ class CandidateLoginScreen extends StatelessWidget {
         ),
         AppSpacing.vertical(context, 0.02),
         AppTextField(
+          key: ValueKey('candidate_login_password_$controllerKey'), // Force recreation when controller changes
           controller: controller.passwordController,
           labelText: AppTexts.password,
           prefixIcon: Iconsax.lock,
           obscureText: true,
-          onChanged: (_) {
-            if (controller.passwordError.value != null) {
-              controller.validatePassword(controller.passwordController.text);
-            }
+          onChanged: (value) {
+            // Always validate on change to clear errors when user types
+            // Use the value parameter directly instead of reading from controller
+            controller.validatePassword(value);
           },
         ),
         Obx(
