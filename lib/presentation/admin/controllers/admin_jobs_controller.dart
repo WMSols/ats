@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:ats/domain/repositories/job_repository.dart';
 import 'package:ats/domain/entities/job_entity.dart';
@@ -15,16 +16,32 @@ class AdminJobsController extends GetxController {
 
   final createJobUseCase = CreateJobUseCase(Get.find<JobRepository>());
 
+  // Stream subscription
+  StreamSubscription<List<JobEntity>>? _jobsSubscription;
+
   @override
   void onInit() {
     super.onInit();
     loadJobs();
   }
 
+  @override
+  void onClose() {
+    // Cancel stream subscription to prevent permission errors after sign-out
+    _jobsSubscription?.cancel();
+    super.onClose();
+  }
+
   void loadJobs() {
-    jobRepository.streamJobs().listen((jobsList) {
-      jobs.value = jobsList;
-    });
+    _jobsSubscription?.cancel(); // Cancel previous subscription if exists
+    _jobsSubscription = jobRepository.streamJobs().listen(
+      (jobsList) {
+        jobs.value = jobsList;
+      },
+      onError: (error) {
+        // Silently handle permission errors
+      },
+    );
   }
 
   void selectJob(JobEntity job) {

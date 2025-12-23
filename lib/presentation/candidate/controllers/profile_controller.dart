@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/domain/repositories/auth_repository.dart';
@@ -17,19 +18,36 @@ class ProfileController extends GetxController {
 
   final createProfileUseCase = CreateProfileUseCase(Get.find<CandidateProfileRepository>());
 
+  // Stream subscription
+  StreamSubscription<CandidateProfileEntity?>? _profileSubscription;
+
   @override
   void onInit() {
     super.onInit();
     loadProfile();
   }
 
+  @override
+  void onClose() {
+    // Cancel stream subscription to prevent permission errors after sign-out
+    _profileSubscription?.cancel();
+    super.onClose();
+  }
+
   void loadProfile() {
     final currentUser = authRepository.getCurrentUser();
     if (currentUser == null) return;
 
-    profileRepository.streamProfile(currentUser.userId).listen((profileData) {
-      profile.value = profileData;
-    });
+    _profileSubscription?.cancel(); // Cancel previous subscription if exists
+    _profileSubscription = profileRepository.streamProfile(currentUser.userId).listen(
+      (profileData) {
+        profile.value = profileData;
+      },
+      onError: (error) {
+        // Silently handle permission errors (user might have signed out)
+        // Don't show errors for permission-denied as it's expected after sign-out
+      },
+    );
   }
 
   Future<void> createOrUpdateProfile({

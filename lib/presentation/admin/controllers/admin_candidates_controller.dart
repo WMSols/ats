@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:ats/domain/repositories/admin_repository.dart';
 import 'package:ats/domain/repositories/application_repository.dart';
@@ -29,10 +30,22 @@ class AdminCandidatesController extends GetxController {
   final updateApplicationStatusUseCase = UpdateApplicationStatusUseCase(Get.find<ApplicationRepository>());
   final updateDocumentStatusUseCase = UpdateDocumentStatusUseCase(Get.find<DocumentRepository>());
 
+  // Stream subscriptions
+  StreamSubscription<List<ApplicationEntity>>? _applicationsSubscription;
+  StreamSubscription<List<CandidateDocumentEntity>>? _documentsSubscription;
+
   @override
   void onInit() {
     super.onInit();
     loadCandidates();
+  }
+
+  @override
+  void onClose() {
+    // Cancel all stream subscriptions to prevent permission errors after sign-out
+    _applicationsSubscription?.cancel();
+    _documentsSubscription?.cancel();
+    super.onClose();
   }
 
   void loadCandidates() {
@@ -51,19 +64,31 @@ class AdminCandidatesController extends GetxController {
   }
 
   void loadCandidateApplications(String candidateId) {
-    applicationRepository
+    _applicationsSubscription?.cancel(); // Cancel previous subscription if exists
+    _applicationsSubscription = applicationRepository
         .streamApplications(candidateId: candidateId)
-        .listen((apps) {
-      candidateApplications.value = apps;
-    });
+        .listen(
+      (apps) {
+        candidateApplications.value = apps;
+      },
+      onError: (error) {
+        // Silently handle permission errors
+      },
+    );
   }
 
   void loadCandidateDocuments(String candidateId) {
-    documentRepository
+    _documentsSubscription?.cancel(); // Cancel previous subscription if exists
+    _documentsSubscription = documentRepository
         .streamCandidateDocuments(candidateId)
-        .listen((docs) {
-      candidateDocuments.value = docs;
-    });
+        .listen(
+      (docs) {
+        candidateDocuments.value = docs;
+      },
+      onError: (error) {
+        // Silently handle permission errors
+      },
+    );
   }
 
   Future<void> updateDocumentStatus({

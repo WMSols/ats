@@ -30,10 +30,10 @@ class CandidateSignUpScreen extends StatelessWidget {
           controller: controller.firstNameController,
           labelText: AppTexts.firstName,
           prefixIcon: Iconsax.user,
-          onChanged: (_) {
-            if (controller.firstNameError.value != null) {
-              controller.validateFirstName(controller.firstNameController.text);
-            }
+          onChanged: (value) {
+            // Always validate on change to clear errors when user types
+            // Use the value parameter directly instead of reading from controller
+            controller.validateFirstName(value);
           },
         ),
         Obx(
@@ -50,10 +50,10 @@ class CandidateSignUpScreen extends StatelessWidget {
           controller: controller.lastNameController,
           labelText: AppTexts.lastName,
           prefixIcon: Iconsax.user,
-          onChanged: (_) {
-            if (controller.lastNameError.value != null) {
-              controller.validateLastName(controller.lastNameController.text);
-            }
+          onChanged: (value) {
+            // Always validate on change to clear errors when user types
+            // Use the value parameter directly instead of reading from controller
+            controller.validateLastName(value);
           },
         ),
         Obx(
@@ -71,10 +71,10 @@ class CandidateSignUpScreen extends StatelessWidget {
           labelText: AppTexts.email,
           prefixIcon: Iconsax.sms,
           keyboardType: TextInputType.emailAddress,
-          onChanged: (_) {
-            if (controller.emailError.value != null) {
-              controller.validateEmail(controller.emailController.text);
-            }
+          onChanged: (value) {
+            // Always validate on change to clear errors when user types
+            // Use the value parameter directly instead of reading from controller
+            controller.validateEmail(value);
           },
         ),
         Obx(
@@ -92,10 +92,10 @@ class CandidateSignUpScreen extends StatelessWidget {
           labelText: AppTexts.password,
           prefixIcon: Iconsax.lock,
           obscureText: true,
-          onChanged: (_) {
-            if (controller.passwordError.value != null) {
-              controller.validatePassword(controller.passwordController.text);
-            }
+          onChanged: (value) {
+            // Always validate on change to clear errors when user types
+            // Use the value parameter directly instead of reading from controller
+            controller.validatePassword(value);
           },
         ),
         Obx(

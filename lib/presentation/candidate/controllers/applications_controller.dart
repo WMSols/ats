@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/domain/repositories/auth_repository.dart';
@@ -17,25 +18,42 @@ class ApplicationsController extends GetxController {
   final applications = <ApplicationEntity>[].obs;
   final jobs = <String, JobEntity>{}.obs;
 
+  // Stream subscription
+  StreamSubscription<List<ApplicationEntity>>? _applicationsSubscription;
+
   @override
   void onInit() {
     super.onInit();
     loadApplications();
   }
 
+  @override
+  void onClose() {
+    // Cancel stream subscription to prevent permission errors after sign-out
+    _applicationsSubscription?.cancel();
+    super.onClose();
+  }
+
   void loadApplications() {
     final currentUser = authRepository.getCurrentUser();
     if (currentUser == null) return;
 
-    applicationRepository
+    _applicationsSubscription?.cancel(); // Cancel previous subscription if exists
+    _applicationsSubscription = applicationRepository
         .streamApplications(candidateId: currentUser.userId)
-        .listen((appsList) {
-      applications.value = appsList;
-      // Load job details for each application
-      for (final app in appsList) {
-        loadJobDetails(app.jobId);
-      }
-    });
+        .listen(
+      (appsList) {
+        applications.value = appsList;
+        // Load job details for each application
+        for (final app in appsList) {
+          loadJobDetails(app.jobId);
+        }
+      },
+      onError: (error) {
+        // Silently handle permission errors (user might have signed out)
+        // Don't show errors for permission-denied as it's expected after sign-out
+      },
+    );
   }
 
   Future<void> loadJobDetails(String jobId) async {

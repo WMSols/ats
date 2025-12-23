@@ -1,60 +1,41 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ats/core/constants/app_constants.dart';
-import 'package:ats/data/repositories/auth_repository_impl.dart';
-import 'package:ats/domain/repositories/auth_repository.dart';
 
 class AuthMiddleware extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
-    // Check if AuthRepository is registered
-    if (!Get.isRegistered<AuthRepository>()) {
-      // If not registered yet, allow the route to proceed
-      // The binding will register it when the route loads
-      return null;
-    }
-
-    final authRepo = Get.find<AuthRepository>();
+    // Check Firebase Auth directly for synchronous check
+    final firebaseUser = FirebaseAuth.instance.currentUser;
     
-    // Check if user is authenticated
-    if (authRepo is AuthRepositoryImpl) {
-      final currentUser = authRepo.getCurrentUser();
-      
-      if (currentUser == null) {
-        // Not authenticated, allow access to auth routes only
-        if (route != AppConstants.routeLogin && 
-            route != AppConstants.routeSignUp &&
-            route != AppConstants.routeAdminLogin &&
-            route != AppConstants.routeAdminSignUp) {
-          return const RouteSettings(name: AppConstants.routeLogin);
-        }
-      } else {
-        // Authenticated, redirect away from auth routes based on role
-        final userRole = currentUser.role;
-        
-        // Candidate auth routes
-        if (route == AppConstants.routeLogin || 
-            route == AppConstants.routeSignUp) {
-          if (userRole == AppConstants.roleAdmin) {
-            return const RouteSettings(name: AppConstants.routeAdminDashboard);
-          } else {
-            return const RouteSettings(name: AppConstants.routeCandidateDashboard);
-          }
-        }
-        
-        // Admin auth routes
-        if (route == AppConstants.routeAdminLogin || 
-            route == AppConstants.routeAdminSignUp) {
-          if (userRole == AppConstants.roleAdmin) {
-            return const RouteSettings(name: AppConstants.routeAdminDashboard);
-          } else {
-            return const RouteSettings(name: AppConstants.routeCandidateDashboard);
-          }
-        }
+    // List of public auth routes that don't require authentication
+    final publicRoutes = [
+      AppConstants.routeLogin,
+      AppConstants.routeSignUp,
+      AppConstants.routeAdminLogin,
+      AppConstants.routeAdminSignUp,
+    ];
+    
+    if (firebaseUser == null) {
+      // Not authenticated - allow only public auth routes
+      if (publicRoutes.contains(route)) {
+        return null; // Allow access to auth routes
+      }
+      // Redirect to login for protected routes
+      return const RouteSettings(name: AppConstants.routeLogin);
+    } else {
+      // Authenticated - redirect away from auth routes
+      // The actual role-based redirect will be handled by the route or AdminMiddleware
+      if (publicRoutes.contains(route)) {
+        // User is logged in but trying to access auth routes
+        // Redirect to candidate dashboard (default)
+        // AdminMiddleware will handle admin-specific routes
+        return const RouteSettings(name: AppConstants.routeCandidateDashboard);
       }
     }
     
-    return null;
+    return null; // Allow access to protected routes
   }
 }
 
