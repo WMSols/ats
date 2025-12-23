@@ -5,10 +5,8 @@ import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/presentation/admin/controllers/admin_jobs_controller.dart';
 import 'package:ats/presentation/admin/controllers/admin_documents_controller.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
-import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
-import 'package:ats/core/utils/app_colors/app_colors.dart';
-import 'package:ats/core/utils/app_responsive/app_responsive.dart';
+import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
 
 class AdminJobDetailsScreen extends StatelessWidget {
@@ -40,173 +38,27 @@ class AdminJobDetailsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with Status and Actions
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          job.title,
-                          style: AppTextStyles.headline(context),
-                        ),
-                        AppSpacing.vertical(context, 0.01),
-                        AppStatusChip(
-                          status: job.status,
-                          customText: job.status == AppConstants.jobStatusOpen ? 'Open' : 'Closed',
-                        ),
-                      ],
-                    ),
-                  ),
-                  AppSpacing.horizontal(context, 0.02),
-                  IconButton(
-                    icon: Icon(
-                      Iconsax.edit,
-                      size: AppResponsive.iconSize(context),
-                      color: AppColors.information,
-                    ),
-                    onPressed: () {
-                      Get.toNamed(AppConstants.routeAdminJobEdit);
-                    },
-                  ),
-                ],
+              AppJobHeader(
+                job: job,
+                onEdit: () => Get.toNamed(AppConstants.routeAdminJobEdit),
               ),
               AppSpacing.vertical(context, 0.03),
-              // Description Section
-              Text(
-                AppTexts.description,
-                style: AppTextStyles.heading(context),
-              ),
-              AppSpacing.vertical(context, 0.01),
-              Container(
-                width: double.infinity,
-                padding: AppSpacing.all(context),
-                decoration: BoxDecoration(
-                  color: AppColors.lightGrey,
-                  borderRadius: BorderRadius.circular(
-                    AppResponsive.radius(context, factor: 5),
-                  ),
-                ),
-                child: Text(
-                  job.description,
-                  style: AppTextStyles.bodyText(context),
-                ),
+              AppContentSection(
+                title: AppTexts.description,
+                content: job.description,
               ),
               AppSpacing.vertical(context, 0.03),
-              // Requirements Section
-              Text(
-                AppTexts.requirements,
-                style: AppTextStyles.heading(context),
-              ),
-              AppSpacing.vertical(context, 0.01),
-              Container(
-                width: double.infinity,
-                padding: AppSpacing.all(context),
-                decoration: BoxDecoration(
-                  color: AppColors.lightGrey,
-                  borderRadius: BorderRadius.circular(
-                    AppResponsive.radius(context, factor: 5),
-                  ),
-                ),
-                child: Text(
-                  job.requirements,
-                  style: AppTextStyles.bodyText(context),
-                ),
+              AppContentSection(
+                title: AppTexts.requirements,
+                content: job.requirements,
               ),
               AppSpacing.vertical(context, 0.03),
-              // Required Documents Section
-              Text(
-                'Required Documents',
-                style: AppTextStyles.heading(context),
-              ),
-              AppSpacing.vertical(context, 0.01),
-              if (requiredDocuments.isEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: AppSpacing.all(context),
-                  decoration: BoxDecoration(
-                    color: AppColors.lightGrey,
-                    borderRadius: BorderRadius.circular(
-                      AppResponsive.radius(context, factor: 5),
-                    ),
-                  ),
-                  child: Text(
-                    'No required documents',
-                    style: AppTextStyles.bodyText(context).copyWith(
-                      color: AppColors.grey,
-                    ),
-                  ),
-                )
-              else
-                ...requiredDocuments.map((doc) => Container(
-                      margin: EdgeInsets.only(
-                        bottom: AppResponsive.screenHeight(context) * 0.01,
-                      ),
-                      padding: AppSpacing.all(context),
-                      decoration: BoxDecoration(
-                        color: AppColors.lightGrey,
-                        borderRadius: BorderRadius.circular(
-                          AppResponsive.radius(context, factor: 5),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Iconsax.document_text,
-                            size: AppResponsive.iconSize(context),
-                            color: AppColors.primary,
-                          ),
-                          AppSpacing.horizontal(context, 0.02),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  doc.name,
-                                  style: AppTextStyles.bodyText(context).copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                if (doc.description.isNotEmpty)
-                                  Text(
-                                    doc.description,
-                                    style: AppTextStyles.bodyText(context).copyWith(
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )),
+              _buildRequiredDocumentsSection(context, requiredDocuments),
               AppSpacing.vertical(context, 0.03),
-              // Statistics Section
-              Container(
-                padding: AppSpacing.all(context),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(
-                    AppResponsive.radius(context, factor: 5),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Iconsax.document_download,
-                      size: AppResponsive.iconSize(context, factor: 1.5),
-                      color: AppColors.primary,
-                    ),
-                    AppSpacing.horizontal(context, 0.02),
-                    Text(
-                      'Applications: $applicationCount',
-                      style: AppTextStyles.heading(context).copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
+              AppStatisticsCard(
+                icon: Iconsax.document_download,
+                label: AppTexts.applications,
+                value: applicationCount,
               ),
             ],
           ),
@@ -214,5 +66,29 @@ class AdminJobDetailsScreen extends StatelessWidget {
       }),
     );
   }
-}
 
+  Widget _buildRequiredDocumentsSection(
+    BuildContext context,
+    List documents,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppTexts.requiredDocuments,
+          style: AppTextStyles.heading(context),
+        ),
+        AppSpacing.vertical(context, 0.01),
+        if (documents.isEmpty)
+          AppContentSection(
+            title: '',
+            content: AppTexts.noRequiredDocuments,
+          )
+        else
+          ...documents.map(
+            (doc) => AppDocumentListItem(document: doc),
+          ),
+      ],
+    );
+  }
+}

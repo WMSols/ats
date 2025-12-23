@@ -28,3 +28,20 @@ export 'common/app_user_profile_section.dart';
 
 // Admin widgets (used in admin screens)
 export 'admin/app_admin_layout.dart';
+
+// Jobs widgets (used in job screens)
+export 'jobs/app_search_create_bar.dart';
+export 'jobs/app_filter_tabs.dart';
+export 'jobs/app_job_card.dart';
+export 'jobs/app_document_selector.dart';
+export 'jobs/app_status_dropdown.dart';
+export 'jobs/app_content_section.dart';
+export 'jobs/app_delete_confirmation_dialog.dart';
+export 'jobs/app_document_list_item.dart';
+export 'jobs/app_statistics_card.dart';
+export 'jobs/app_job_form_fields.dart';
+export 'jobs/app_section_title.dart';
+export 'jobs/app_job_header.dart';
+
+// Documents widgets (used in document screens)
+export 'documents/app_document_form_fields.dart';

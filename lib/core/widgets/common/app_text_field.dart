@@ -10,6 +10,7 @@ class AppTextField extends StatefulWidget {
   final String? hintText;
   final IconData? prefixIcon;
   final bool obscureText;
+  final int? minLines;
   final int? maxLines;
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
@@ -22,6 +23,7 @@ class AppTextField extends StatefulWidget {
     this.hintText,
     this.prefixIcon,
     this.obscureText = false,
+    this.minLines = 1,
     this.maxLines = 1,
     this.keyboardType,
     this.validator,
@@ -133,6 +135,7 @@ class _AppTextFieldState extends State<AppTextField> {
     return TextField(
       controller: _internalController,
       obscureText: widget.obscureText,
+      minLines: widget.minLines,
       maxLines: widget.maxLines,
       keyboardType: widget.keyboardType,
       style: AppTextStyles.bodyText(context),
