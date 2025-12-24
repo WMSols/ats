@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:ats/presentation/admin/controllers/admin_auth_controller.dart';
-import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
-import 'package:ats/core/utils/app_navigation/app_navigation.dart';
 import 'package:ats/core/utils/app_colors/app_colors.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
 
@@ -28,7 +26,7 @@ class AdminLoginScreen extends StatelessWidget {
         // Already on login screen
       },
       onSignUpTap: () {
-        AppNavigation.toNamedWithFade(AppConstants.routeAdminSignUp);
+        // Signup removed - admins are created by other admins
       },
       formFields: [
         AppTextField(
