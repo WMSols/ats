@@ -81,6 +81,7 @@ class CandidateSignUpScreen extends StatelessWidget {
           text: AppTexts.signUp,
           onPressed: controller.signUp,
           isLoading: controller.isLoading.value,
+          backgroundColor: AppColors.primary,
         ),
       ),
     );

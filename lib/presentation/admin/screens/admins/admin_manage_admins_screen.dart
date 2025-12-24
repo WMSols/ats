@@ -33,13 +33,14 @@ class AdminManageAdminsScreen extends StatelessWidget {
           // Admins and Recruiters List
           Expanded(
             child: Obx(() {
-              final filteredProfiles = controller.filteredAdminProfiles.toList();
+              final filteredProfiles = controller.filteredAdminProfiles
+                  .toList();
               final allProfiles = controller.adminProfiles.toList();
-              
+
               if (controller.isLoadingList.value) {
                 return const Center(child: AppLoadingIndicator());
               }
-              
+
               if (filteredProfiles.isEmpty) {
                 return AppEmptyState(
                   message: allProfiles.isEmpty
@@ -54,15 +55,20 @@ class AdminManageAdminsScreen extends StatelessWidget {
                 itemCount: filteredProfiles.length,
                 itemBuilder: (context, index) {
                   final profile = filteredProfiles[index];
-                  final isAdmin = profile.accessLevel == AppConstants.accessLevelSuperAdmin;
+                  final isAdmin =
+                      profile.accessLevel == AppConstants.accessLevelSuperAdmin;
                   final isCurrentUser = controller.isCurrentUser(profile);
-                  final isChanging = controller.isChangingRole[profile.profileId] ?? false;
-                  
+                  final isChanging =
+                      controller.isChangingRole[profile.profileId] ?? false;
+
                   return AppListCard(
                     title: profile.name,
-                    subtitle: '${profile.email}\n${AppTexts.role}: ${isAdmin ? AppTexts.admin : AppTexts.recruiter}',
+                    subtitle:
+                        '${profile.email}\n${AppTexts.role}: ${isAdmin ? AppTexts.admin : AppTexts.recruiter}',
                     icon: Iconsax.user,
-                    iconColor: isAdmin ? AppColors.primary : AppColors.secondary,
+                    iconColor: isAdmin
+                        ? AppColors.primary
+                        : AppColors.secondary,
                     statusWidget: AppStatusChip(
                       status: isAdmin ? 'admin' : 'recruiter',
                       customText: isAdmin ? AppTexts.admin : AppTexts.recruiter,
@@ -73,10 +79,10 @@ class AdminManageAdminsScreen extends StatelessWidget {
                             onPressed: isChanging
                                 ? null
                                 : () => _showChangeRoleConfirmation(
-                                      context,
-                                      controller,
-                                      profile,
-                                    ),
+                                    context,
+                                    controller,
+                                    profile,
+                                  ),
                             backgroundColor: AppColors.success,
                             foregroundColor: AppColors.white,
                           )
@@ -99,34 +105,16 @@ class AdminManageAdminsScreen extends StatelessWidget {
   ) {
     final isAdmin = profile.accessLevel == AppConstants.accessLevelSuperAdmin;
     final newRole = isAdmin ? AppTexts.recruiter : AppTexts.admin;
-    
-    Get.dialog(
-      AlertDialog(
-        title: Text(
-          AppTexts.changeRole,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        content: Text(
+
+    AppAlertDialog.show(
+      title: AppTexts.changeRole,
+      subtitle:
           '${AppTexts.changeRoleConfirmation} "${profile.name}" to $newRole?',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(AppTexts.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              Get.back();
-              controller.changeRole(profile);
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary,
-            ),
-            child: Text(AppTexts.changeRole),
-          ),
-        ],
-      ),
+      primaryButtonText: AppTexts.changeRole,
+      primaryButtonColor: AppColors.success,
+      secondaryButtonText: AppTexts.cancel,
+      onPrimaryPressed: () => controller.changeRole(profile),
+      onSecondaryPressed: () {},
     );
   }
 }

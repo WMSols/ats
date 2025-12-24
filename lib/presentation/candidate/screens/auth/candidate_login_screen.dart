@@ -16,7 +16,7 @@ class CandidateLoginScreen extends StatelessWidget {
     // Ensure controller is fresh - this simulates app restart behavior after sign-out
     // The controller is deleted on sign-out, so Get.find() will create a fresh instance via lazyPut
     final controller = Get.find<CandidateAuthController>();
-    
+
     // Use controller instance as key to force widget recreation when controller is recreated
     final controllerKey = controller.hashCode;
 
@@ -31,7 +31,8 @@ class CandidateLoginScreen extends StatelessWidget {
       },
       formFields: [
         AppTextField(
-          key: ValueKey('candidate_login_email_$controllerKey'), // Force recreation when controller changes
+          key: ValueKey('candidate_login_email_$controllerKey'),
+          // Force recreation when controller changes
           controller: controller.emailController,
           labelText: AppTexts.email,
           prefixIcon: Iconsax.sms,
@@ -53,7 +54,8 @@ class CandidateLoginScreen extends StatelessWidget {
         ),
         AppSpacing.vertical(context, 0.02),
         AppTextField(
-          key: ValueKey('candidate_login_password_$controllerKey'), // Force recreation when controller changes
+          key: ValueKey('candidate_login_password_$controllerKey'),
+          // Force recreation when controller changes
           controller: controller.passwordController,
           labelText: AppTexts.password,
           prefixIcon: Iconsax.lock,
@@ -88,6 +90,7 @@ class CandidateLoginScreen extends StatelessWidget {
           text: AppTexts.login,
           onPressed: controller.signIn,
           isLoading: controller.isLoading.value,
+          backgroundColor: AppColors.primary,
         ),
       ),
     );
