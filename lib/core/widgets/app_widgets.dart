@@ -1,6 +1,7 @@
 // Export all reusable widgets
 // Common widgets (used throughout the app)
 export 'common/app_text_field.dart';
+export 'common/app_dropdown_field.dart';
 export 'common/app_button.dart';
 export 'common/app_text_button.dart';
 export 'common/app_action_button.dart';

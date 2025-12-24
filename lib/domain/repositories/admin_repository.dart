@@ -14,5 +14,12 @@ abstract class AdminRepository {
     required String name,
     required String accessLevel,
   });
+
+  Future<Either<Failure, List<AdminProfileEntity>>> getAllAdminProfiles();
+
+  Future<Either<Failure, AdminProfileEntity>> updateAdminProfileAccessLevel({
+    required String profileId,
+    required String accessLevel,
+  });
 }
 

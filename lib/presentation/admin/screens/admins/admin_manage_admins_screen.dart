@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
-import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/utils/app_colors/app_colors.dart';
-import 'package:ats/core/utils/app_responsive/app_responsive.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
+import 'package:ats/domain/entities/admin_profile_entity.dart';
 import 'package:ats/presentation/admin/controllers/admin_manage_admins_controller.dart';
 
 class AdminManageAdminsScreen extends StatelessWidget {
@@ -18,190 +18,114 @@ class AdminManageAdminsScreen extends StatelessWidget {
 
     return AppAdminLayout(
       title: AppTexts.manageAdmins,
-      child: SingleChildScrollView(
-        padding: AppSpacing.all(context, factor: 0.03),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Create New Admin or Recruiter',
-              style: AppTextStyles.heading(context),
-            ),
-            SizedBox(height: AppResponsive.screenHeight(context) * 0.02),
-            Padding(
-              padding: AppSpacing.all(context, factor: 0.03),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AppTextField(
-                    controller: controller.nameController,
-                    labelText: 'Full Name',
-                    prefixIcon: Iconsax.user,
-                    onChanged: (value) {
-                      controller.validateName(value);
-                    },
-                  ),
-                  Obx(
-                    () => controller.nameError.value != null
-                        ? Padding(
-                            padding: EdgeInsets.only(
-                              top: AppResponsive.screenHeight(context) * 0.01,
-                            ),
-                            child: AppErrorMessage(
-                              message: controller.nameError.value!,
-                              icon: Iconsax.info_circle,
-                              messageColor: AppColors.error,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                  SizedBox(height: AppResponsive.screenHeight(context) * 0.02),
-                  AppTextField(
-                    controller: controller.emailController,
-                    labelText: AppTexts.email,
-                    prefixIcon: Iconsax.sms,
-                    keyboardType: TextInputType.emailAddress,
-                    onChanged: (value) {
-                      controller.validateEmail(value);
-                    },
-                  ),
-                  Obx(
-                    () => controller.emailError.value != null
-                        ? Padding(
-                            padding: EdgeInsets.only(
-                              top: AppResponsive.screenHeight(context) * 0.01,
-                            ),
-                            child: AppErrorMessage(
-                              message: controller.emailError.value!,
-                              icon: Iconsax.info_circle,
-                              messageColor: AppColors.error,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                  SizedBox(height: AppResponsive.screenHeight(context) * 0.02),
-                  AppTextField(
-                    controller: controller.passwordController,
-                    labelText: AppTexts.password,
-                    prefixIcon: Iconsax.lock,
-                    obscureText: true,
-                    onChanged: (value) {
-                      controller.validatePassword(value);
-                    },
-                  ),
-                  Obx(
-                    () => controller.passwordError.value != null
-                        ? Padding(
-                            padding: EdgeInsets.only(
-                              top: AppResponsive.screenHeight(context) * 0.01,
-                            ),
-                            child: AppErrorMessage(
-                              message: controller.passwordError.value!,
-                              icon: Iconsax.info_circle,
-                              messageColor: AppColors.error,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                  SizedBox(height: AppResponsive.screenHeight(context) * 0.02),
-                  DropdownButtonFormField<String>(
-                    value: controller.roleValue.value,
-                    decoration: InputDecoration(
-                      labelText: 'Role',
-                      prefixIcon: Icon(
-                        Iconsax.user_tag,
-                        size: AppResponsive.iconSize(context),
-                        color: AppColors.primary,
-                      ),
-                      filled: true,
-                      fillColor: AppColors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppResponsive.radius(context, factor: 5),
-                        ),
-                        borderSide: BorderSide(
-                          color: AppColors.white.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppResponsive.radius(context, factor: 5),
-                        ),
-                        borderSide: BorderSide(
-                          color: AppColors.white.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppResponsive.radius(context, factor: 5),
-                        ),
-                        borderSide: const BorderSide(
-                          color: AppColors.primary,
-                          width: 2,
-                        ),
-                      ),
-                      contentPadding: AppSpacing.symmetric(
-                        context,
-                        h: 0.04,
-                        v: 0.02,
-                      ),
+      child: Column(
+        children: [
+          // Search and Create Section
+          AppSearchCreateBar(
+            searchHint: AppTexts.searchAdmins,
+            createButtonText: AppTexts.createUser,
+            createButtonIcon: Iconsax.add,
+            onSearchChanged: (value) => controller.setSearchQuery(value),
+            onCreatePressed: () {
+              Get.toNamed(AppConstants.routeAdminCreateNewUser);
+            },
+          ),
+          // Admins and Recruiters List
+          Expanded(
+            child: Obx(() {
+              final filteredProfiles = controller.filteredAdminProfiles.toList();
+              final allProfiles = controller.adminProfiles.toList();
+              
+              if (controller.isLoadingList.value) {
+                return const Center(child: AppLoadingIndicator());
+              }
+              
+              if (filteredProfiles.isEmpty) {
+                return AppEmptyState(
+                  message: allProfiles.isEmpty
+                      ? AppTexts.noAdminsAvailable
+                      : AppTexts.noAdminsFound,
+                  icon: Iconsax.user,
+                );
+              }
+
+              return ListView.builder(
+                padding: AppSpacing.padding(context),
+                itemCount: filteredProfiles.length,
+                itemBuilder: (context, index) {
+                  final profile = filteredProfiles[index];
+                  final isAdmin = profile.accessLevel == AppConstants.accessLevelSuperAdmin;
+                  final isCurrentUser = controller.isCurrentUser(profile);
+                  final isChanging = controller.isChangingRole[profile.profileId] ?? false;
+                  
+                  return AppListCard(
+                    title: profile.name,
+                    subtitle: '${profile.email}\n${AppTexts.role}: ${isAdmin ? AppTexts.admin : AppTexts.recruiter}',
+                    icon: Iconsax.user,
+                    iconColor: isAdmin ? AppColors.primary : AppColors.secondary,
+                    statusWidget: AppStatusChip(
+                      status: isAdmin ? 'admin' : 'recruiter',
+                      customText: isAdmin ? AppTexts.admin : AppTexts.recruiter,
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                      DropdownMenuItem(
-                        value: 'recruiter',
-                        child: Text('Recruiter'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        controller.setRole(value);
-                      }
-                    },
-                  ),
-                  Obx(
-                    () => controller.roleError.value != null
-                        ? Padding(
-                            padding: EdgeInsets.only(
-                              top: AppResponsive.screenHeight(context) * 0.01,
-                            ),
-                            child: AppErrorMessage(
-                              message: controller.roleError.value!,
-                              icon: Iconsax.info_circle,
-                              messageColor: AppColors.error,
-                            ),
+                    trailing: !isCurrentUser
+                        ? AppActionButton(
+                            text: AppTexts.changeRole,
+                            onPressed: isChanging
+                                ? null
+                                : () => _showChangeRoleConfirmation(
+                                      context,
+                                      controller,
+                                      profile,
+                                    ),
+                            backgroundColor: AppColors.success,
+                            foregroundColor: AppColors.white,
                           )
-                        : const SizedBox.shrink(),
-                  ),
-                  SizedBox(height: AppResponsive.screenHeight(context) * 0.03),
-                  Obx(
-                    () => controller.errorMessage.value.isNotEmpty
-                        ? Padding(
-                            padding: EdgeInsets.only(
-                              bottom:
-                                  AppResponsive.screenHeight(context) * 0.02,
-                            ),
-                            child: AppErrorMessage(
-                              message: controller.errorMessage.value,
-                              icon: Iconsax.info_circle,
-                              messageColor: AppColors.error,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                  Obx(
-                    () => AppButton(
-                      text:
-                          'Create ${controller.roleValue.value == 'admin' ? 'Admin' : 'Recruiter'}',
-                      onPressed: controller.createAdmin,
-                      isLoading: controller.isLoading.value,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+                        : null,
+                    useRowLayout: true,
+                  );
+                },
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChangeRoleConfirmation(
+    BuildContext context,
+    AdminManageAdminsController controller,
+    AdminProfileEntity profile,
+  ) {
+    final isAdmin = profile.accessLevel == AppConstants.accessLevelSuperAdmin;
+    final newRole = isAdmin ? AppTexts.recruiter : AppTexts.admin;
+    
+    Get.dialog(
+      AlertDialog(
+        title: Text(
+          AppTexts.changeRole,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
+        content: Text(
+          '${AppTexts.changeRoleConfirmation} "${profile.name}" to $newRole?',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(AppTexts.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              controller.changeRole(profile);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
+            ),
+            child: Text(AppTexts.changeRole),
+          ),
+        ],
       ),
     );
   }

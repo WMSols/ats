@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/domain/repositories/candidate_auth_repository.dart';
-import 'package:ats/domain/repositories/candidate_profile_repository.dart';
 
 /// Middleware to check if candidate profile is completed
 /// Redirects to profile screen if profile is incomplete
@@ -30,7 +29,8 @@ class ProfileCompletionMiddleware extends GetMiddleware {
       }
 
       // Check profile completion
-      final profileRepository = Get.find<CandidateProfileRepository>();
+      // Note: profileRepository would be used here for async profile checks
+      // For now, profile check will be done in screens
       
       // Try to get profile synchronously (this might not work perfectly)
       // We'll use a stream-based approach instead

@@ -1,121 +1,120 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ats/core/utils/app_validators/app_validators.dart';
+import 'package:ats/core/constants/app_constants.dart';
+import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/domain/repositories/admin_repository.dart';
-import 'package:ats/domain/usecases/admin/create_admin_usecase.dart';
+import 'package:ats/domain/entities/admin_profile_entity.dart';
+import 'package:ats/presentation/admin/controllers/admin_auth_controller.dart';
 
 class AdminManageAdminsController extends GetxController {
   final AdminRepository adminRepository;
-  late final CreateAdminUseCase createAdminUseCase;
 
-  AdminManageAdminsController(this.adminRepository) {
-    createAdminUseCase = CreateAdminUseCase(adminRepository);
-  }
+  AdminManageAdminsController(this.adminRepository);
 
-  final isLoading = false.obs;
-  final errorMessage = ''.obs;
-
-  // Validation errors
-  final nameError = Rxn<String>();
-  final emailError = Rxn<String>();
-  final passwordError = Rxn<String>();
-  final roleError = Rxn<String>();
-
-  // Current field values
-  final nameValue = ''.obs;
-  final emailValue = ''.obs;
-  final passwordValue = ''.obs;
-  final roleValue = 'recruiter'.obs; // Default to recruiter
-
-  // Text controllers
-  final nameController = TextEditingController();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final isLoadingList = false.obs;
+  final adminProfiles = <AdminProfileEntity>[].obs;
+  final filteredAdminProfiles = <AdminProfileEntity>[].obs;
+  final searchQuery = ''.obs;
+  final isChangingRole = <String, bool>{}.obs;
 
   @override
-  void onClose() {
-    nameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    super.onClose();
+  void onInit() {
+    super.onInit();
+    loadAdminProfiles();
   }
 
-  void validateName(String? value) {
-    nameValue.value = value ?? '';
-    nameError.value = AppValidators.validateFirstName(value);
+  void setSearchQuery(String query) {
+    searchQuery.value = query;
+    _applyFilters();
   }
 
-  void validateEmail(String? value) {
-    emailValue.value = value ?? '';
-    emailError.value = AppValidators.validateEmail(value);
-  }
-
-  void validatePassword(String? value) {
-    passwordValue.value = value ?? '';
-    passwordError.value = AppValidators.validatePassword(value);
-  }
-
-  void setRole(String role) {
-    roleValue.value = role;
-    roleError.value = null;
-  }
-
-  bool validateForm() {
-    validateName(nameController.text);
-    validateEmail(emailController.text);
-    validatePassword(passwordController.text);
-    
-    if (roleValue.value.isEmpty) {
-      roleError.value = 'Please select a role';
-      return false;
+  void _applyFilters() {
+    if (searchQuery.value.isEmpty) {
+      filteredAdminProfiles.value = List.from(adminProfiles);
+    } else {
+      final query = searchQuery.value.toLowerCase();
+      filteredAdminProfiles.value = adminProfiles
+          .where((profile) =>
+              profile.name.toLowerCase().contains(query))
+          .toList();
     }
-
-    return nameError.value == null &&
-        emailError.value == null &&
-        passwordError.value == null &&
-        roleError.value == null;
   }
 
-  Future<void> createAdmin() async {
-    if (!validateForm()) {
+
+  Future<void> loadAdminProfiles() async {
+    isLoadingList.value = true;
+    final result = await adminRepository.getAllAdminProfiles();
+    result.fold(
+      (failure) {
+        isLoadingList.value = false;
+        // Silently handle errors - don't show error for empty list
+      },
+      (profiles) {
+        adminProfiles.value = profiles;
+        _applyFilters();
+        isLoadingList.value = false;
+      },
+    );
+  }
+
+  /// Get current user ID
+  String? get currentUserId {
+    try {
+      final authController = Get.find<AdminAuthController>();
+      return authController.adminAuthRepository.getCurrentUser()?.userId;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Check if profile belongs to current user
+  bool isCurrentUser(AdminProfileEntity profile) {
+    return profile.userId == currentUserId;
+  }
+
+  /// Change role of an admin profile
+  Future<void> changeRole(AdminProfileEntity profile) async {
+    // Don't allow changing own role
+    if (isCurrentUser(profile)) {
+      Get.snackbar(
+        AppTexts.error,
+        'You cannot change your own role',
+      );
       return;
     }
 
-    isLoading.value = true;
-    errorMessage.value = '';
+    // Determine new access level (toggle between super_admin and recruiter)
+    final newAccessLevel = profile.accessLevel == AppConstants.accessLevelSuperAdmin
+        ? AppConstants.accessLevelRecruiter
+        : AppConstants.accessLevelSuperAdmin;
 
-    final result = await createAdminUseCase(
-      email: emailValue.value.trim(),
-      password: passwordValue.value,
-      name: nameValue.value.trim(),
-      role: roleValue.value,
+    isChangingRole[profile.profileId] = true;
+
+    final result = await adminRepository.updateAdminProfileAccessLevel(
+      profileId: profile.profileId,
+      accessLevel: newAccessLevel,
     );
+
+    isChangingRole[profile.profileId] = false;
 
     result.fold(
       (failure) {
-        errorMessage.value = failure.message;
-        isLoading.value = false;
-        Get.snackbar('Error', failure.message);
-      },
-      (adminProfile) {
-        isLoading.value = false;
-        errorMessage.value = '';
-        // Clear form
-        nameController.clear();
-        emailController.clear();
-        passwordController.clear();
-        nameValue.value = '';
-        emailValue.value = '';
-        passwordValue.value = '';
-        roleValue.value = 'recruiter';
-        nameError.value = null;
-        emailError.value = null;
-        passwordError.value = null;
-        roleError.value = null;
-        
         Get.snackbar(
-          'Success',
-          '${roleValue.value == 'admin' ? 'Admin' : 'Recruiter'} created successfully',
+          AppTexts.error,
+          AppTexts.roleChangeFailed,
+        );
+      },
+      (updatedProfile) {
+        // Update the profile in the list
+        final index = adminProfiles.indexWhere(
+          (p) => p.profileId == profile.profileId,
+        );
+        if (index != -1) {
+          adminProfiles[index] = updatedProfile;
+          _applyFilters();
+        }
+        Get.snackbar(
+          AppTexts.success,
+          AppTexts.roleChanged,
         );
       },
     );
