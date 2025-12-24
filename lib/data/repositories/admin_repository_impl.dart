@@ -46,11 +46,15 @@ class AdminRepositoryImpl implements AdminRepository {
           ? (firstName.isNotEmpty ? firstName : lastName)
           : name;
 
+      // Get user email from already fetched userData
+      final email = userData['email'] ?? '';
+
       return Right(AdminProfileEntity(
         profileId: profileId,
         userId: userId,
         name: finalName,
         accessLevel: profileData['accessLevel'] ?? AppConstants.accessLevelRecruiter,
+        email: email,
       ));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -133,9 +137,90 @@ class AdminRepositoryImpl implements AdminRepository {
         userId: userId,
         name: name,
         accessLevel: accessLevel,
+        email: email,
       ));
     } on AuthException catch (e) {
       return Left(AuthFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('An unexpected error occurred: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<AdminProfileEntity>>> getAllAdminProfiles() async {
+    try {
+      final profilesData = await firestoreDataSource.getAllAdminProfiles();
+      final profiles = <AdminProfileEntity>[];
+
+      for (var profileData in profilesData) {
+        final firstName = profileData['firstName'] ?? '';
+        final lastName = profileData['lastName'] ?? '';
+        final name = '$firstName $lastName'.trim();
+        final finalName = name.isEmpty 
+            ? (firstName.isNotEmpty ? firstName : lastName)
+            : name;
+
+        // Get user email
+        final userId = profileData['userId'] ?? '';
+        final userData = await firestoreDataSource.getUser(userId);
+        final email = userData?['email'] ?? '';
+
+        profiles.add(AdminProfileEntity(
+          profileId: profileData['profileId'] ?? '',
+          userId: userId,
+          name: finalName,
+          accessLevel: profileData['accessLevel'] ?? AppConstants.accessLevelRecruiter,
+          email: email,
+        ));
+      }
+
+      return Right(profiles);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('An unexpected error occurred: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, AdminProfileEntity>> updateAdminProfileAccessLevel({
+    required String profileId,
+    required String accessLevel,
+  }) async {
+    try {
+      // Update admin profile access level
+      await firestoreDataSource.updateAdminProfile(
+        profileId: profileId,
+        data: {'accessLevel': accessLevel},
+      );
+
+      // Get updated profile data
+      final profileData = await firestoreDataSource.getAdminProfile(profileId);
+      if (profileData == null) {
+        return const Left(ServerFailure('Admin profile not found'));
+      }
+
+      final firstName = profileData['firstName'] ?? '';
+      final lastName = profileData['lastName'] ?? '';
+      final name = '$firstName $lastName'.trim();
+      final finalName = name.isEmpty 
+          ? (firstName.isNotEmpty ? firstName : lastName)
+          : name;
+
+      // Get user email
+      final userId = profileData['userId'] ?? '';
+      final userData = await firestoreDataSource.getUser(userId);
+      final email = userData != null ? (userData['email'] ?? '') : '';
+
+      return Right(AdminProfileEntity(
+        profileId: profileId,
+        userId: userId,
+        name: finalName,
+        accessLevel: accessLevel,
+        email: email,
+      ));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {

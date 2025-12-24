@@ -112,6 +112,17 @@ class AppTexts {
   static const String administrator = "Administrator";
   static const String admin = "Admin";
   static const String logout = "Logout";
+  static const String createNewUser = "Create New User";
+  static const String createUser = "Create User";
+  static const String fullName = "Full Name";
+  static const String recruiter = "Recruiter";
+  static const String searchAdmins = "Search admins and recruiters by name...";
+  static const String noAdminsFound = "No admins or recruiters found matching your search";
+  static const String noAdminsAvailable = "No admins or recruiters available";
+  static const String changeRole = "Change Role";
+  static const String changeRoleConfirmation = "Are you sure you want to change the role of";
+  static const String roleChanged = "Role changed successfully";
+  static const String roleChangeFailed = "Failed to change role";
 
   // Validation
   static const String emailRequired = "Email is required";

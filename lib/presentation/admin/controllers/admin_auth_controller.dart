@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/domain/entities/user_entity.dart';
+import 'package:ats/domain/entities/admin_profile_entity.dart';
 import 'package:ats/domain/repositories/admin_auth_repository.dart';
+import 'package:ats/domain/repositories/admin_repository.dart';
 import 'package:ats/domain/usecases/admin_auth/admin_sign_up_usecase.dart';
 import 'package:ats/domain/usecases/admin_auth/admin_sign_in_usecase.dart';
 import 'package:ats/domain/usecases/admin_auth/admin_sign_out_usecase.dart';
@@ -12,15 +14,43 @@ import 'package:ats/presentation/common/controllers/base_auth_controller.dart';
 /// Handles admin-specific authentication flows with complete isolation
 class AdminAuthController extends BaseAuthController {
   final AdminAuthRepository adminAuthRepository;
+  final AdminRepository adminRepository;
   late final AdminSignUpUseCase signUpUseCase;
   late final AdminSignInUseCase signInUseCase;
   late final AdminSignOutUseCase signOutUseCase;
 
-  AdminAuthController(this.adminAuthRepository) : super() {
+  // Cached current admin profile to avoid refetching on every navigation
+  final currentAdminProfile = Rxn<AdminProfileEntity>();
+
+  AdminAuthController(this.adminAuthRepository, this.adminRepository) : super() {
     signUpUseCase = AdminSignUpUseCase(adminAuthRepository);
     signInUseCase = AdminSignInUseCase(adminAuthRepository);
     signOutUseCase = AdminSignOutUseCase(adminAuthRepository);
+    _loadCurrentAdminProfile();
   }
+
+  /// Load current admin profile if user is already logged in
+  Future<void> _loadCurrentAdminProfile() async {
+    final currentUser = adminAuthRepository.getCurrentUser();
+    if (currentUser != null) {
+      await loadAdminProfile(currentUser.userId);
+    }
+  }
+
+  /// Load admin profile for the given user ID
+  Future<void> loadAdminProfile(String userId) async {
+    final result = await adminRepository.getAdminProfile(userId);
+    result.fold(
+      (failure) => currentAdminProfile.value = null,
+      (profile) => currentAdminProfile.value = profile,
+    );
+  }
+
+  /// Get access level of current admin
+  String? get currentAccessLevel => currentAdminProfile.value?.accessLevel;
+
+  /// Check if current admin is super admin
+  bool get isSuperAdmin => currentAccessLevel == AppConstants.accessLevelSuperAdmin;
 
   @override
   String get signUpRole => AppConstants.roleAdmin;
@@ -81,6 +111,8 @@ class AdminAuthController extends BaseAuthController {
         lastNameValue.value = '';
         emailValue.value = '';
         passwordValue.value = '';
+        // Load admin profile after signup
+        loadAdminProfile(user.userId);
         // Handle navigation
         handleSignUpSuccess(user);
       },
@@ -116,6 +148,8 @@ class AdminAuthController extends BaseAuthController {
         // Clear stored values
         emailValue.value = '';
         passwordValue.value = '';
+        // Load admin profile after sign in
+        loadAdminProfile(user.userId);
         // Handle navigation
         handleSignInSuccess(user);
       },
@@ -136,6 +170,8 @@ class AdminAuthController extends BaseAuthController {
       (_) {
         isLoading.value = false;
         errorMessage.value = '';
+        // Clear cached admin profile
+        currentAdminProfile.value = null;
         // Clear all validation errors and stored values
         resetState();
         // Clear controllers before navigation

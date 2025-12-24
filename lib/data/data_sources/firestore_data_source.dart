@@ -58,6 +58,8 @@ abstract class FirestoreDataSource {
     required Map<String, dynamic> data,
   });
 
+  Future<List<Map<String, dynamic>>> getAllAdminProfiles();
+
   // Jobs
   Future<String> createJob({
     required String title,
@@ -366,6 +368,22 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
           .update(data);
     } catch (e) {
       throw ServerException('Failed to update admin profile: $e');
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getAllAdminProfiles() async {
+    try {
+      final querySnapshot = await firestore
+          .collection(AppConstants.adminProfilesCollection)
+          .get();
+      return querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        data['profileId'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      throw ServerException('Failed to get admin profiles: $e');
     }
   }
 

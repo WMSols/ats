@@ -13,6 +13,7 @@ import 'package:ats/presentation/admin/screens/candidates/admin_candidate_detail
 import 'package:ats/presentation/admin/screens/document_types/admin_document_types_screen.dart';
 import 'package:ats/presentation/admin/screens/document_types/admin_create_document_type_screen.dart';
 import 'package:ats/presentation/admin/screens/admins/admin_manage_admins_screen.dart';
+import 'package:ats/presentation/admin/screens/admins/admin_create_new_user_screen.dart';
 
 class AdminRoutes {
   static const String initial = AppConstants.routeAdminLogin;
@@ -94,6 +95,13 @@ class AdminRoutes {
     GetPage(
       name: AppConstants.routeAdminManageAdmins,
       page: () => const AdminManageAdminsScreen(),
+      binding: AdminBindings(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppConstants.routeAdminCreateNewUser,
+      page: () => const AdminCreateNewUserScreen(),
       binding: AdminBindings(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 300),

@@ -17,6 +17,7 @@ class AppAuthLayout extends StatelessWidget {
   final List<Widget> formFields;
   final Widget actionButton;
   final Widget? errorMessage;
+  final bool showNavigationChip;
 
   const AppAuthLayout({
     super.key,
@@ -27,6 +28,7 @@ class AppAuthLayout extends StatelessWidget {
     required this.formFields,
     required this.actionButton,
     this.errorMessage,
+    this.showNavigationChip = true,
   });
 
   @override
@@ -49,14 +51,15 @@ class AppAuthLayout extends StatelessWidget {
               children: [
                 const AppAuthLogo(),
                 AppSpacing.vertical(context, 0.02),
-                AppNavigationChip(
-                  firstLabel: AppTexts.login,
-                  secondLabel: AppTexts.signUp,
-                  isFirstSelected: isLoginSelected,
-                  onFirstTap: onLoginTap,
-                  onSecondTap: onSignUpTap,
-                ),
-                AppSpacing.vertical(context, 0.02),
+                if (showNavigationChip)
+                  AppNavigationChip(
+                    firstLabel: AppTexts.login,
+                    secondLabel: AppTexts.signUp,
+                    isFirstSelected: isLoginSelected,
+                    onFirstTap: onLoginTap,
+                    onSecondTap: onSignUpTap,
+                  ),
+                if (showNavigationChip) AppSpacing.vertical(context, 0.02),
                 AppAuthTitle(title: title),
                 AppSpacing.vertical(context, 0.04),
                 AppAuthFormContent(

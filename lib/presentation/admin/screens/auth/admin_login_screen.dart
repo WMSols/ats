@@ -22,6 +22,7 @@ class AdminLoginScreen extends StatelessWidget {
     return AppAuthLayout(
       title: AppTexts.adminLogin,
       isLoginSelected: true,
+      showNavigationChip: false,
       onLoginTap: () {
         // Already on login screen
       },

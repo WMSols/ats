@@ -78,7 +78,7 @@ class AppStatusChip extends StatelessWidget {
         lowerStatus == AppConstants.documentStatusPending) {
       return AppColors.warning;
     } else {
-      return AppColors.grey;
+      return AppColors.secondary;
     }
   }
 
