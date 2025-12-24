@@ -54,7 +54,7 @@ class AppButton extends StatelessWidget {
         style: AppTextStyles.buttonText(context),
       ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? AppColors.primary,
+        backgroundColor: backgroundColor ?? AppColors.secondary,
         foregroundColor: foregroundColor ?? AppColors.white,
         padding: AppSpacing.symmetric(context),
         shape: RoundedRectangleBorder(

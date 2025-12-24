@@ -41,7 +41,7 @@ export 'jobs/app_job_card.dart';
 export 'jobs/app_document_selector.dart';
 export 'jobs/app_status_dropdown.dart';
 export 'jobs/app_content_section.dart';
-export 'jobs/app_delete_confirmation_dialog.dart';
+export 'common/app_alert_dialog.dart';
 export 'jobs/app_document_list_item.dart';
 export 'jobs/app_statistics_card.dart';
 export 'jobs/app_job_form_fields.dart';
