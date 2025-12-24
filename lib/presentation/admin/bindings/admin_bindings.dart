@@ -20,6 +20,7 @@ import 'package:ats/presentation/admin/controllers/admin_dashboard_controller.da
 import 'package:ats/presentation/admin/controllers/admin_jobs_controller.dart';
 import 'package:ats/presentation/admin/controllers/admin_candidates_controller.dart';
 import 'package:ats/presentation/admin/controllers/admin_documents_controller.dart';
+import 'package:ats/presentation/admin/controllers/admin_manage_admins_controller.dart';
 
 class AdminBindings extends Bindings {
   @override
@@ -60,6 +61,7 @@ class AdminBindings extends Bindings {
     Get.lazyPut(() => AdminJobsController(jobRepo, applicationRepo));
     Get.lazyPut(() => AdminCandidatesController(adminRepo, applicationRepo, documentRepo));
     Get.lazyPut(() => AdminDocumentsController(documentRepo));
+    Get.lazyPut(() => AdminManageAdminsController(adminRepo));
   }
 }
 

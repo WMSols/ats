@@ -3,7 +3,6 @@ import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/core/middleware/auth_middleware.dart';
 import 'package:ats/presentation/admin/bindings/admin_bindings.dart';
 import 'package:ats/presentation/admin/screens/auth/admin_login_screen.dart';
-import 'package:ats/presentation/admin/screens/auth/admin_signup_screen.dart';
 import 'package:ats/presentation/admin/screens/dashboard/admin_dashboard_screen.dart';
 import 'package:ats/presentation/admin/screens/jobs/admin_jobs_list_screen.dart';
 import 'package:ats/presentation/admin/screens/jobs/admin_job_create_screen.dart';
@@ -23,14 +22,6 @@ class AdminRoutes {
     GetPage(
       name: AppConstants.routeAdminLogin,
       page: () => const AdminLoginScreen(),
-      binding: AdminBindings(),
-      middlewares: [AuthMiddleware()],
-      transition: Transition.fadeIn,
-      transitionDuration: const Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: AppConstants.routeAdminSignUp,
-      page: () => const AdminSignUpScreen(),
       binding: AdminBindings(),
       middlewares: [AuthMiddleware()],
       transition: Transition.fadeIn,

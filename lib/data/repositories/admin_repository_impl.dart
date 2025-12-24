@@ -1,5 +1,6 @@
 import 'package:ats/core/errors/failures.dart';
 import 'package:ats/core/errors/exceptions.dart';
+import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/domain/entities/admin_profile_entity.dart';
 import 'package:ats/domain/entities/user_entity.dart';
 import 'package:ats/domain/repositories/admin_repository.dart';
@@ -21,9 +22,36 @@ class AdminRepositoryImpl implements AdminRepository {
   Future<Either<Failure, AdminProfileEntity>> getAdminProfile(
       String userId) async {
     try {
-      // This would need to be implemented in FirestoreDataSource
-      // For now, returning a placeholder
-      return const Left(ServerFailure('Not implemented'));
+      // Get user data to find profileId
+      final userData = await firestoreDataSource.getUser(userId);
+      if (userData == null) {
+        return const Left(ServerFailure('User not found'));
+      }
+
+      final profileId = userData['profileId'] as String?;
+      if (profileId == null) {
+        return const Left(ServerFailure('Admin profile not found'));
+      }
+
+      // Get admin profile data
+      final profileData = await firestoreDataSource.getAdminProfile(profileId);
+      if (profileData == null) {
+        return const Left(ServerFailure('Admin profile not found'));
+      }
+
+      final firstName = profileData['firstName'] ?? '';
+      final lastName = profileData['lastName'] ?? '';
+      final name = '$firstName $lastName'.trim();
+      final finalName = name.isEmpty 
+          ? (firstName.isNotEmpty ? firstName : lastName)
+          : name;
+
+      return Right(AdminProfileEntity(
+        profileId: profileId,
+        userId: userId,
+        name: finalName,
+        accessLevel: profileData['accessLevel'] ?? AppConstants.accessLevelRecruiter,
+      ));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -60,6 +88,13 @@ class AdminRepositoryImpl implements AdminRepository {
     required String accessLevel,
   }) async {
     try {
+      // Split name into firstName and lastName
+      final nameParts = name.trim().split(' ');
+      final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+      final lastName = nameParts.length > 1 
+          ? nameParts.sublist(1).join(' ') 
+          : '';
+
       // Create Firebase Auth user
       final userCredential = await authDataSource.signUp(
         email: email,
@@ -71,16 +106,36 @@ class AdminRepositoryImpl implements AdminRepository {
         return const Left(AuthFailure('Admin creation failed'));
       }
 
-      // Create user document in Firestore
+      // Create user document in Firestore with admin role
       await firestoreDataSource.createUser(
         userId: userId,
         email: email,
-        role: 'admin',
+        role: AppConstants.roleAdmin,
       );
 
-      // Create admin profile (would need to be implemented)
-      // For now, returning a placeholder
-      return const Left(ServerFailure('Admin profile creation not implemented'));
+      // Create admin profile
+      final profileId = await firestoreDataSource.createAdminProfile(
+        userId: userId,
+        firstName: firstName,
+        lastName: lastName,
+        accessLevel: accessLevel,
+      );
+
+      // Update user with profileId
+      await firestoreDataSource.updateUser(
+        userId: userId,
+        data: {'profileId': profileId},
+      );
+
+      // Return the created admin profile entity
+      return Right(AdminProfileEntity(
+        profileId: profileId,
+        userId: userId,
+        name: name,
+        accessLevel: accessLevel,
+      ));
+    } on AuthException catch (e) {
+      return Left(AuthFailure(e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {

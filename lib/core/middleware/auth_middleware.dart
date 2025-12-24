@@ -14,7 +14,6 @@ class AuthMiddleware extends GetMiddleware {
       AppConstants.routeLogin,
       AppConstants.routeSignUp,
       AppConstants.routeAdminLogin,
-      AppConstants.routeAdminSignUp,
     ];
     
     // Get current route to check if user is navigating between auth screens
@@ -29,7 +28,6 @@ class AuthMiddleware extends GetMiddleware {
     // Admin auth routes
     final adminAuthRoutes = [
       AppConstants.routeAdminLogin,
-      AppConstants.routeAdminSignUp,
     ];
     
     // Check if navigating between auth screens of the same type
