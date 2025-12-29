@@ -15,6 +15,7 @@ class AdminManageAdminsController extends GetxController {
   final filteredAdminProfiles = <AdminProfileEntity>[].obs;
   final searchQuery = ''.obs;
   final isChangingRole = <String, bool>{}.obs;
+  final isDeletingUser = <String, bool>{}.obs;
 
   @override
   void onInit() {
@@ -115,6 +116,47 @@ class AdminManageAdminsController extends GetxController {
         Get.snackbar(
           AppTexts.success,
           AppTexts.roleChanged,
+        );
+      },
+    );
+  }
+
+  /// Delete a user (from both Firestore and Authentication)
+  Future<void> deleteUser(AdminProfileEntity profile) async {
+    // Don't allow deleting own account
+    if (isCurrentUser(profile)) {
+      Get.snackbar(
+        AppTexts.error,
+        'You cannot delete your own account',
+      );
+      return;
+    }
+
+    isDeletingUser[profile.profileId] = true;
+
+    final result = await adminRepository.deleteUser(
+      userId: profile.userId,
+      profileId: profile.profileId,
+    );
+
+    isDeletingUser[profile.profileId] = false;
+
+    result.fold(
+      (failure) {
+        Get.snackbar(
+          AppTexts.error,
+          failure.message,
+        );
+      },
+      (_) {
+        // Remove the profile from the list
+        adminProfiles.removeWhere(
+          (p) => p.profileId == profile.profileId,
+        );
+        _applyFilters();
+        Get.snackbar(
+          AppTexts.success,
+          'User deleted successfully',
         );
       },
     );

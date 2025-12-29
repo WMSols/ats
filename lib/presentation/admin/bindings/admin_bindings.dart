@@ -2,9 +2,11 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:ats/data/data_sources/firebase_auth_data_source.dart';
 import 'package:ats/data/data_sources/firestore_data_source.dart';
 import 'package:ats/data/data_sources/firebase_storage_data_source.dart';
+import 'package:ats/data/data_sources/firebase_functions_data_source.dart';
 import 'package:ats/data/repositories/admin_auth_repository_impl.dart';
 import 'package:ats/data/repositories/job_repository_impl.dart';
 import 'package:ats/data/repositories/document_repository_impl.dart';
@@ -32,6 +34,7 @@ class AdminBindings extends Bindings {
     final authDataSource = FirebaseAuthDataSourceImpl(FirebaseAuth.instance);
     final firestoreDataSource = FirestoreDataSourceImpl(FirebaseFirestore.instance);
     final storageDataSource = FirebaseStorageDataSourceImpl(FirebaseStorage.instance);
+    final functionsDataSource = FirebaseFunctionsDataSourceImpl(FirebaseFunctions.instance);
 
     // Admin Auth Repository (completely isolated)
     final adminAuthRepo = AdminAuthRepositoryImpl(
@@ -49,6 +52,7 @@ class AdminBindings extends Bindings {
     final adminRepo = AdminRepositoryImpl(
       firestoreDataSource: firestoreDataSource,
       authDataSource: authDataSource,
+      functionsDataSource: functionsDataSource, // Use Firebase Functions for admin operations
     );
     final candidateProfileRepo = CandidateProfileRepositoryImpl(firestoreDataSource);
 

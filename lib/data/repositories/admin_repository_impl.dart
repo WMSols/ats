@@ -6,6 +6,7 @@ import 'package:ats/domain/entities/user_entity.dart';
 import 'package:ats/domain/repositories/admin_repository.dart';
 import 'package:ats/data/data_sources/firestore_data_source.dart';
 import 'package:ats/data/data_sources/firebase_auth_data_source.dart';
+import 'package:ats/data/data_sources/firebase_functions_data_source.dart';
 import 'package:ats/data/models/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
@@ -13,10 +14,12 @@ import 'package:dartz/dartz.dart';
 class AdminRepositoryImpl implements AdminRepository {
   final FirestoreDataSource firestoreDataSource;
   final FirebaseAuthDataSource authDataSource;
+  final FirebaseFunctionsDataSource? functionsDataSource;
 
   AdminRepositoryImpl({
     required this.firestoreDataSource,
     required this.authDataSource,
+    this.functionsDataSource, // Optional: if provided, use Functions; otherwise use direct Firebase
   });
 
   @override
@@ -114,53 +117,77 @@ class AdminRepositoryImpl implements AdminRepository {
     required String accessLevel,
   }) async {
     try {
-      // Split name into firstName and lastName
-      final nameParts = name.trim().split(' ');
-      final firstName = nameParts.isNotEmpty ? nameParts.first : '';
-      final lastName = nameParts.length > 1 
-          ? nameParts.sublist(1).join(' ') 
-          : '';
+      // Use Firebase Functions if available (Firebase Admin SDK), otherwise fall back to direct Firebase
+      if (functionsDataSource != null) {
+        // Use Firebase Functions - creates user without auto-login
+        final result = await functionsDataSource!.createAdmin(
+          email: email,
+          password: password,
+          name: name,
+          accessLevel: accessLevel,
+        );
 
-      // Create Firebase Auth user
-      final userCredential = await authDataSource.signUp(
-        email: email,
-        password: password,
-      );
+        return Right(AdminProfileEntity(
+          profileId: result['profileId'] as String,
+          userId: result['userId'] as String,
+          name: result['name'] as String,
+          accessLevel: result['accessLevel'] as String,
+          email: result['email'] as String,
+        ));
+      } else {
+        // Fallback to direct Firebase (legacy approach)
+        // Split name into firstName and lastName
+        final nameParts = name.trim().split(' ');
+        final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+        final lastName = nameParts.length > 1 
+            ? nameParts.sublist(1).join(' ') 
+            : '';
 
-      final userId = userCredential.user?.uid;
-      if (userId == null) {
-        return const Left(AuthFailure('Admin creation failed'));
+        // Create Firebase Auth user (this will automatically sign in the new user)
+        final userCredential = await authDataSource.signUp(
+          email: email,
+          password: password,
+        );
+
+        final userId = userCredential.user?.uid;
+        if (userId == null) {
+          return const Left(AuthFailure('Admin creation failed'));
+        }
+
+        // Create user document in Firestore with admin role
+        await firestoreDataSource.createUser(
+          userId: userId,
+          email: email,
+          role: AppConstants.roleAdmin,
+        );
+
+        // Create admin profile
+        final profileId = await firestoreDataSource.createAdminProfile(
+          userId: userId,
+          firstName: firstName,
+          lastName: lastName,
+          accessLevel: accessLevel,
+        );
+
+        // Update user with profileId
+        await firestoreDataSource.updateUser(
+          userId: userId,
+          data: {'profileId': profileId},
+        );
+
+        // Note: createUserWithEmailAndPassword automatically signs in the new user
+        // Sign out the newly created user to prevent auto-login
+        await authDataSource.signOut();
+
+        // Return the created admin profile entity
+        return Right(AdminProfileEntity(
+          profileId: profileId,
+          userId: userId,
+          name: name,
+          accessLevel: accessLevel,
+          email: email,
+        ));
       }
-
-      // Create user document in Firestore with admin role
-      await firestoreDataSource.createUser(
-        userId: userId,
-        email: email,
-        role: AppConstants.roleAdmin,
-      );
-
-      // Create admin profile
-      final profileId = await firestoreDataSource.createAdminProfile(
-        userId: userId,
-        firstName: firstName,
-        lastName: lastName,
-        accessLevel: accessLevel,
-      );
-
-      // Update user with profileId
-      await firestoreDataSource.updateUser(
-        userId: userId,
-        data: {'profileId': profileId},
-      );
-
-      // Return the created admin profile entity
-      return Right(AdminProfileEntity(
-        profileId: profileId,
-        userId: userId,
-        name: name,
-        accessLevel: accessLevel,
-        email: email,
-      ));
     } on AuthException catch (e) {
       return Left(AuthFailure(e.message));
     } on ServerException catch (e) {
@@ -245,6 +272,52 @@ class AdminRepositoryImpl implements AdminRepository {
       ));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('An unexpected error occurred: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteUser({
+    required String userId,
+    required String profileId,
+  }) async {
+    try {
+      // Use Firebase Functions if available (Firebase Admin SDK), otherwise fall back to direct Firebase
+      if (functionsDataSource != null) {
+        // Use Firebase Functions - can delete any user
+        await functionsDataSource!.deleteUser(
+          userId: userId,
+          profileId: profileId,
+        );
+        return const Right(null);
+      } else {
+        // Fallback to direct Firebase (legacy approach)
+        // Delete admin profile from Firestore
+        await firestoreDataSource.deleteAdminProfile(profileId);
+
+        // Delete user document from Firestore
+        await firestoreDataSource.deleteUser(userId);
+
+        // Delete user from Firebase Authentication
+        // Note: Client SDK can only delete the current user
+        // For deleting other users, Admin SDK is required
+        try {
+          await authDataSource.deleteUser(userId);
+        } on AuthException catch (e) {
+          // If deletion from Auth fails (e.g., trying to delete a different user),
+          // we still consider it a partial success since Firestore data is deleted
+          return Left(AuthFailure(
+            'User deleted from Firestore, but Auth deletion requires Admin SDK: ${e.message}',
+          ));
+        }
+
+        return const Right(null);
+      }
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on AuthException catch (e) {
+      return Left(AuthFailure(e.message));
     } catch (e) {
       return Left(ServerFailure('An unexpected error occurred: $e'));
     }

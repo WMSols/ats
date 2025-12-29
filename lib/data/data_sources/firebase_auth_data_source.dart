@@ -16,6 +16,8 @@ abstract class FirebaseAuthDataSource {
 
   Future<void> sendPasswordResetEmail(String email);
 
+  Future<void> deleteUser(String userId);
+
   Stream<User?> get authStateChanges;
 
   User? getCurrentUser();
@@ -75,6 +77,24 @@ class FirebaseAuthDataSourceImpl implements FirebaseAuthDataSource {
       await firebaseAuth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
       throw AuthException(e.message ?? 'Failed to send password reset email');
+    } catch (e) {
+      throw AuthException('An unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteUser(String userId) async {
+    try {
+      final user = firebaseAuth.currentUser;
+      if (user != null && user.uid == userId) {
+        await user.delete();
+      } else {
+        // If the user to delete is not the current user, we need to use Admin SDK
+        // For now, throw an exception as client SDK can only delete current user
+        throw AuthException('Cannot delete user: Only the current user can be deleted');
+      }
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(e.message ?? 'Failed to delete user');
     } catch (e) {
       throw AuthException('An unexpected error occurred: $e');
     }

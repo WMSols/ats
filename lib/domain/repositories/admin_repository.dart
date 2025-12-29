@@ -21,5 +21,10 @@ abstract class AdminRepository {
     required String profileId,
     required String accessLevel,
   });
+
+  Future<Either<Failure, void>> deleteUser({
+    required String userId,
+    required String profileId,
+  });
 }
 

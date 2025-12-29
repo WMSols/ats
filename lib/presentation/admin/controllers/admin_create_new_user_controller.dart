@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ats/core/utils/app_validators/app_validators.dart';
+import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/domain/repositories/admin_repository.dart';
 import 'package:ats/domain/usecases/admin/create_admin_usecase.dart';
 import 'package:ats/presentation/admin/controllers/admin_manage_admins_controller.dart';
@@ -118,8 +119,9 @@ class AdminCreateNewUserController extends GetxController {
           'Success',
           '${roleValue.value == 'admin' ? 'Admin' : 'Recruiter'} created successfully',
         );
-        // Navigate back and refresh list
-        Get.back();
+        // Navigate to AdminManageAdminsScreen instead of going back
+        // Note: The repository will sign out the newly created user to prevent auto-login
+        Get.offNamed(AppConstants.routeAdminManageAdmins);
         // Refresh the list in manage admins screen
         if (Get.isRegistered<AdminManageAdminsController>()) {
           final manageController = Get.find<AdminManageAdminsController>();
