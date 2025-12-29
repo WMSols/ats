@@ -111,7 +111,9 @@ class AppTexts {
   static const String candidates = "Candidates";
   static const String candidateDetails = "Candidate Details";
   static const String noCandidatesAvailable = "No candidates available";
+  static const String noCandidatesFound = "No candidates found matching your search";
   static const String candidateNotFound = "Candidate not found";
+  static const String searchCandidates = "Search candidates by name, email, company, or position...";
   static const String role = "Role";
   static const String applicationStatusUpdated = "Application status updated";
 

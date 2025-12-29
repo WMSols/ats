@@ -32,13 +32,15 @@ class AppSearchCreateBar extends StatelessWidget {
               onChanged: onSearchChanged,
             ),
           ),
-          AppSpacing.horizontal(context, 0.02),
-          AppButton(
-            text: createButtonText,
-            icon: createButtonIcon,
-            onPressed: onCreatePressed,
-            isFullWidth: false,
-          ),
+          if (onCreatePressed != null) ...[
+            AppSpacing.horizontal(context, 0.02),
+            AppButton(
+              text: createButtonText,
+              icon: createButtonIcon,
+              onPressed: onCreatePressed,
+              isFullWidth: false,
+            ),
+          ],
         ],
       ),
     );

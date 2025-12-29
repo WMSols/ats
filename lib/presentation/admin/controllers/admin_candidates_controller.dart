@@ -12,6 +12,7 @@ import 'package:ats/domain/entities/candidate_profile_entity.dart';
 import 'package:ats/domain/entities/job_entity.dart';
 import 'package:ats/domain/usecases/application/update_application_status_usecase.dart';
 import 'package:ats/domain/usecases/document/update_document_status_usecase.dart';
+import 'package:ats/core/constants/app_constants.dart';
 
 class AdminCandidatesController extends GetxController {
   final AdminRepository adminRepository;
@@ -31,7 +32,10 @@ class AdminCandidatesController extends GetxController {
   final isLoading = false.obs;
   final errorMessage = ''.obs;
   final candidates = <UserEntity>[].obs;
+  final filteredCandidates = <UserEntity>[].obs;
+  final searchQuery = ''.obs;
   final candidateProfiles = <String, CandidateProfileEntity?>{}.obs;
+  final candidateDocumentsMap = <String, List<CandidateDocumentEntity>>{}.obs;
   final selectedCandidate = Rxn<UserEntity>();
   final selectedCandidateProfile = Rxn<CandidateProfileEntity>();
   final candidateApplications = <ApplicationEntity>[].obs;
@@ -45,6 +49,7 @@ class AdminCandidatesController extends GetxController {
   StreamSubscription<List<ApplicationEntity>>? _applicationsSubscription;
   StreamSubscription<List<CandidateDocumentEntity>>? _documentsSubscription;
   StreamSubscription<CandidateProfileEntity?>? _profileSubscription;
+  final Map<String, StreamSubscription<List<CandidateDocumentEntity>>> _candidateDocumentsSubscriptions = {};
 
   @override
   void onInit() {
@@ -61,6 +66,10 @@ class AdminCandidatesController extends GetxController {
     _applicationsSubscription?.cancel();
     _documentsSubscription?.cancel();
     _profileSubscription?.cancel();
+    for (var subscription in _candidateDocumentsSubscriptions.values) {
+      subscription.cancel();
+    }
+    _candidateDocumentsSubscriptions.clear();
     super.onClose();
   }
 
@@ -77,10 +86,12 @@ class AdminCandidatesController extends GetxController {
         (candidatesList) {
           candidates.value = candidatesList;
           isLoading.value = false;
+          _applyFilters();
           
-          // Load profiles for all candidates
+          // Load profiles and documents for all candidates
           for (var candidate in candidatesList) {
             loadCandidateProfile(candidate.userId);
+            loadCandidateDocumentsForList(candidate.userId);
           }
         },
       );
@@ -97,6 +108,7 @@ class AdminCandidatesController extends GetxController {
         (profile) {
           candidateProfiles[userId] = profile;
           candidateProfiles.refresh(); // Trigger reactivity
+          _applyFilters(); // Re-apply filters when profile loads
         },
       );
     }).catchError((error) {
@@ -249,6 +261,56 @@ class AdminCandidatesController extends GetxController {
     return latestWork['position']?.toString() ?? 'N/A';
   }
 
+  void loadCandidateDocumentsForList(String candidateId) {
+    // Cancel existing subscription if any
+    _candidateDocumentsSubscriptions[candidateId]?.cancel();
+    
+    // Create new subscription
+    final subscription = documentRepository
+        .streamCandidateDocuments(candidateId)
+        .listen(
+      (docs) {
+        candidateDocumentsMap[candidateId] = docs;
+        candidateDocumentsMap.refresh(); // Trigger reactivity
+      },
+      onError: (error) {
+        // Silently handle permission errors
+      },
+    );
+    
+    _candidateDocumentsSubscriptions[candidateId] = subscription;
+  }
+
+  String getCandidateStatus(String userId) {
+    final documents = candidateDocumentsMap[userId] ?? [];
+    
+    if (documents.isEmpty) {
+      return AppConstants.documentStatusPending; // No documents means pending
+    }
+    
+    // Check if any document is rejected/denied
+    final hasRejected = documents.any((doc) => 
+      doc.status == AppConstants.documentStatusDenied);
+    if (hasRejected) {
+      return AppConstants.documentStatusDenied;
+    }
+    
+    // Check if any document is pending
+    final hasPending = documents.any((doc) => doc.status == AppConstants.documentStatusPending);
+    if (hasPending) {
+      return AppConstants.documentStatusPending;
+    }
+    
+    // Check if all documents are approved
+    final allApproved = documents.every((doc) => doc.status == AppConstants.documentStatusApproved);
+    if (allApproved) {
+      return AppConstants.documentStatusApproved;
+    }
+    
+    // Default to pending if status is unclear
+    return AppConstants.documentStatusPending;
+  }
+
   int getDocumentsCount() {
     return candidateDocuments.length;
   }
@@ -265,6 +327,48 @@ class AdminCandidatesController extends GetxController {
     return profile.workHistory!
         .map((work) => '${work['company'] ?? 'N/A'} - ${work['position'] ?? 'N/A'}')
         .join('\n');
+  }
+
+  void setSearchQuery(String query) {
+    searchQuery.value = query;
+    _applyFilters();
+  }
+
+  void _applyFilters() {
+    var filtered = List<UserEntity>.from(candidates);
+
+    // Apply search filter
+    if (searchQuery.value.isNotEmpty) {
+      final query = searchQuery.value.toLowerCase();
+      filtered = filtered.where((candidate) {
+        // Search by email
+        if (candidate.email.toLowerCase().contains(query)) {
+          return true;
+        }
+        
+        // Search by name
+        final name = getCandidateName(candidate.userId).toLowerCase();
+        if (name.contains(query)) {
+          return true;
+        }
+        
+        // Search by company
+        final company = getCandidateCompany(candidate.userId).toLowerCase();
+        if (company.contains(query)) {
+          return true;
+        }
+        
+        // Search by position
+        final position = getCandidatePosition(candidate.userId).toLowerCase();
+        if (position.contains(query)) {
+          return true;
+        }
+        
+        return false;
+      }).toList();
+    }
+
+    filteredCandidates.value = filtered;
   }
 }
 

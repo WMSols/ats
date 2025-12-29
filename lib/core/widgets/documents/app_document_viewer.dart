@@ -100,8 +100,10 @@ class AppDocumentViewer extends StatelessWidget {
             ),
             AppSpacing.vertical(context, 0.02),
             // Footer actions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 8.0,
+              runSpacing: 8.0,
               children: [
                 TextButton.icon(
                   onPressed: () => _openInNewTab(documentUrl),
@@ -117,7 +119,6 @@ class AppDocumentViewer extends StatelessWidget {
                     ),
                   ),
                 ),
-                AppSpacing.horizontal(context, 0.02),
                 TextButton.icon(
                   onPressed: () => _downloadDocument(documentUrl, documentName),
                   icon: Icon(

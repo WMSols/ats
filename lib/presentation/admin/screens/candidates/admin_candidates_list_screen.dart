@@ -15,31 +15,54 @@ class AdminCandidatesListScreen extends StatelessWidget {
 
     return AppAdminLayout(
       title: AppTexts.candidates,
-      child: Obx(() {
-        if (controller.candidates.isEmpty) {
-          return AppEmptyState(
-            message: AppTexts.noCandidatesAvailable,
-            icon: Iconsax.profile_circle,
-          );
-        }
+      child: Column(
+        children: [
+          // Search Section
+          AppSearchCreateBar(
+            searchHint: AppTexts.searchCandidates,
+            createButtonText: AppTexts.candidates,
+            createButtonIcon: Iconsax.profile_circle,
+            onSearchChanged: (value) => controller.setSearchQuery(value),
+          ),
+          // Candidates List
+          Expanded(
+            child: Obx(() {
+              if (controller.candidates.isEmpty) {
+                return AppEmptyState(
+                  message: AppTexts.noCandidatesAvailable,
+                  icon: Iconsax.profile_circle,
+                );
+              }
 
-        // Observe candidateProfiles to rebuild when profiles load
-        // Access the map to ensure GetX tracks changes
-        for (var candidate in controller.candidates) {
-          final _ = controller.candidateProfiles[candidate.userId];
-        }
+              if (controller.filteredCandidates.isEmpty) {
+                return AppEmptyState(
+                  message: AppTexts.noCandidatesFound,
+                  icon: Iconsax.profile_circle,
+                );
+              }
 
-        return AppCandidatesTable(
-          candidates: controller.candidates,
-          getName: (userId) => controller.getCandidateName(userId),
-          getCompany: (userId) => controller.getCandidateCompany(userId),
-          getPosition: (userId) => controller.getCandidatePosition(userId),
-          onCandidateTap: (candidate) {
-            controller.selectCandidate(candidate);
-            Get.toNamed(AppConstants.routeAdminCandidateDetails);
-          },
-        );
-      }),
+              // Observe candidateProfiles and candidateDocumentsMap to rebuild when data loads
+              // Access the maps to ensure GetX tracks changes
+              for (var candidate in controller.filteredCandidates) {
+                controller.candidateProfiles[candidate.userId];
+                controller.candidateDocumentsMap[candidate.userId];
+              }
+
+              return AppCandidatesTable(
+                candidates: controller.filteredCandidates,
+                getName: (userId) => controller.getCandidateName(userId),
+                getCompany: (userId) => controller.getCandidateCompany(userId),
+                getPosition: (userId) => controller.getCandidatePosition(userId),
+                getStatus: (userId) => controller.getCandidateStatus(userId),
+                onCandidateTap: (candidate) {
+                  controller.selectCandidate(candidate);
+                  Get.toNamed(AppConstants.routeAdminCandidateDetails);
+                },
+              );
+            }),
+          ),
+        ],
+      ),
     );
   }
 }
