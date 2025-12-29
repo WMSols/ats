@@ -147,6 +147,10 @@ abstract class FirestoreDataSource {
 
   // Admin
   Future<List<Map<String, dynamic>>> getCandidates();
+
+  // Delete operations
+  Future<void> deleteUser(String userId);
+  Future<void> deleteAdminProfile(String profileId);
 }
 
 class FirestoreDataSourceImpl implements FirestoreDataSource {
@@ -808,6 +812,27 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
       return candidates;
     } catch (e) {
       throw ServerException('Failed to get candidates: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteUser(String userId) async {
+    try {
+      await firestore.collection(AppConstants.usersCollection).doc(userId).delete();
+    } catch (e) {
+      throw ServerException('Failed to delete user: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteAdminProfile(String profileId) async {
+    try {
+      await firestore
+          .collection(AppConstants.adminProfilesCollection)
+          .doc(profileId)
+          .delete();
+    } catch (e) {
+      throw ServerException('Failed to delete admin profile: $e');
     }
   }
 }

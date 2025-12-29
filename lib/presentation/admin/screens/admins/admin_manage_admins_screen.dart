@@ -72,17 +72,35 @@ class AdminManageAdminsScreen extends StatelessWidget {
                       customText: isAdmin ? AppTexts.admin : AppTexts.recruiter,
                     ),
                     trailing: !isCurrentUser
-                        ? AppActionButton(
-                            text: AppTexts.changeRole,
-                            onPressed: isChanging
-                                ? null
-                                : () => _showChangeRoleConfirmation(
-                                    context,
-                                    controller,
-                                    profile,
-                                  ),
-                            backgroundColor: AppColors.success,
-                            foregroundColor: AppColors.white,
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AppActionButton(
+                                text: AppTexts.changeRole,
+                                onPressed: isChanging
+                                    ? null
+                                    : () => _showChangeRoleConfirmation(
+                                        context,
+                                        controller,
+                                        profile,
+                                      ),
+                                backgroundColor: AppColors.success,
+                                foregroundColor: AppColors.white,
+                              ),
+                              AppSpacing.horizontal(context, 0.01),
+                              AppActionButton(
+                                text: AppTexts.deleteUser,
+                                onPressed: (controller.isDeletingUser[profile.profileId] ?? false)
+                                    ? null
+                                    : () => _showDeleteUserConfirmation(
+                                        context,
+                                        controller,
+                                        profile,
+                                      ),
+                                backgroundColor: AppColors.error,
+                                foregroundColor: AppColors.white,
+                              ),
+                            ],
                           )
                         : null,
                     useRowLayout: true,
@@ -112,6 +130,23 @@ class AdminManageAdminsScreen extends StatelessWidget {
       primaryButtonColor: AppColors.success,
       secondaryButtonText: AppTexts.cancel,
       onPrimaryPressed: () => controller.changeRole(profile),
+      onSecondaryPressed: () {},
+    );
+  }
+
+  void _showDeleteUserConfirmation(
+    BuildContext context,
+    AdminManageAdminsController controller,
+    AdminProfileEntity profile,
+  ) {
+    AppAlertDialog.show(
+      title: AppTexts.deleteUser,
+      subtitle:
+          '${AppTexts.deleteUserConfirmation} "${profile.name}"? This action cannot be undone.',
+      primaryButtonText: AppTexts.deleteUser,
+      primaryButtonColor: AppColors.error,
+      secondaryButtonText: AppTexts.cancel,
+      onPrimaryPressed: () => controller.deleteUser(profile),
       onSecondaryPressed: () {},
     );
   }

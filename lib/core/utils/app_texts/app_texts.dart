@@ -132,6 +132,10 @@ class AppTexts {
   static const String changeRoleConfirmation = "Are you sure you want to change the role of";
   static const String roleChanged = "Role changed successfully";
   static const String roleChangeFailed = "Failed to change role";
+  static const String deleteUser = "Delete User";
+  static const String deleteUserConfirmation = "Are you sure you want to delete";
+  static const String userDeleted = "User deleted successfully";
+  static const String userDeleteFailed = "Failed to delete user";
 
   // Validation
   static const String emailRequired = "Email is required";
