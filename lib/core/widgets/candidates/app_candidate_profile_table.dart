@@ -31,20 +31,26 @@ class AppCandidateProfileTable extends StatelessWidget {
           headingRowColor: MaterialStateProperty.all(AppColors.lightGrey),
           columns: [
             DataColumn(
-              label: Text(
-                AppTexts.field,
-                style: AppTextStyles.bodyText(context).copyWith(
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.w500,
+              label: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                child: Text(
+                  AppTexts.field,
+                  style: AppTextStyles.bodyText(context).copyWith(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
             DataColumn(
-              label: Text(
-                AppTexts.value,
-                style: AppTextStyles.bodyText(context).copyWith(
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.w500,
+              label: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                child: Text(
+                  AppTexts.value,
+                  style: AppTextStyles.bodyText(context).copyWith(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
@@ -53,53 +59,92 @@ class AppCandidateProfileTable extends StatelessWidget {
             DataRow(
               cells: [
                 DataCell(
-                  Text(AppTexts.name, style: AppTextStyles.bodyText(context)),
-                ),
-                DataCell(Text(name, style: AppTextStyles.bodyText(context))),
-              ],
-            ),
-            DataRow(
-              cells: [
-                DataCell(
-                  Text(AppTexts.email, style: AppTextStyles.bodyText(context)),
-                ),
-                DataCell(Text(email, style: AppTextStyles.bodyText(context))),
-              ],
-            ),
-            DataRow(
-              cells: [
-                DataCell(
-                  Text(
-                    AppTexts.workHistory,
-                    style: AppTextStyles.bodyText(context),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    child: Text(AppTexts.name, style: AppTextStyles.bodyText(context)),
                   ),
                 ),
                 DataCell(
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minWidth: 200,
-                      maxWidth: double.infinity,
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                     child: Text(
-                      workHistory,
+                      name,
+                      style: AppTextStyles.bodyText(context),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            DataRow(
+              cells: [
+                DataCell(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    child: Text(AppTexts.email, style: AppTextStyles.bodyText(context)),
+                  ),
+                ),
+                DataCell(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    child: Text(
+                      email,
+                      style: AppTextStyles.bodyText(context),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            DataRow(
+              cells: [
+                DataCell(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    child: Text(
+                      AppTexts.workHistory,
                       style: AppTextStyles.bodyText(context),
                     ),
                   ),
                 ),
+                DataCell(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minWidth: 200,
+                        maxWidth: double.infinity,
+                      ),
+                      child: Text(
+                        workHistory,
+                        style: AppTextStyles.bodyText(context),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
             DataRow(
               cells: [
                 DataCell(
-                  Text(
-                    AppTexts.documentsUploadedCount,
-                    style: AppTextStyles.bodyText(context),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    child: Text(
+                      AppTexts.documentsUploadedCount,
+                      style: AppTextStyles.bodyText(context),
+                    ),
                   ),
                 ),
                 DataCell(
-                  Text(
-                    documentsCount.toString(),
-                    style: AppTextStyles.bodyText(context),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    child: Text(
+                      documentsCount.toString(),
+                      style: AppTextStyles.bodyText(context),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ],
@@ -107,15 +152,22 @@ class AppCandidateProfileTable extends StatelessWidget {
             DataRow(
               cells: [
                 DataCell(
-                  Text(
-                    AppTexts.jobsAppliedCount,
-                    style: AppTextStyles.bodyText(context),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    child: Text(
+                      AppTexts.jobsAppliedCount,
+                      style: AppTextStyles.bodyText(context),
+                    ),
                   ),
                 ),
                 DataCell(
-                  Text(
-                    applicationsCount.toString(),
-                    style: AppTextStyles.bodyText(context),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    child: Text(
+                      applicationsCount.toString(),
+                      style: AppTextStyles.bodyText(context),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ],
