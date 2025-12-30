@@ -4,7 +4,7 @@ import 'package:ats/core/utils/app_colors/app_colors.dart';
 import 'package:ats/core/utils/app_responsive/app_responsive.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/utils/app_styles/app_text_styles.dart';
-import 'package:ats/core/widgets/common/app_navigation_item_model.dart';
+import 'package:ats/core/widgets/common/navigation/app_navigation_item_model.dart';
 
 class AppNavigationItem extends StatelessWidget {
   final AppNavigationItemModel item;

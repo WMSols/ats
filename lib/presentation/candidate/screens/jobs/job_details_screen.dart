@@ -12,7 +12,7 @@ import 'package:ats/core/utils/app_responsive/app_responsive.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
 import 'package:ats/core/widgets/jobs/app_content_section.dart';
 import 'package:ats/core/widgets/jobs/app_required_documents_list.dart';
-import 'package:ats/core/widgets/common/app_info_message.dart';
+import 'package:ats/core/widgets/common/feedback/app_info_message.dart';
 
 class JobDetailsScreen extends StatelessWidget {
   const JobDetailsScreen({super.key});
