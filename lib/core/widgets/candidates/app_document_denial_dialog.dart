@@ -6,8 +6,8 @@ import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/utils/app_responsive/app_responsive.dart';
 import 'package:ats/core/utils/app_images/app_images.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
-import 'package:ats/core/widgets/common/app_text_field.dart';
-import 'package:ats/core/widgets/common/app_action_button.dart';
+import 'package:ats/core/widgets/common/forms/app_text_field.dart';
+import 'package:ats/core/widgets/common/buttons/app_action_button.dart';
 
 class AppDocumentDenialDialog extends StatefulWidget {
   final String documentName;

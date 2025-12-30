@@ -5,7 +5,7 @@ import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/utils/app_responsive/app_responsive.dart';
 import 'package:ats/core/utils/app_images/app_images.dart';
-import 'package:ats/core/widgets/common/app_action_button.dart';
+import 'package:ats/core/widgets/common/buttons/app_action_button.dart';
 
 class AppAlertDialog extends StatelessWidget {
   final String title;

@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/constants/app_constants.dart';
-import 'package:ats/core/widgets/common/app_side_layout.dart';
-import 'package:ats/core/widgets/common/app_navigation_item_model.dart';
+import 'package:ats/core/widgets/common/layout/app_side_layout.dart';
+import 'package:ats/core/widgets/common/navigation/app_navigation_item_model.dart';
 import 'package:ats/presentation/admin/controllers/admin_auth_controller.dart';
 
 class AppAdminLayout extends StatelessWidget {
