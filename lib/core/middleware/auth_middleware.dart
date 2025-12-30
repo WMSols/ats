@@ -59,7 +59,6 @@ class AuthMiddleware extends GetMiddleware {
         }
         // User is logged in but trying to access auth routes from outside
         // Redirect to candidate dashboard (default)
-        // AdminMiddleware will handle admin-specific routes
         return const RouteSettings(name: AppConstants.routeCandidateDashboard);
       }
     }
