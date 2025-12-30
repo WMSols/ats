@@ -80,19 +80,8 @@ class AppCandidateDocumentsList extends StatelessWidget {
                   foregroundColor: AppColors.white,
                 ),
               ],
-              // Show request button only when document is denied
-              if (isRejected) ...[
-                AppStatusChip(status: doc.status),
-                AppSpacing.horizontal(context, 0.01),
-                AppActionButton(
-                  text: AppTexts.request,
-                  onPressed: () {
-                    // TODO: Implement request functionality
-                  },
-                  backgroundColor: AppColors.warning,
-                  foregroundColor: AppColors.black,
-                ),
-              ],
+              // Show status chip when document is denied
+              if (isRejected) ...[AppStatusChip(status: doc.status)],
             ],
           ),
           onTap: null,
