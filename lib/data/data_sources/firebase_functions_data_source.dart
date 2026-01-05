@@ -12,6 +12,23 @@ abstract class FirebaseFunctionsDataSource {
     required String accessLevel,
   });
 
+  /// Creates a candidate user without automatically signing them in
+  /// Returns the created candidate profile data
+  Future<Map<String, dynamic>> createCandidate({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    String? phone,
+    String? address,
+  });
+
+  /// Deletes a candidate user and all associated data (documents, applications, profile, user)
+  Future<void> deleteCandidate({
+    required String userId,
+    required String profileId,
+  });
+
   /// Deletes a user from both Firebase Authentication and Firestore
   Future<void> deleteUser({
     required String userId,
@@ -52,6 +69,53 @@ class FirebaseFunctionsDataSourceImpl implements FirebaseFunctionsDataSource {
       return data;
     } on FirebaseFunctionsException catch (e) {
       throw ServerException('Failed to create admin: ${e.message}');
+    } catch (e) {
+      throw ServerException('An unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> createCandidate({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    String? phone,
+    String? address,
+  }) async {
+    try {
+      final callable = firebaseFunctions.httpsCallable('createCandidate');
+      final result = await callable.call({
+        'email': email,
+        'password': password,
+        'firstName': firstName,
+        'lastName': lastName,
+        'phone': phone,
+        'address': address,
+      });
+
+      final data = result.data as Map<String, dynamic>;
+      return data;
+    } on FirebaseFunctionsException catch (e) {
+      throw ServerException('Failed to create candidate: ${e.message}');
+    } catch (e) {
+      throw ServerException('An unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteCandidate({
+    required String userId,
+    required String profileId,
+  }) async {
+    try {
+      final callable = firebaseFunctions.httpsCallable('deleteCandidate');
+      await callable.call({
+        'userId': userId,
+        'profileId': profileId,
+      });
+    } on FirebaseFunctionsException catch (e) {
+      throw ServerException('Failed to delete candidate: ${e.message}');
     } catch (e) {
       throw ServerException('An unexpected error occurred: $e');
     }

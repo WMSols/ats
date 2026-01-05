@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
@@ -16,6 +17,8 @@ class AppCandidatesTable extends StatelessWidget {
   final String Function(String userId) getAgentName;
   final String? Function(String userId) getAssignedAgentProfileId;
   final Function(UserEntity) onCandidateTap;
+  final Function(UserEntity)? onCandidateEdit;
+  final Function(UserEntity)? onCandidateDelete;
   final bool isSuperAdmin;
   final List<AdminProfileEntity> availableAgents;
   final Future<void> Function(String userId, String? agentId) onAgentChanged;
@@ -30,6 +33,8 @@ class AppCandidatesTable extends StatelessWidget {
     required this.getAgentName,
     required this.getAssignedAgentProfileId,
     required this.onCandidateTap,
+    this.onCandidateEdit,
+    this.onCandidateDelete,
     required this.isSuperAdmin,
     required this.availableAgents,
     required this.onAgentChanged,
@@ -117,6 +122,19 @@ class AppCandidatesTable extends StatelessWidget {
                 ),
               ),
             ),
+            if (isSuperAdmin && (onCandidateEdit != null || onCandidateDelete != null))
+              DataColumn(
+                label: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                  child: Text(
+                    AppTexts.actions,
+                    style: AppTextStyles.bodyText(context).copyWith(
+                      color: AppColors.secondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
           ],
           rows: candidates.map((candidate) {
             final name = getName(candidate.userId);
@@ -204,6 +222,29 @@ class AppCandidatesTable extends StatelessWidget {
                           ),
                   ),
                 ),
+                if (isSuperAdmin && (onCandidateEdit != null || onCandidateDelete != null))
+                  DataCell(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (onCandidateEdit != null)
+                            IconButton(
+                              icon: const Icon(Iconsax.edit, color: AppColors.secondary),
+                              onPressed: () => onCandidateEdit!(candidate),
+                              tooltip: AppTexts.edit,
+                            ),
+                          if (onCandidateDelete != null)
+                            IconButton(
+                              icon: const Icon(Iconsax.trash, color: AppColors.error),
+                              onPressed: () => onCandidateDelete!(candidate),
+                              tooltip: AppTexts.deleteCandidate,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             );
           }).toList(),

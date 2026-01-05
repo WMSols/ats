@@ -15,6 +15,7 @@ import 'package:ats/domain/entities/admin_profile_entity.dart';
 import 'package:ats/domain/usecases/application/update_application_status_usecase.dart';
 import 'package:ats/domain/usecases/document/update_document_status_usecase.dart';
 import 'package:ats/domain/usecases/email/send_document_denial_email_usecase.dart';
+import 'package:ats/domain/usecases/admin/delete_candidate_usecase.dart';
 import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
@@ -53,6 +54,7 @@ class AdminCandidatesController extends GetxController {
   late final UpdateApplicationStatusUseCase updateApplicationStatusUseCase;
   late final UpdateDocumentStatusUseCase updateDocumentStatusUseCase;
   late final SendDocumentDenialEmailUseCase sendDocumentDenialEmailUseCase;
+  late final DeleteCandidateUseCase deleteCandidateUseCase;
 
   // Stream subscriptions
   StreamSubscription<List<ApplicationEntity>>? _applicationsSubscription;
@@ -67,6 +69,7 @@ class AdminCandidatesController extends GetxController {
     updateApplicationStatusUseCase = UpdateApplicationStatusUseCase(Get.find<ApplicationRepository>());
     updateDocumentStatusUseCase = UpdateDocumentStatusUseCase(Get.find<DocumentRepository>());
     sendDocumentDenialEmailUseCase = SendDocumentDenialEmailUseCase(Get.find<EmailRepository>());
+    deleteCandidateUseCase = DeleteCandidateUseCase(adminRepository);
     loadCandidates();
     loadAvailableAgents();
     
@@ -624,6 +627,134 @@ class AdminCandidatesController extends GetxController {
         candidateProfiles.refresh();
         isLoading.value = false;
         AppSnackbar.success('Agent updated successfully');
+      },
+    );
+  }
+
+  /// Update candidate profile (admin can edit all fields)
+  Future<void> updateCandidateProfile({
+    required String firstName,
+    required String lastName,
+    required String phone,
+    required String address,
+    List<Map<String, dynamic>>? workHistory,
+  }) async {
+    final profile = selectedCandidateProfile.value;
+    if (profile == null) {
+      AppSnackbar.error('Candidate profile not found');
+      return;
+    }
+
+    final profileId = profile.profileId;
+    if (profileId.isEmpty) {
+      AppSnackbar.error('Unable to update: Profile ID not found');
+      return;
+    }
+
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    final result = await candidateProfileRepository.updateProfile(
+      profileId: profileId,
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone,
+      address: address,
+      workHistory: workHistory,
+    );
+
+    result.fold(
+      (failure) {
+        errorMessage.value = failure.message;
+        isLoading.value = false;
+        AppSnackbar.error('Failed to update candidate: ${failure.message}');
+      },
+      (updatedProfile) {
+        selectedCandidateProfile.value = updatedProfile;
+        candidateProfiles[profile.userId] = updatedProfile;
+        candidateProfiles.refresh();
+        isLoading.value = false;
+        AppSnackbar.success('Candidate updated successfully');
+        // Navigate back
+        Get.back();
+      },
+    );
+  }
+
+  /// Delete candidate and all associated data (from details screen)
+  Future<void> deleteCandidate() async {
+    final candidate = selectedCandidate.value;
+    if (candidate == null) {
+      AppSnackbar.error('Candidate not selected');
+      return;
+    }
+
+    final profile = selectedCandidateProfile.value;
+    if (profile == null) {
+      AppSnackbar.error('Candidate profile not found');
+      return;
+    }
+
+    final profileId = profile.profileId;
+    if (profileId.isEmpty) {
+      AppSnackbar.error('Unable to delete: Profile ID not found');
+      return;
+    }
+
+    await deleteCandidateById(
+      userId: candidate.userId,
+      profileId: profileId,
+    );
+  }
+
+  /// Delete candidate by ID (can be called from list or details screen)
+  Future<void> deleteCandidateById({
+    required String userId,
+    required String profileId,
+  }) async {
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    final result = await deleteCandidateUseCase(
+      userId: userId,
+      profileId: profileId,
+    );
+
+    result.fold(
+      (failure) {
+        errorMessage.value = failure.message;
+        isLoading.value = false;
+        AppSnackbar.error('Failed to delete candidate: ${failure.message}');
+      },
+      (_) {
+        isLoading.value = false;
+        AppSnackbar.success('Candidate deleted successfully');
+        
+        // Clear selected candidate if it's the one being deleted
+        if (selectedCandidate.value?.userId == userId) {
+          selectedCandidate.value = null;
+          selectedCandidateProfile.value = null;
+        }
+        
+        // Remove from local lists
+        candidates.removeWhere((c) => c.userId == userId);
+        filteredCandidates.removeWhere((c) => c.userId == userId);
+        candidateProfiles.remove(userId);
+        candidateDocumentsMap.remove(userId);
+        
+        // Cancel any active streams for this candidate
+        candidateProfileStreams[userId]?.cancel();
+        candidateProfileStreams.remove(userId);
+        _candidateDocumentsSubscriptions[userId]?.cancel();
+        _candidateDocumentsSubscriptions.remove(userId);
+        
+        // Reload candidates list to ensure consistency
+        loadCandidates();
+        
+        // If we're on details screen, navigate back
+        if (Get.currentRoute == AppConstants.routeAdminCandidateDetails) {
+          Get.offNamed(AppConstants.routeAdminCandidates);
+        }
       },
     );
   }

@@ -1,6 +1,7 @@
 import 'package:ats/core/errors/failures.dart';
 import 'package:ats/domain/entities/admin_profile_entity.dart';
 import 'package:ats/domain/entities/user_entity.dart';
+import 'package:ats/domain/entities/candidate_profile_entity.dart';
 import 'package:dartz/dartz.dart';
 
 abstract class AdminRepository {
@@ -13,6 +14,20 @@ abstract class AdminRepository {
     required String password,
     required String name,
     required String accessLevel,
+  });
+
+  Future<Either<Failure, CandidateProfileEntity>> createCandidate({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    String? phone,
+    String? address,
+  });
+
+  Future<Either<Failure, void>> deleteCandidate({
+    required String userId,
+    required String profileId,
   });
 
   Future<Either<Failure, List<AdminProfileEntity>>> getAllAdminProfiles();

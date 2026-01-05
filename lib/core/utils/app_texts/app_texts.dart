@@ -110,7 +110,12 @@ class AppTexts {
   // Candidates
   static const String candidate = "Candidate";
   static const String candidates = "Candidates";
+  static const String createCandidate = "Create Candidate";
   static const String candidateDetails = "Candidate Details";
+  static const String deleteCandidate = "Delete Candidate";
+  static const String deleteCandidateConfirmation = "Are you sure you want to delete";
+  static const String deleteCandidateWarning = "This will permanently delete the candidate and all associated data including documents, applications, and profile. This action cannot be undone.";
+  static const String candidateDeleted = "Candidate deleted successfully";
   static const String noCandidatesAvailable = "No candidates available";
   static const String noCandidatesFound = "No candidates found matching your search";
   static const String candidateNotFound = "Candidate not found";
@@ -172,6 +177,7 @@ class AppTexts {
   static const String update = "Update";
   static const String delete = "Delete";
   static const String edit = "Edit";
+  static const String actions = "Actions";
   static const String success = "Success";
   static const String error = "Error";
   static const String info = "Info";

@@ -58,6 +58,8 @@ class AppConstants {
     static const String routeAdminJobDetails = '/admin/jobs/details';
     static const String routeAdminCandidates = '/admin/candidates';
     static const String routeAdminCandidateDetails = '/admin/candidates/details';
+    static const String routeAdminCreateCandidate = '/admin/candidates/create';
+    static const String routeAdminEditCandidate = '/admin/candidates/edit';
     static const String routeAdminDocumentTypes = '/admin/document-types';
     static const String routeAdminCreateDocumentType = '/admin/document-types/create';
     static const String routeAdminManageAdmins = '/admin/manage-admins';
