@@ -109,6 +109,237 @@ exports.createAdmin = functions.https.onCall(async (data, context) => {
 });
 
 /**
+ * Creates a candidate user without automatically signing them in
+ * This function uses Firebase Admin SDK to create users without affecting the current session
+ */
+exports.createCandidate = onCall(async (request) => {
+  const {data, auth} = request;
+  
+  // Verify that the caller is authenticated and is an admin
+  if (!auth) {
+    throw new HttpsError(
+      'unauthenticated',
+      'User must be authenticated to create candidate users'
+    );
+  }
+
+  // Verify the caller is an admin
+  const callerUserDoc = await admin.firestore()
+    .collection('users')
+    .doc(auth.uid)
+    .get();
+
+  if (!callerUserDoc.exists) {
+    throw new HttpsError(
+      'permission-denied',
+      'User document not found'
+    );
+  }
+
+  const callerRole = callerUserDoc.data().role;
+  if (callerRole !== 'admin') {
+    throw new HttpsError(
+      'permission-denied',
+      'Only admins can create candidate users'
+    );
+  }
+
+  // Extract data from request
+  const { email, password, firstName, lastName, phone, address } = data;
+
+  if (!email || !password || !firstName || !lastName) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Missing required fields: email, password, firstName, lastName'
+    );
+  }
+
+  try {
+    // Create user in Firebase Authentication using Admin SDK
+    // This does NOT sign in the user automatically
+    const userRecord = await admin.auth().createUser({
+      email: email,
+      password: password,
+      emailVerified: false,
+    });
+
+    const userId = userRecord.uid;
+
+    // Create user document in Firestore with candidate role
+    await admin.firestore().collection('users').doc(userId).set({
+      email: email,
+      role: 'candidate',
+      profileId: null, // Will be updated after profile creation
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Create candidate profile
+    const profileRef = await admin.firestore()
+      .collection('candidateProfiles')
+      .add({
+        userId: userId,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        phone: phone?.trim() || '',
+        address: address?.trim() || '',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+    const profileId = profileRef.id;
+
+    // Update user with profileId
+    await admin.firestore().collection('users').doc(userId).update({
+      profileId: profileId,
+    });
+
+    // Return the created candidate profile data
+    return {
+      profileId: profileId,
+      userId: userId,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email,
+    };
+  } catch (error) {
+    console.error('Error creating candidate user:', error);
+    throw new HttpsError(
+      'internal',
+      `Failed to create candidate user: ${error.message}`
+    );
+  }
+});
+
+/**
+ * Deletes a candidate user and all associated data
+ * This function deletes:
+ * - All candidate documents from Storage
+ * - All candidate documents from Firestore
+ * - All applications from Firestore
+ * - Candidate profile from Firestore
+ * - User document from Firestore
+ * - User from Firebase Authentication
+ */
+exports.deleteCandidate = onCall(async (request) => {
+  const {data, auth} = request;
+  
+  // Verify that the caller is authenticated and is an admin
+  if (!auth) {
+    throw new HttpsError(
+      'unauthenticated',
+      'User must be authenticated to delete candidates'
+    );
+  }
+
+  // Verify the caller is an admin
+  const callerUserDoc = await admin.firestore()
+    .collection('users')
+    .doc(auth.uid)
+    .get();
+
+  if (!callerUserDoc.exists) {
+    throw new HttpsError(
+      'permission-denied',
+      'User document not found'
+    );
+  }
+
+  const callerRole = callerUserDoc.data().role;
+  if (callerRole !== 'admin') {
+    throw new HttpsError(
+      'permission-denied',
+      'Only admins can delete candidates'
+    );
+  }
+
+  // Extract data from request
+  const { userId, profileId } = data;
+
+  if (!userId || !profileId) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Missing required fields: userId, profileId'
+    );
+  }
+
+  try {
+    // Step 1: Get all candidate documents
+    const documentsSnapshot = await admin.firestore()
+      .collection('candidateDocuments')
+      .where('candidateId', '==', userId)
+      .get();
+
+    // Step 2: Delete all document files from Storage
+    const bucket = admin.storage().bucket();
+    
+    for (const doc of documentsSnapshot.docs) {
+      const docData = doc.data();
+      const storageUrl = docData.storageUrl;
+      
+      if (storageUrl) {
+        try {
+          // Extract file path from storage URL
+          // Storage URLs format: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{pathEncoded}?alt=media&token={token}
+          const urlObj = new URL(storageUrl);
+          const pathMatch = urlObj.pathname.match(/\/o\/(.+?)(\?|$)/);
+          if (pathMatch && pathMatch[1]) {
+            // Decode the path (it's URL encoded, %2F represents /)
+            let filePath = decodeURIComponent(pathMatch[1]);
+            // Handle double encoding if needed
+            if (filePath.includes('%')) {
+              filePath = decodeURIComponent(filePath);
+            }
+            const file = bucket.file(filePath);
+            await file.delete().catch(err => {
+              console.warn(`Failed to delete storage file ${filePath}:`, err.message);
+            });
+          }
+        } catch (storageError) {
+          console.warn(`Failed to delete storage file for document ${doc.id}:`, storageError.message);
+          // Continue with other deletions even if storage deletion fails
+        }
+      }
+      
+      // Step 3: Delete document from Firestore
+      await doc.ref.delete();
+    }
+
+    // Step 4: Get all applications for this candidate
+    const applicationsSnapshot = await admin.firestore()
+      .collection('applications')
+      .where('candidateId', '==', userId)
+      .get();
+
+    // Step 5: Delete all applications from Firestore
+    for (const app of applicationsSnapshot.docs) {
+      await app.ref.delete();
+    }
+
+    // Step 6: Delete candidate profile from Firestore
+    await admin.firestore()
+      .collection('candidateProfiles')
+      .doc(profileId)
+      .delete();
+
+    // Step 7: Delete user document from Firestore
+    await admin.firestore()
+      .collection('users')
+      .doc(userId)
+      .delete();
+
+    // Step 8: Delete user from Firebase Authentication using Admin SDK
+    await admin.auth().deleteUser(userId);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting candidate:', error);
+    throw new HttpsError(
+      'internal',
+      `Failed to delete candidate: ${error.message}`
+    );
+  }
+});
+
+/**
  * Deletes a user from both Firebase Authentication and Firestore
  * This function uses Firebase Admin SDK to delete any user
  */

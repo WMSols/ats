@@ -1,14 +1,32 @@
 import 'package:ats/core/utils/app_colors/app_colors.dart';
 import 'package:ats/core/utils/app_styles/app_text_styles.dart';
+import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:ats/presentation/admin/controllers/admin_candidates_controller.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
+import 'package:ats/core/constants/app_constants.dart';
 
 class AdminCandidateDetailsScreen extends StatelessWidget {
   const AdminCandidateDetailsScreen({super.key});
+
+  void _showDeleteConfirmation(
+    BuildContext context,
+    AdminCandidatesController controller,
+    String candidateName,
+  ) {
+    AppAlertDialog.show(
+      title: AppTexts.deleteCandidate,
+      subtitle: '${AppTexts.deleteCandidateConfirmation} "$candidateName"?\n\n${AppTexts.deleteCandidateWarning}',
+      primaryButtonText: AppTexts.delete,
+      secondaryButtonText: AppTexts.cancel,
+      onPrimaryPressed: () => controller.deleteCandidate(),
+      onSecondaryPressed: () {},
+      primaryButtonColor: AppColors.error,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,23 +86,58 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
               Expanded(
                 child: TabBarView(
                   children: [
-                    AppCandidateProfileTable(
-                      name: name,
-                      email: email,
-                      workHistory: workHistory,
-                      documentsCount: documentsCount,
-                      applicationsCount: applicationsCount,
-                      agentName: agentName,
-                      isSuperAdmin: controller.isSuperAdmin,
-                      availableAgents: availableAgents,
-                      assignedAgentProfileId: assignedAgentProfileId,
-                      onAgentChanged: controller.isSuperAdmin
-                          ? (agentProfileId) => controller.updateCandidateAgent(
-                                userId: candidate.userId,
-                                agentId: agentProfileId,
-                              )
-                          : null,
-                      userId: candidate.userId,
+                    // Profile Tab with Edit Button at Bottom
+                    Column(
+                      children: [
+                        Expanded(
+                          child: AppCandidateProfileTable(
+                            name: name,
+                            email: email,
+                            workHistory: workHistory,
+                            documentsCount: documentsCount,
+                            applicationsCount: applicationsCount,
+                            agentName: agentName,
+                            isSuperAdmin: controller.isSuperAdmin,
+                            availableAgents: availableAgents,
+                            assignedAgentProfileId: assignedAgentProfileId,
+                            onAgentChanged: controller.isSuperAdmin
+                                ? (agentProfileId) => controller.updateCandidateAgent(
+                                      userId: candidate.userId,
+                                      agentId: agentProfileId,
+                                    )
+                                : null,
+                            userId: candidate.userId,
+                          ),
+                        ),
+                        if (controller.isSuperAdmin)
+                          Padding(
+                            padding: AppSpacing.padding(context),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: AppButton(
+                                    text: AppTexts.edit,
+                                    icon: Iconsax.edit,
+                                    onPressed: () {
+                                      Get.toNamed(AppConstants.routeAdminEditCandidate);
+                                    },
+                                  ),
+                                ),
+                                SizedBox(width: AppSpacing.horizontal(context, 0.02).width),
+                                Expanded(
+                                  child: AppButton(
+                                    text: AppTexts.deleteCandidate,
+                                    icon: Iconsax.trash,
+                                    onPressed: () {
+                                      _showDeleteConfirmation(context, controller, name);
+                                    },
+                                    backgroundColor: AppColors.error,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
                     AppCandidateDocumentsList(
                       documents: controller.candidateDocuments,
