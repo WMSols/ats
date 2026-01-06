@@ -16,10 +16,8 @@ class CreateAdminUseCase {
     required String role, // 'admin' or 'recruiter'
   }) {
     // Map role to accessLevel
-    final accessLevel = role == 'admin' 
-        ? 'super_admin' 
-        : 'recruiter';
-    
+    final accessLevel = role == 'admin' ? 'super_admin' : 'recruiter';
+
     return repository.createAdmin(
       email: email,
       password: password,
@@ -28,4 +26,3 @@ class CreateAdminUseCase {
     );
   }
 }
-

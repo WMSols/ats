@@ -163,4 +163,3 @@ class AdminCreateNewUserScreen extends StatelessWidget {
     );
   }
 }
-

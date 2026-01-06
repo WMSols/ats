@@ -29,4 +29,3 @@ abstract class ApplicationRepository {
     required String applicationId,
   });
 }
-

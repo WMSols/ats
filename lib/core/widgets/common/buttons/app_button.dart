@@ -44,15 +44,9 @@ class AppButton extends StatelessWidget {
               ),
             )
           : icon != null
-              ? Icon(
-                  icon,
-                  size: AppResponsive.iconSize(context),
-                )
-              : const SizedBox.shrink(),
-      label: Text(
-        text,
-        style: AppTextStyles.buttonText(context),
-      ),
+          ? Icon(icon, size: AppResponsive.iconSize(context))
+          : const SizedBox.shrink(),
+      label: Text(text, style: AppTextStyles.buttonText(context)),
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor ?? AppColors.secondary,
         foregroundColor: foregroundColor ?? AppColors.white,
@@ -65,10 +59,6 @@ class AppButton extends StatelessWidget {
       ),
     );
 
-    return SizedBox(
-      width: isFullWidth ? double.infinity : null,
-      child: button,
-    );
+    return SizedBox(width: isFullWidth ? double.infinity : null, child: button);
   }
 }
-

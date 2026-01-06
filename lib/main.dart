@@ -12,7 +12,7 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 void main() async {
   // Set URL strategy to remove hash from URLs
   setUrlStrategy(PathUrlStrategy());
-  
+
   await AppInitializer.initialize();
   runApp(const ATSApp(appType: AppType.admin));
 }

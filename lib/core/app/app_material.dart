@@ -16,13 +16,9 @@ class AppMaterial extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       initialRoute: AppRoutes.initial,
-      getPages: [
-        ...CandidateRoutes.routes,
-        ...AdminRoutes.routes,
-      ],
+      getPages: [...CandidateRoutes.routes, ...AdminRoutes.routes],
       unknownRoute: AppRoutes.unknownRoute,
       debugShowCheckedModeBanner: false,
     );
   }
 }
-

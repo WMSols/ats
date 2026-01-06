@@ -23,7 +23,7 @@ class ProfileCompletionMiddleware extends GetMiddleware {
     try {
       final authRepository = Get.find<CandidateAuthRepository>();
       final currentUser = authRepository.getCurrentUser();
-      
+
       if (currentUser == null) {
         return null; // Not authenticated, let AuthMiddleware handle it
       }
@@ -31,12 +31,12 @@ class ProfileCompletionMiddleware extends GetMiddleware {
       // Check profile completion
       // Note: profileRepository would be used here for async profile checks
       // For now, profile check will be done in screens
-      
+
       // Try to get profile synchronously (this might not work perfectly)
       // We'll use a stream-based approach instead
       // For now, we'll check in the screen itself
       // This middleware will be enhanced to work with async profile checks
-      
+
       return null; // Allow access for now, profile check will be done in screens
     } catch (e) {
       // Controllers not initialized yet, allow access
@@ -44,4 +44,3 @@ class ProfileCompletionMiddleware extends GetMiddleware {
     }
   }
 }
-

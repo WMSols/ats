@@ -86,7 +86,8 @@ class AppUserProfileSection extends StatelessWidget {
           // Map access level to display role
           if (adminProfile.accessLevel == AppConstants.accessLevelSuperAdmin) {
             return AppTexts.admin;
-          } else if (adminProfile.accessLevel == AppConstants.accessLevelRecruiter) {
+          } else if (adminProfile.accessLevel ==
+              AppConstants.accessLevelRecruiter) {
             return AppTexts.recruiter;
           }
         }
@@ -100,7 +101,8 @@ class AppUserProfileSection extends StatelessWidget {
       try {
         final authRepo = Get.find<CandidateAuthRepository>();
         final currentUser = authRepo.getCurrentUser();
-        if (currentUser != null && currentUser.role == AppConstants.roleCandidate) {
+        if (currentUser != null &&
+            currentUser.role == AppConstants.roleCandidate) {
           return AppTexts.candidate;
         }
       } catch (e) {
@@ -122,107 +124,106 @@ class AppUserProfileSection extends StatelessWidget {
       final userRole = _getUserRole();
 
       if (isMobile) {
-      // Mobile: Profile section at bottom of drawer
-      return Container(
-        padding: AppSpacing.all(context, factor: 1),
-        child: Column(
+        // Mobile: Profile section at bottom of drawer
+        return Container(
+          padding: AppSpacing.all(context, factor: 1),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Profile Info Row
+              Row(
+                children: [
+                  // Name and Role
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          userName,
+                          style: AppTextStyles.bodyText(context).copyWith(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          userRole,
+                          style: AppTextStyles.hintText(context).copyWith(
+                            color: AppColors.white.withValues(alpha: 0.8),
+                            fontSize:
+                                AppResponsive.screenWidth(context) * 0.025,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Logout Button
+                  IconButton(
+                    icon: Icon(
+                      Iconsax.logout,
+                      size: AppResponsive.iconSize(context),
+                      color: AppColors.white,
+                    ),
+                    onPressed: onLogout,
+                    tooltip: AppTexts.logout,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      } else {
+        // Desktop: Profile section at top right
+        return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Profile Info Row
-            Row(
-              children: [
-                // Name and Role
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        userName,
-                        style: AppTextStyles.bodyText(context).copyWith(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        userRole,
-                        style: AppTextStyles.hintText(context).copyWith(
-                          color: AppColors.white.withValues(alpha: 0.8),
-                          fontSize: AppResponsive.screenWidth(context) * 0.025,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+            // Name and Role
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    userName,
+                    style: AppTextStyles.bodyText(context).copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.white,
+                      height: 1.0,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                // Logout Button
-                IconButton(
-                  icon: Icon(
-                    Iconsax.logout,
-                    size: AppResponsive.iconSize(context),
-                    color: AppColors.white,
+                  Text(
+                    userRole,
+                    style: AppTextStyles.hintText(context).copyWith(
+                      fontSize: AppResponsive.screenWidth(context) * 0.01,
+                      color: AppColors.white.withValues(alpha: 0.8),
+                      height: 1.0,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  onPressed: onLogout,
-                  tooltip: AppTexts.logout,
-                ),
-              ],
+                ],
+              ),
+            ),
+            AppSpacing.horizontal(context, 0.01),
+            // Logout Button
+            IconButton(
+              icon: Icon(
+                Iconsax.logout,
+                size: AppResponsive.iconSize(context),
+                color: AppColors.white,
+              ),
+              onPressed: onLogout,
+              tooltip: AppTexts.logout,
             ),
           ],
-        ),
-      );
-    } else {
-      // Desktop: Profile section at top right
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Name and Role
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  userName,
-                  style: AppTextStyles.bodyText(
-                    context,
-                  ).copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.white,
-                    height: 1.0,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  userRole,
-                  style: AppTextStyles.hintText(context).copyWith(
-                    fontSize: AppResponsive.screenWidth(context) * 0.01,
-                    color: AppColors.white.withValues(alpha: 0.8),
-                    height: 1.0,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          AppSpacing.horizontal(context, 0.01),
-          // Logout Button
-          IconButton(
-            icon: Icon(
-              Iconsax.logout,
-              size: AppResponsive.iconSize(context),
-              color: AppColors.white,
-            ),
-            onPressed: onLogout,
-            tooltip: AppTexts.logout,
-          ),
-        ],
-      );
+        );
       }
     });
   }

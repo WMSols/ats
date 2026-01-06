@@ -27,4 +27,3 @@ class FirebaseConstants {
   static const String fieldJobId = 'jobId';
   static const String fieldAppliedAt = 'appliedAt';
 }
-

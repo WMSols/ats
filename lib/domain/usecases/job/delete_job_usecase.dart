@@ -11,4 +11,3 @@ class DeleteJobUseCase {
     return repository.deleteJob(jobId);
   }
 }
-

@@ -8,36 +8,34 @@ class AuthMiddleware extends GetMiddleware {
   RouteSettings? redirect(String? route) {
     // Check Firebase Auth directly for synchronous check
     final firebaseUser = FirebaseAuth.instance.currentUser;
-    
+
     // List of public auth routes that don't require authentication
     final publicRoutes = [
       AppConstants.routeLogin,
       AppConstants.routeSignUp,
       AppConstants.routeAdminLogin,
     ];
-    
+
     // Get current route to check if user is navigating between auth screens
     final currentRoute = Get.currentRoute;
-    
+
     // Candidate auth routes
     final candidateAuthRoutes = [
       AppConstants.routeLogin,
       AppConstants.routeSignUp,
     ];
-    
+
     // Admin auth routes
-    final adminAuthRoutes = [
-      AppConstants.routeAdminLogin,
-    ];
-    
+    final adminAuthRoutes = [AppConstants.routeAdminLogin];
+
     // Check if navigating between auth screens of the same type
-    final isNavigatingBetweenCandidateAuth = 
-        candidateAuthRoutes.contains(currentRoute) && 
+    final isNavigatingBetweenCandidateAuth =
+        candidateAuthRoutes.contains(currentRoute) &&
         candidateAuthRoutes.contains(route);
-    final isNavigatingBetweenAdminAuth = 
-        adminAuthRoutes.contains(currentRoute) && 
+    final isNavigatingBetweenAdminAuth =
+        adminAuthRoutes.contains(currentRoute) &&
         adminAuthRoutes.contains(route);
-    
+
     if (firebaseUser == null) {
       // Not authenticated - allow only public auth routes
       if (publicRoutes.contains(route)) {
@@ -62,8 +60,7 @@ class AuthMiddleware extends GetMiddleware {
         return const RouteSettings(name: AppConstants.routeCandidateDashboard);
       }
     }
-    
+
     return null; // Allow access to protected routes
   }
 }
-

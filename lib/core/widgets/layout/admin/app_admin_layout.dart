@@ -67,4 +67,3 @@ class AppAdminLayout extends StatelessWidget {
     });
   }
 }
-

@@ -39,12 +39,12 @@ class _MyDocumentCreateScreenState extends State<MyDocumentCreateScreen> {
     final isValid = _formKey.currentState!.validate();
     final controller = Get.find<DocumentsController>();
     if (!isValid) return false;
-    
+
     if (controller.selectedFile.value == null) {
       AppSnackbar.error(AppTexts.documentFileRequired);
       return false;
     }
-    
+
     return true;
   }
 
@@ -70,10 +70,11 @@ class _MyDocumentCreateScreenState extends State<MyDocumentCreateScreen> {
               AppSpacing.vertical(context, 0.03),
               Obx(() {
                 final hasFile = controller.selectedFile.value != null;
-                final canCreate = hasFile && 
+                final canCreate =
+                    hasFile &&
                     titleController.text.trim().isNotEmpty &&
                     descriptionController.text.trim().isNotEmpty;
-                
+
                 return AppButton(
                   text: AppTexts.create,
                   icon: Iconsax.add,
@@ -97,4 +98,3 @@ class _MyDocumentCreateScreenState extends State<MyDocumentCreateScreen> {
     );
   }
 }
-

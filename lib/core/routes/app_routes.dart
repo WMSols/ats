@@ -10,8 +10,6 @@ class AppRoutes {
   static const String initial = AppConstants.routeLogin;
 
   /// Fallback route for unknown/non-existent routes
-  static GetPage get unknownRoute => GetPage(
-        name: '/not-found',
-        page: () => const CandidateLoginScreen(),
-      );
+  static GetPage get unknownRoute =>
+      GetPage(name: '/not-found', page: () => const CandidateLoginScreen());
 }

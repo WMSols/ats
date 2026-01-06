@@ -12,4 +12,3 @@ class AdminSignOutUseCase {
     return repository.signOut();
   }
 }
-

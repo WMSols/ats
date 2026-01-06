@@ -136,7 +136,9 @@ abstract class FirestoreDataSource {
 
   Future<List<Map<String, dynamic>>> getCandidateDocuments(String candidateId);
 
-  Stream<List<Map<String, dynamic>>> streamCandidateDocuments(String candidateId);
+  Stream<List<Map<String, dynamic>>> streamCandidateDocuments(
+    String candidateId,
+  );
 
   Future<void> updateCandidateDocument({
     required String candidateDocId,
@@ -230,13 +232,13 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
       final docRef = await firestore
           .collection(AppConstants.candidateProfilesCollection)
           .add({
-        'userId': userId,
-        'firstName': firstName,
-        'lastName': lastName,
-        'phone': phone,
-        'address': address,
-        if (workHistory != null) 'workHistory': workHistory,
-      });
+            'userId': userId,
+            'firstName': firstName,
+            'lastName': lastName,
+            'phone': phone,
+            'address': address,
+            if (workHistory != null) 'workHistory': workHistory,
+          });
       return docRef.id;
     } catch (e) {
       throw ServerException('Failed to create candidate profile: $e');
@@ -261,7 +263,8 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
 
   @override
   Future<Map<String, dynamic>?> getCandidateProfileByUserId(
-      String userId) async {
+    String userId,
+  ) async {
     try {
       final querySnapshot = await firestore
           .collection(AppConstants.candidateProfilesCollection)
@@ -321,12 +324,12 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
       final docRef = await firestore
           .collection(AppConstants.adminProfilesCollection)
           .add({
-        'userId': userId,
-        'firstName': firstName,
-        'lastName': lastName,
-        'accessLevel': accessLevel,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+            'userId': userId,
+            'firstName': firstName,
+            'lastName': lastName,
+            'accessLevel': accessLevel,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
       return docRef.id;
     } catch (e) {
       throw ServerException('Failed to create admin profile: $e');
@@ -405,14 +408,16 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
     required List<String> requiredDocumentIds,
   }) async {
     try {
-      final docRef = await firestore.collection(AppConstants.jobsCollection).add({
-        'title': title,
-        'description': description,
-        'requirements': requirements,
-        'requiredDocumentIds': requiredDocumentIds,
-        'status': AppConstants.jobStatusOpen,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      final docRef = await firestore
+          .collection(AppConstants.jobsCollection)
+          .add({
+            'title': title,
+            'description': description,
+            'requirements': requirements,
+            'requiredDocumentIds': requiredDocumentIds,
+            'status': AppConstants.jobStatusOpen,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
       return docRef.id;
     } catch (e) {
       throw ServerException('Failed to create job: $e');
@@ -422,8 +427,10 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
   @override
   Future<Map<String, dynamic>?> getJob(String jobId) async {
     try {
-      final doc =
-          await firestore.collection(AppConstants.jobsCollection).doc(jobId).get();
+      final doc = await firestore
+          .collection(AppConstants.jobsCollection)
+          .doc(jobId)
+          .get();
       if (doc.exists) {
         return doc.data();
       }
@@ -442,10 +449,9 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
       }
       final querySnapshot = await query.get();
       return querySnapshot.docs
-          .map((doc) => {
-                ...doc.data() as Map<String, dynamic>,
-                'jobId': doc.id,
-              })
+          .map(
+            (doc) => {...doc.data() as Map<String, dynamic>, 'jobId': doc.id},
+          )
           .toList();
     } catch (e) {
       throw ServerException('Failed to get jobs: $e');
@@ -458,12 +464,13 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
     if (status != null) {
       query = query.where('status', isEqualTo: status);
     }
-    return query.snapshots().map((snapshot) => snapshot.docs
-        .map((doc) => {
-              ...doc.data() as Map<String, dynamic>,
-              'jobId': doc.id,
-            })
-        .toList());
+    return query.snapshots().map(
+      (snapshot) => snapshot.docs
+          .map(
+            (doc) => {...doc.data() as Map<String, dynamic>, 'jobId': doc.id},
+          )
+          .toList(),
+    );
   }
 
   @override
@@ -484,7 +491,10 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
   @override
   Future<void> deleteJob(String jobId) async {
     try {
-      await firestore.collection(AppConstants.jobsCollection).doc(jobId).delete();
+      await firestore
+          .collection(AppConstants.jobsCollection)
+          .doc(jobId)
+          .delete();
     } catch (e) {
       throw ServerException('Failed to delete job: $e');
     }
@@ -496,13 +506,14 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
     required String jobId,
   }) async {
     try {
-      final docRef =
-          await firestore.collection(AppConstants.applicationsCollection).add({
-        'candidateId': candidateId,
-        'jobId': jobId,
-        'status': AppConstants.applicationStatusPending,
-        'appliedAt': FieldValue.serverTimestamp(),
-      });
+      final docRef = await firestore
+          .collection(AppConstants.applicationsCollection)
+          .add({
+            'candidateId': candidateId,
+            'jobId': jobId,
+            'status': AppConstants.applicationStatusPending,
+            'appliedAt': FieldValue.serverTimestamp(),
+          });
       return docRef.id;
     } catch (e) {
       throw ServerException('Failed to create application: $e');
@@ -553,11 +564,13 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
     if (status != null) {
       query = query.where('status', isEqualTo: status);
     }
-    return query.snapshots().map((snapshot) => snapshot.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          data['applicationId'] = doc.id;
-          return data;
-        }).toList());
+    return query.snapshots().map(
+      (snapshot) => snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['applicationId'] = doc.id;
+        return data;
+      }).toList(),
+    );
   }
 
   @override
@@ -597,10 +610,10 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
       final docRef = await firestore
           .collection(AppConstants.documentTypesCollection)
           .add({
-        'name': name,
-        'description': description,
-        'isRequired': isRequired,
-      });
+            'name': name,
+            'description': description,
+            'isRequired': isRequired,
+          });
       return docRef.id;
     } catch (e) {
       throw ServerException('Failed to create document type: $e');
@@ -614,10 +627,7 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
           .collection(AppConstants.documentTypesCollection)
           .get();
       return querySnapshot.docs
-          .map((doc) => {
-                ...doc.data(),
-                'docTypeId': doc.id,
-              })
+          .map((doc) => {...doc.data(), 'docTypeId': doc.id})
           .toList();
     } catch (e) {
       throw ServerException('Failed to get document types: $e');
@@ -629,12 +639,11 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
     return firestore
         .collection(AppConstants.documentTypesCollection)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => {
-                  ...doc.data(),
-                  'docTypeId': doc.id,
-                })
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => {...doc.data(), 'docTypeId': doc.id})
+              .toList(),
+        );
   }
 
   @override
@@ -677,15 +686,15 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
       final docRef = await firestore
           .collection(AppConstants.candidateDocumentsCollection)
           .add({
-        'candidateId': candidateId,
-        'docTypeId': docTypeId,
-        'documentName': documentName,
-        'storageUrl': storageUrl,
-        'status': AppConstants.documentStatusPending,
-        'uploadedAt': FieldValue.serverTimestamp(),
-        if (title != null) 'title': title,
-        if (description != null) 'description': description,
-      });
+            'candidateId': candidateId,
+            'docTypeId': docTypeId,
+            'documentName': documentName,
+            'storageUrl': storageUrl,
+            'status': AppConstants.documentStatusPending,
+            'uploadedAt': FieldValue.serverTimestamp(),
+            if (title != null) 'title': title,
+            if (description != null) 'description': description,
+          });
       return docRef.id;
     } catch (e) {
       throw ServerException('Failed to create candidate document: $e');
@@ -694,7 +703,8 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
 
   @override
   Future<List<Map<String, dynamic>>> getCandidateDocuments(
-      String candidateId) async {
+    String candidateId,
+  ) async {
     try {
       final querySnapshot = await firestore
           .collection(AppConstants.candidateDocumentsCollection)
@@ -712,16 +722,19 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
 
   @override
   Stream<List<Map<String, dynamic>>> streamCandidateDocuments(
-      String candidateId) {
+    String candidateId,
+  ) {
     return firestore
         .collection(AppConstants.candidateDocumentsCollection)
         .where('candidateId', isEqualTo: candidateId)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) {
-              final data = doc.data();
-              data['candidateDocId'] = doc.id;
-              return data;
-            }).toList());
+        .map(
+          (snapshot) => snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['candidateDocId'] = doc.id;
+            return data;
+          }).toList(),
+        );
   }
 
   @override
@@ -758,37 +771,37 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
       final profilesSnapshot = await firestore
           .collection(AppConstants.candidateProfilesCollection)
           .get();
-      
+
       final candidates = <Map<String, dynamic>>[];
-      
+
       // For each profile, get the user email from users collection
       for (var profileDoc in profilesSnapshot.docs) {
         final profileData = profileDoc.data();
         final userId = profileData['userId'] as String?;
-        
+
         if (userId == null || userId.isEmpty) {
           continue;
         }
-        
+
         // Get user data to get email
         try {
           final userDoc = await firestore
               .collection(AppConstants.usersCollection)
               .doc(userId)
               .get();
-          
+
           if (!userDoc.exists) {
             continue;
           }
-          
+
           final userData = userDoc.data();
           final email = userData?['email'] ?? '';
           final role = userData?['role'] ?? '';
-          
+
           if (role != AppConstants.roleCandidate) {
             continue;
           }
-          
+
           // Combine profile and user data
           final candidateData = {
             'userId': userId,
@@ -802,13 +815,13 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
             'workHistory': profileData['workHistory'],
             'createdAt': userData?['createdAt'],
           };
-          
+
           candidates.add(candidateData);
         } catch (e) {
           continue;
         }
       }
-      
+
       return candidates;
     } catch (e) {
       throw ServerException('Failed to get candidates: $e');
@@ -818,7 +831,10 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
   @override
   Future<void> deleteUser(String userId) async {
     try {
-      await firestore.collection(AppConstants.usersCollection).doc(userId).delete();
+      await firestore
+          .collection(AppConstants.usersCollection)
+          .doc(userId)
+          .delete();
     } catch (e) {
       throw ServerException('Failed to delete user: $e');
     }
@@ -836,4 +852,3 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
     }
   }
 }
-

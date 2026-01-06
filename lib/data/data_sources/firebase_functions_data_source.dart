@@ -30,10 +30,7 @@ abstract class FirebaseFunctionsDataSource {
   });
 
   /// Deletes a user from both Firebase Authentication and Firestore
-  Future<void> deleteUser({
-    required String userId,
-    required String profileId,
-  });
+  Future<void> deleteUser({required String userId, required String profileId});
 
   /// Sends a document denial email to a candidate
   Future<void> sendDocumentDenialEmail({
@@ -110,10 +107,7 @@ class FirebaseFunctionsDataSourceImpl implements FirebaseFunctionsDataSource {
   }) async {
     try {
       final callable = firebaseFunctions.httpsCallable('deleteCandidate');
-      await callable.call({
-        'userId': userId,
-        'profileId': profileId,
-      });
+      await callable.call({'userId': userId, 'profileId': profileId});
     } on FirebaseFunctionsException catch (e) {
       throw ServerException('Failed to delete candidate: ${e.message}');
     } catch (e) {
@@ -128,10 +122,7 @@ class FirebaseFunctionsDataSourceImpl implements FirebaseFunctionsDataSource {
   }) async {
     try {
       final callable = firebaseFunctions.httpsCallable('deleteUser');
-      await callable.call({
-        'userId': userId,
-        'profileId': profileId,
-      });
+      await callable.call({'userId': userId, 'profileId': profileId});
     } on FirebaseFunctionsException catch (e) {
       throw ServerException('Failed to delete user: ${e.message}');
     } catch (e) {
@@ -147,7 +138,9 @@ class FirebaseFunctionsDataSourceImpl implements FirebaseFunctionsDataSource {
     String? denialReason,
   }) async {
     try {
-      final callable = firebaseFunctions.httpsCallable('sendDocumentDenialEmail');
+      final callable = firebaseFunctions.httpsCallable(
+        'sendDocumentDenialEmail',
+      );
       await callable.call({
         'candidateEmail': candidateEmail,
         'candidateName': candidateName,
@@ -161,4 +154,3 @@ class FirebaseFunctionsDataSourceImpl implements FirebaseFunctionsDataSource {
     }
   }
 }
-

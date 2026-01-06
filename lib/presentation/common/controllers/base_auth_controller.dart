@@ -7,10 +7,9 @@ import 'package:ats/domain/entities/user_entity.dart';
 /// Base authentication controller with shared functionality
 /// This controller handles common auth operations that are used by both
 /// admin and candidate authentication flows
-/// 
+///
 /// Generic type T represents the specific repository type (AdminAuthRepository or CandidateAuthRepository)
 abstract class BaseAuthController extends GetxController {
-
   final isLoading = false.obs;
   final errorMessage = ''.obs;
 
@@ -193,7 +192,7 @@ abstract class BaseAuthController extends GetxController {
     if (addressValue.value != addressController.text) {
       addressValue.value = addressController.text;
     }
-    
+
     // Use stored values (updated in real-time via onChanged callbacks)
     // This is more reliable than reading from controllers which may have sync issues
     validateFirstName(firstNameValue.value);
@@ -246,12 +245,12 @@ abstract class BaseAuthController extends GetxController {
     // This is more reliable than reading from controllers which may have sync issues
     final email = emailValue.value.trim();
     final password = passwordValue.value;
-    
+
     // Validate form with current values
     // This will set error messages if validation fails
     validateEmail(email);
     validatePassword(password);
-    
+
     // Check if validation passed
     // If either field has an error, stop here and show the errors
     if (emailError.value != null || passwordError.value != null) {
@@ -272,4 +271,3 @@ abstract class BaseAuthController extends GetxController {
   /// Must be implemented by child classes to delete the correct type
   void deleteController();
 }
-

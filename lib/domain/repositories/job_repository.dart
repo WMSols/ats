@@ -27,4 +27,3 @@ abstract class JobRepository {
 
   Future<Either<Failure, void>> deleteJob(String jobId);
 }
-

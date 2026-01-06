@@ -87,10 +87,7 @@ class AdminAuthRepositoryImpl implements AdminAuthRepository {
     required String password,
   }) async {
     try {
-      await authDataSource.signIn(
-        email: email,
-        password: password,
-      );
+      await authDataSource.signIn(email: email, password: password);
 
       final currentUser = authDataSource.getCurrentUser();
       if (currentUser == null) {
@@ -104,14 +101,16 @@ class AdminAuthRepositoryImpl implements AdminAuthRepository {
       Map<String, dynamic>? userData;
       int retries = 3;
       Exception? lastException;
-      
+
       for (int i = 0; i < retries; i++) {
         try {
           userData = await firestoreDataSource.getUser(currentUser.uid);
           if (userData != null) break;
         } on ServerException catch (e) {
           lastException = e;
-          if (i < retries - 1 && (e.message.contains('permission') || e.message.contains('Permission'))) {
+          if (i < retries - 1 &&
+              (e.message.contains('permission') ||
+                  e.message.contains('Permission'))) {
             await Future.delayed(Duration(milliseconds: 200 * (i + 1)));
             continue;
           }
@@ -124,18 +123,24 @@ class AdminAuthRepositoryImpl implements AdminAuthRepository {
           await Future.delayed(Duration(milliseconds: 200 * (i + 1)));
         }
       }
-      
+
       if (userData == null) {
         if (lastException is ServerException) {
           throw lastException;
         }
-        return const Left(AuthFailure('User data not found. Please contact support.'));
+        return const Left(
+          AuthFailure('User data not found. Please contact support.'),
+        );
       }
 
       // CRITICAL: Validate that user is an admin
       final userRole = userData['role'] as String?;
       if (userRole != AppConstants.roleAdmin) {
-        return const Left(AuthFailure('Access denied. This account is not authorized for admin access. Please use the candidate login page.'));
+        return const Left(
+          AuthFailure(
+            'Access denied. This account is not authorized for admin access. Please use the candidate login page.',
+          ),
+        );
       }
 
       final userModel = UserModel(
@@ -150,8 +155,13 @@ class AdminAuthRepositoryImpl implements AdminAuthRepository {
     } on AuthException catch (e) {
       return Left(AuthFailure(e.message));
     } on ServerException catch (e) {
-      if (e.message.contains('permission') || e.message.contains('Permission')) {
-        return const Left(AuthFailure('Permission denied. Please try again or contact support.'));
+      if (e.message.contains('permission') ||
+          e.message.contains('Permission')) {
+        return const Left(
+          AuthFailure(
+            'Permission denied. Please try again or contact support.',
+          ),
+        );
       }
       return Left(AuthFailure('Database error: ${e.message}'));
     } catch (e) {
@@ -215,4 +225,3 @@ class AdminAuthRepositoryImpl implements AdminAuthRepository {
     );
   }
 }
-

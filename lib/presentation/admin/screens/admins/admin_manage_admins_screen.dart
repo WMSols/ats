@@ -90,7 +90,10 @@ class AdminManageAdminsScreen extends StatelessWidget {
                               AppSpacing.horizontal(context, 0.01),
                               AppActionButton(
                                 text: AppTexts.deleteUser,
-                                onPressed: (controller.isDeletingUser[profile.profileId] ?? false)
+                                onPressed:
+                                    (controller.isDeletingUser[profile
+                                            .profileId] ??
+                                        false)
                                     ? null
                                     : () => _showDeleteUserConfirmation(
                                         context,

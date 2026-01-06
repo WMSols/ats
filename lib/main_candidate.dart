@@ -6,8 +6,7 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 void main() async {
   // Set URL strategy to remove hash from URLs
   setUrlStrategy(PathUrlStrategy());
-  
+
   await CandidateInitializer.initialize();
   runApp(const CandidateApp());
 }
-

@@ -34,16 +34,11 @@ class AppDocumentSelector extends StatelessWidget {
         final isSelected = selectedDocumentIds.contains(docType.docTypeId);
 
         return CheckboxListTile(
-          title: Text(
-            docType.name,
-            style: AppTextStyles.bodyText(context),
-          ),
+          title: Text(docType.name, style: AppTextStyles.bodyText(context)),
           subtitle: docType.description.isNotEmpty
               ? Text(
                   docType.description,
-                  style: AppTextStyles.bodyText(context).copyWith(
-                    fontSize: 12,
-                  ),
+                  style: AppTextStyles.bodyText(context).copyWith(fontSize: 12),
                 )
               : null,
           value: isSelected,
@@ -67,11 +62,8 @@ class AppDocumentSelector extends StatelessWidget {
       ),
       child: Text(
         emptyMessage,
-        style: AppTextStyles.bodyText(context).copyWith(
-          color: AppColors.grey,
-        ),
+        style: AppTextStyles.bodyText(context).copyWith(color: AppColors.grey),
       ),
     );
   }
 }
-

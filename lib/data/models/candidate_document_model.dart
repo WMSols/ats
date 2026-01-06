@@ -23,7 +23,8 @@ class CandidateDocumentModel extends CandidateDocumentEntity {
       documentName: data['documentName'] ?? '',
       storageUrl: data['storageUrl'] ?? '',
       status: data['status'] ?? 'pending',
-      uploadedAt: (data['uploadedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      uploadedAt:
+          (data['uploadedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       title: data['title'] as String?,
       description: data['description'] as String?,
     );
@@ -56,4 +57,3 @@ class CandidateDocumentModel extends CandidateDocumentEntity {
     );
   }
 }
-

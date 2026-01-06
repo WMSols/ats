@@ -25,11 +25,13 @@ class ProfileController extends GetxController {
   final phoneError = Rxn<String>();
   final addressError = Rxn<String>();
   final workHistoryError = Rxn<String>();
-  
+
   // Work history validation errors - Map<entryIndex, Map<fieldName, error>>
   final workHistoryErrors = <int, Map<String, Rxn<String>>>{}.obs;
 
-  final createProfileUseCase = CreateProfileUseCase(Get.find<CandidateProfileRepository>());
+  final createProfileUseCase = CreateProfileUseCase(
+    Get.find<CandidateProfileRepository>(),
+  );
 
   // Stream subscription
   StreamSubscription<CandidateProfileEntity?>? _profileSubscription;
@@ -52,15 +54,17 @@ class ProfileController extends GetxController {
     if (currentUser == null) return;
 
     _profileSubscription?.cancel(); // Cancel previous subscription if exists
-    _profileSubscription = profileRepository.streamProfile(currentUser.userId).listen(
-      (profileData) {
-        profile.value = profileData;
-      },
-      onError: (error) {
-        // Silently handle permission errors (user might have signed out)
-        // Don't show errors for permission-denied as it's expected after sign-out
-      },
-    );
+    _profileSubscription = profileRepository
+        .streamProfile(currentUser.userId)
+        .listen(
+          (profileData) {
+            profile.value = profileData;
+          },
+          onError: (error) {
+            // Silently handle permission errors (user might have signed out)
+            // Don't show errors for permission-denied as it's expected after sign-out
+          },
+        );
   }
 
   // Validation methods
@@ -81,7 +85,11 @@ class ProfileController extends GetxController {
   }
 
   // Validate individual work history field
-  void validateWorkHistoryField(int entryIndex, String fieldName, String? value) {
+  void validateWorkHistoryField(
+    int entryIndex,
+    String fieldName,
+    String? value,
+  ) {
     // Initialize error map for this entry if it doesn't exist
     if (!workHistoryErrors.containsKey(entryIndex)) {
       workHistoryErrors[entryIndex] = {
@@ -92,9 +100,11 @@ class ProfileController extends GetxController {
 
     // Validate based on field name
     if (fieldName == 'company') {
-      workHistoryErrors[entryIndex]!['company']!.value = AppValidators.validateCompany(value);
+      workHistoryErrors[entryIndex]!['company']!.value =
+          AppValidators.validateCompany(value);
     } else if (fieldName == 'position') {
-      workHistoryErrors[entryIndex]!['position']!.value = AppValidators.validatePosition(value);
+      workHistoryErrors[entryIndex]!['position']!.value =
+          AppValidators.validatePosition(value);
     }
 
     // Clear general work history error if individual field errors are cleared
@@ -119,7 +129,8 @@ class ProfileController extends GetxController {
   void _updateWorkHistoryGeneralError() {
     bool hasErrors = false;
     for (var entryErrors in workHistoryErrors.values) {
-      if (entryErrors['company']?.value != null || entryErrors['position']?.value != null) {
+      if (entryErrors['company']?.value != null ||
+          entryErrors['position']?.value != null) {
         hasErrors = true;
         break;
       }
@@ -132,13 +143,14 @@ class ProfileController extends GetxController {
   void validateWorkHistory(List<Map<String, dynamic>>? workHistory) {
     // Clear previous errors
     workHistoryErrors.clear();
-    
+
     // Work history is required - must have at least one entry
     if (workHistory == null || workHistory.isEmpty) {
-      workHistoryError.value = 'Work history is required. Please add at least one work history entry.';
+      workHistoryError.value =
+          'Work history is required. Please add at least one work history entry.';
       return;
     }
-    
+
     // If provided, each entry should have required fields
     for (int i = 0; i < workHistory.length; i++) {
       final entry = workHistory[i];
@@ -149,18 +161,18 @@ class ProfileController extends GetxController {
           'position': Rxn<String>(),
         };
       }
-      
+
       // Validate company
       workHistoryErrors[i]!['company']!.value = AppValidators.validateCompany(
         entry['company']?.toString(),
       );
-      
+
       // Validate position
       workHistoryErrors[i]!['position']!.value = AppValidators.validatePosition(
         entry['position']?.toString(),
       );
     }
-    
+
     _updateWorkHistoryGeneralError();
   }
 
@@ -180,7 +192,8 @@ class ProfileController extends GetxController {
     // Check if there are any work history field errors
     bool hasWorkHistoryErrors = false;
     for (var entryErrors in workHistoryErrors.values) {
-      if (entryErrors['company']?.value != null || entryErrors['position']?.value != null) {
+      if (entryErrors['company']?.value != null ||
+          entryErrors['position']?.value != null) {
         hasWorkHistoryErrors = true;
         break;
       }
@@ -197,7 +210,7 @@ class ProfileController extends GetxController {
   // Check if profile is completed
   bool isProfileCompleted() {
     final currentProfile = profile.value;
-    
+
     // If profile is null, it might still be loading, so return false
     // But don't use this for redirect logic - wait for profile to load first
     if (currentProfile == null) {
@@ -213,15 +226,16 @@ class ProfileController extends GetxController {
     }
 
     // Check work history - must have at least one entry with required fields
-    if (currentProfile.workHistory == null || currentProfile.workHistory!.isEmpty) {
+    if (currentProfile.workHistory == null ||
+        currentProfile.workHistory!.isEmpty) {
       return false;
     }
-    
+
     // Validate that each work history entry has required fields (company and position)
     for (var entry in currentProfile.workHistory!) {
       final company = entry['company']?.toString().trim() ?? '';
       final position = entry['position']?.toString().trim() ?? '';
-      
+
       // At least one entry must have both company and position filled
       if (company.isEmpty || position.isEmpty) {
         return false;
@@ -262,8 +276,9 @@ class ProfileController extends GetxController {
 
     // Check if profile exists - use the stream value if available, otherwise get it
     final existingProfile = profile.value;
-    
-    final result = existingProfile != null && existingProfile.profileId.isNotEmpty
+
+    final result =
+        existingProfile != null && existingProfile.profileId.isNotEmpty
         ? await profileRepository.updateProfile(
             profileId: existingProfile.profileId,
             firstName: firstName.trim(),
@@ -290,7 +305,7 @@ class ProfileController extends GetxController {
         // Update profile value - this will trigger stream update
         profile.value = profileData;
         isLoading.value = false;
-        
+
         // Verify profile is complete before navigating
         if (isProfileCompleted()) {
           AppSnackbar.success('Profile saved successfully');
@@ -301,7 +316,8 @@ class ProfileController extends GetxController {
         } else {
           // Profile saved but not complete - show message and stay on profile screen
           AppSnackbar.show(
-            message: 'Please complete all required fields including work history',
+            message:
+                'Please complete all required fields including work history',
             duration: const Duration(seconds: 3),
           );
         }
@@ -313,16 +329,19 @@ class ProfileController extends GetxController {
   List<Map<String, dynamic>> getWorkHistoryFromControllers(
     List<Map<String, TextEditingController>> controllers,
   ) {
-    return controllers.map((entry) {
-      return {
-        'company': entry['company']!.text.trim(),
-        'position': entry['position']!.text.trim(),
-        'description': entry['description']!.text.trim(),
-      };
-    }).where((entry) => 
-      entry['company']!.isNotEmpty || 
-      entry['position']!.isNotEmpty
-    ).toList();
+    return controllers
+        .map((entry) {
+          return {
+            'company': entry['company']!.text.trim(),
+            'position': entry['position']!.text.trim(),
+            'description': entry['description']!.text.trim(),
+          };
+        })
+        .where(
+          (entry) =>
+              entry['company']!.isNotEmpty || entry['position']!.isNotEmpty,
+        )
+        .toList();
   }
 
   void initializeWorkHistoryControllers(
@@ -335,11 +354,16 @@ class ProfileController extends GetxController {
 
     for (var entry in workHistory) {
       controllers.add({
-        'company': TextEditingController(text: entry['company']?.toString() ?? ''),
-        'position': TextEditingController(text: entry['position']?.toString() ?? ''),
-        'description': TextEditingController(text: entry['description']?.toString() ?? ''),
+        'company': TextEditingController(
+          text: entry['company']?.toString() ?? '',
+        ),
+        'position': TextEditingController(
+          text: entry['position']?.toString() ?? '',
+        ),
+        'description': TextEditingController(
+          text: entry['description']?.toString() ?? '',
+        ),
       });
     }
   }
 }
-

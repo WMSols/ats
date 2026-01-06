@@ -128,13 +128,17 @@ class _AppRequirementsInputState extends State<AppRequirementsInput> {
               borderRadius: BorderRadius.circular(
                 AppResponsive.radius(context, factor: 5),
               ),
-              borderSide: BorderSide(color: AppColors.grey.withValues(alpha: 0.3)),
+              borderSide: BorderSide(
+                color: AppColors.grey.withValues(alpha: 0.3),
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(
                 AppResponsive.radius(context, factor: 5),
               ),
-              borderSide: BorderSide(color: AppColors.grey.withValues(alpha: 0.3)),
+              borderSide: BorderSide(
+                color: AppColors.grey.withValues(alpha: 0.3),
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(
@@ -166,4 +170,3 @@ class _AppRequirementsInputState extends State<AppRequirementsInput> {
     );
   }
 }
-

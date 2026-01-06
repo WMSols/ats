@@ -24,15 +24,18 @@ class JobRepositoryImpl implements JobRepository {
         } else {
           requirements = data['requirements'] ?? '';
         }
-        
+
         return JobModel(
           jobId: data['jobId'] ?? '',
           title: data['title'] ?? '',
           description: data['description'] ?? '',
           requirements: requirements,
-          requiredDocumentIds: List<String>.from(data['requiredDocumentIds'] ?? []),
+          requiredDocumentIds: List<String>.from(
+            data['requiredDocumentIds'] ?? [],
+          ),
           status: data['status'] ?? 'open',
-          createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          createdAt:
+              (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
         ).toEntity();
       }).toList();
       return Right(jobs);
@@ -64,9 +67,12 @@ class JobRepositoryImpl implements JobRepository {
         title: jobData['title'] ?? '',
         description: jobData['description'] ?? '',
         requirements: requirements,
-        requiredDocumentIds: List<String>.from(jobData['requiredDocumentIds'] ?? []),
+        requiredDocumentIds: List<String>.from(
+          jobData['requiredDocumentIds'] ?? [],
+        ),
         status: jobData['status'] ?? 'open',
-        createdAt: (jobData['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        createdAt:
+            (jobData['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       );
 
       return Right(jobModel.toEntity());
@@ -88,15 +94,18 @@ class JobRepositoryImpl implements JobRepository {
         } else {
           requirements = data['requirements'] ?? '';
         }
-        
+
         return JobModel(
           jobId: data['jobId'] ?? '',
           title: data['title'] ?? '',
           description: data['description'] ?? '',
           requirements: requirements,
-          requiredDocumentIds: List<String>.from(data['requiredDocumentIds'] ?? []),
+          requiredDocumentIds: List<String>.from(
+            data['requiredDocumentIds'] ?? [],
+          ),
           status: data['status'] ?? 'open',
-          createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          createdAt:
+              (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
         ).toEntity();
       }).toList();
     });
@@ -127,9 +136,12 @@ class JobRepositoryImpl implements JobRepository {
         title: jobData['title'] ?? title,
         description: jobData['description'] ?? description,
         requirements: jobData['requirements'] ?? requirements,
-        requiredDocumentIds: List<String>.from(jobData['requiredDocumentIds'] ?? requiredDocumentIds),
+        requiredDocumentIds: List<String>.from(
+          jobData['requiredDocumentIds'] ?? requiredDocumentIds,
+        ),
         status: jobData['status'] ?? 'open',
-        createdAt: (jobData['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        createdAt:
+            (jobData['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       );
 
       return Right(jobModel.toEntity());
@@ -154,13 +166,11 @@ class JobRepositoryImpl implements JobRepository {
       if (title != null) updateData['title'] = title;
       if (description != null) updateData['description'] = description;
       if (requirements != null) updateData['requirements'] = requirements;
-      if (requiredDocumentIds != null) updateData['requiredDocumentIds'] = requiredDocumentIds;
+      if (requiredDocumentIds != null)
+        updateData['requiredDocumentIds'] = requiredDocumentIds;
       if (status != null) updateData['status'] = status;
 
-      await firestoreDataSource.updateJob(
-        jobId: jobId,
-        data: updateData,
-      );
+      await firestoreDataSource.updateJob(jobId: jobId, data: updateData);
 
       final jobData = await firestoreDataSource.getJob(jobId);
       if (jobData == null) {
@@ -180,9 +190,12 @@ class JobRepositoryImpl implements JobRepository {
         title: jobData['title'] ?? '',
         description: jobData['description'] ?? '',
         requirements: reqs,
-        requiredDocumentIds: List<String>.from(jobData['requiredDocumentIds'] ?? []),
+        requiredDocumentIds: List<String>.from(
+          jobData['requiredDocumentIds'] ?? [],
+        ),
         status: jobData['status'] ?? 'open',
-        createdAt: (jobData['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        createdAt:
+            (jobData['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       );
 
       return Right(jobModel.toEntity());

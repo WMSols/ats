@@ -27,8 +27,12 @@ class CandidateBindings extends Bindings {
   void dependencies() {
     // Data Sources
     final authDataSource = FirebaseAuthDataSourceImpl(FirebaseAuth.instance);
-    final firestoreDataSource = FirestoreDataSourceImpl(FirebaseFirestore.instance);
-    final storageDataSource = FirebaseStorageDataSourceImpl(FirebaseStorage.instance);
+    final firestoreDataSource = FirestoreDataSourceImpl(
+      FirebaseFirestore.instance,
+    );
+    final storageDataSource = FirebaseStorageDataSourceImpl(
+      FirebaseStorage.instance,
+    );
 
     // Candidate Auth Repository (completely isolated)
     final candidateAuthRepo = CandidateAuthRepositoryImpl(
@@ -54,17 +58,24 @@ class CandidateBindings extends Bindings {
 
     // Controllers
     // Use lazyPut like AdminBindings to avoid recreating controller when navigating between routes
-    Get.lazyPut<CandidateAuthController>(() => CandidateAuthController(candidateAuthRepo));
-    Get.lazyPut(() => CandidateDashboardController(
-          candidateAuthRepo,
-          applicationRepo,
-          jobRepo,
-          documentRepo,
-        ));
+    Get.lazyPut<CandidateAuthController>(
+      () => CandidateAuthController(candidateAuthRepo),
+    );
+    Get.lazyPut(
+      () => CandidateDashboardController(
+        candidateAuthRepo,
+        applicationRepo,
+        jobRepo,
+        documentRepo,
+      ),
+    );
     Get.lazyPut(() => ProfileController(profileRepo, candidateAuthRepo));
-    Get.lazyPut(() => JobsController(jobRepo, applicationRepo, candidateAuthRepo));
+    Get.lazyPut(
+      () => JobsController(jobRepo, applicationRepo, candidateAuthRepo),
+    );
     Get.lazyPut(() => DocumentsController(documentRepo, candidateAuthRepo));
-    Get.lazyPut(() => ApplicationsController(applicationRepo, candidateAuthRepo));
+    Get.lazyPut(
+      () => ApplicationsController(applicationRepo, candidateAuthRepo),
+    );
   }
 }
-

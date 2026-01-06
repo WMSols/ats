@@ -67,7 +67,7 @@ class AdminCreateNewUserController extends GetxController {
     validateName(nameController.text);
     validateEmail(emailController.text);
     validatePassword(passwordController.text);
-    
+
     if (roleValue.value.isEmpty) {
       roleError.value = 'Please select a role';
       return false;
@@ -115,8 +115,10 @@ class AdminCreateNewUserController extends GetxController {
         emailError.value = null;
         passwordError.value = null;
         roleError.value = null;
-        
-        AppSnackbar.success('${roleValue.value == 'admin' ? 'Admin' : 'Recruiter'} created successfully');
+
+        AppSnackbar.success(
+          '${roleValue.value == 'admin' ? 'Admin' : 'Recruiter'} created successfully',
+        );
         // Navigate to AdminManageAdminsScreen instead of going back
         // Note: The repository will sign out the newly created user to prevent auto-login
         Get.offNamed(AppConstants.routeAdminManageAdmins);
@@ -129,4 +131,3 @@ class AdminCreateNewUserController extends GetxController {
     );
   }
 }
-

@@ -62,9 +62,9 @@ class AppDashboardCard extends StatelessWidget {
                   final iconSize = AppResponsive.isMobile(context)
                       ? constraints.maxWidth * 0.25
                       : AppResponsive.isTablet(context)
-                          ? constraints.maxWidth * 0.20
-                          : constraints.maxWidth * 0.18;
-                  
+                      ? constraints.maxWidth * 0.20
+                      : constraints.maxWidth * 0.18;
+
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,

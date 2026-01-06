@@ -58,7 +58,8 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
           candidateId: data['candidateId'] ?? '',
           jobId: data['jobId'] ?? '',
           status: data['status'] ?? AppConstants.applicationStatusPending,
-          appliedAt: (data['appliedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          appliedAt:
+              (data['appliedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
         ).toEntity();
       }).toList();
       return Right(apps);
@@ -75,21 +76,24 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
     String? jobId,
     String? status,
   }) {
-    return firestoreDataSource.streamApplications(
-      candidateId: candidateId,
-      jobId: jobId,
-      status: status,
-    ).map((appsData) {
-      return appsData.map((data) {
-        return ApplicationModel(
-          applicationId: data['applicationId'] ?? '',
-          candidateId: data['candidateId'] ?? '',
-          jobId: data['jobId'] ?? '',
-          status: data['status'] ?? AppConstants.applicationStatusPending,
-          appliedAt: (data['appliedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-        ).toEntity();
-      }).toList();
-    });
+    return firestoreDataSource
+        .streamApplications(
+          candidateId: candidateId,
+          jobId: jobId,
+          status: status,
+        )
+        .map((appsData) {
+          return appsData.map((data) {
+            return ApplicationModel(
+              applicationId: data['applicationId'] ?? '',
+              candidateId: data['candidateId'] ?? '',
+              jobId: data['jobId'] ?? '',
+              status: data['status'] ?? AppConstants.applicationStatusPending,
+              appliedAt:
+                  (data['appliedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+            ).toEntity();
+          }).toList();
+        });
   }
 
   @override
@@ -134,4 +138,3 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
     }
   }
 }
-

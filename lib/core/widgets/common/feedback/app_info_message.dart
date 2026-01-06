@@ -5,12 +5,7 @@ import 'package:ats/core/utils/app_colors/app_colors.dart';
 import 'package:ats/core/utils/app_responsive/app_responsive.dart';
 import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 
-enum AppInfoMessageType {
-  success,
-  error,
-  info,
-  warning,
-}
+enum AppInfoMessageType { success, error, info, warning }
 
 class AppInfoMessage extends StatelessWidget {
   final String message;
@@ -86,4 +81,3 @@ class AppInfoMessage extends StatelessWidget {
     );
   }
 }
-

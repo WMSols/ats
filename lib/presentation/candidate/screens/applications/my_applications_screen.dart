@@ -19,49 +19,52 @@ class MyApplicationsScreen extends StatelessWidget {
 
     return AppCandidateLayout(
       title: AppTexts.myApplications,
-      child: Obx(() => applicationsController.applications.isEmpty
-          ? AppEmptyState(
-              message: AppTexts.noApplicationsYet,
-              icon: Iconsax.document,
-            )
-          : ListView.builder(
-              padding: AppSpacing.padding(context),
-              itemCount: applicationsController.applications.length,
-              itemBuilder: (context, index) {
-                final app = applicationsController.applications[index];
-                final job = jobsController.jobs.firstWhereOrNull(
-                  (j) => j.jobId == app.jobId,
-                );
-                final isDenied = app.status == AppConstants.applicationStatusDenied;
+      child: Obx(
+        () => applicationsController.applications.isEmpty
+            ? AppEmptyState(
+                message: AppTexts.noApplicationsYet,
+                icon: Iconsax.document,
+              )
+            : ListView.builder(
+                padding: AppSpacing.padding(context),
+                itemCount: applicationsController.applications.length,
+                itemBuilder: (context, index) {
+                  final app = applicationsController.applications[index];
+                  final job = jobsController.jobs.firstWhereOrNull(
+                    (j) => j.jobId == app.jobId,
+                  );
+                  final isDenied =
+                      app.status == AppConstants.applicationStatusDenied;
 
-                return AppListCard(
-                  title: job?.title ?? AppTexts.unknownJob,
-                  subtitle: applicationsController.getStatusText(app.status),
-                  icon: Iconsax.document,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AppStatusChip(status: app.status),
-                      // Show re-apply button only when application is denied
-                      if (isDenied) ...[
-                        AppSpacing.horizontal(context, 0.01),
-                        AppActionButton(
-                          text: AppTexts.reapply,
-                          onPressed: () {
-                            if (job != null) {
-                              applicationsController.reapplyToJob(app.jobId);
-                            }
-                          },
-                          backgroundColor: AppColors.warning,
-                          foregroundColor: AppColors.black,
-                        ),
+                  return AppListCard(
+                    title: job?.title ?? AppTexts.unknownJob,
+                    subtitle: applicationsController.getStatusText(app.status),
+                    icon: Iconsax.document,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AppStatusChip(status: app.status),
+                        // Show re-apply button only when application is denied
+                        if (isDenied) ...[
+                          AppSpacing.horizontal(context, 0.01),
+                          AppActionButton(
+                            text: AppTexts.reapply,
+                            onPressed: () {
+                              if (job != null) {
+                                applicationsController.reapplyToJob(app.jobId);
+                              }
+                            },
+                            backgroundColor: AppColors.warning,
+                            foregroundColor: AppColors.black,
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                  onTap: null,
-                );
-              },
-            )),
+                    ),
+                    onTap: null,
+                  );
+                },
+              ),
+      ),
     );
   }
 }

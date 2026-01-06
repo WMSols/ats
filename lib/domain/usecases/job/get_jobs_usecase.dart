@@ -12,4 +12,3 @@ class GetJobsUseCase {
     return repository.getJobs(status: status);
   }
 }
-

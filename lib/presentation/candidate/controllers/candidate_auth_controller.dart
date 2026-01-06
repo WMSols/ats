@@ -54,30 +54,32 @@ class CandidateAuthController extends BaseAuthController {
     // For candidate signup, only validate email and password
     // Stored values are updated in real-time via onChanged callbacks, so they're the source of truth
     // Only sync from controller if stored values are empty or controller has more complete data
-    
+
     final emailFromController = emailController.text.trim();
     final passwordFromController = passwordController.text;
-    
+
     // Only sync if stored value is empty or controller value is longer (more complete)
     // This prevents overwriting correct stored values with stale controller values
-    if (emailValue.value.isEmpty || emailFromController.length > emailValue.value.length) {
+    if (emailValue.value.isEmpty ||
+        emailFromController.length > emailValue.value.length) {
       if (emailValue.value != emailFromController) {
         emailValue.value = emailFromController;
       }
     }
-    
-    if (passwordValue.value.isEmpty || passwordFromController.length > passwordValue.value.length) {
+
+    if (passwordValue.value.isEmpty ||
+        passwordFromController.length > passwordValue.value.length) {
       if (passwordValue.value != passwordFromController) {
         passwordValue.value = passwordFromController;
       }
     }
-    
+
     // Use stored values (updated in real-time via onChanged callbacks)
     // This is more reliable than reading from controllers which may have sync issues
     // The validation methods will update error observables correctly
     validateEmail(emailValue.value);
     validatePassword(passwordValue.value);
-    
+
     // Return true only if both validations pass (no errors)
     return emailError.value == null && passwordError.value == null;
   }
@@ -133,10 +135,7 @@ class CandidateAuthController extends BaseAuthController {
     isLoading.value = true;
     errorMessage.value = '';
 
-    final result = await signInUseCase(
-      email: email,
-      password: password,
-    );
+    final result = await signInUseCase(email: email, password: password);
 
     result.fold(
       (failure) {

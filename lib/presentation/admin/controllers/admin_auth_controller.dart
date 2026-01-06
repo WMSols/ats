@@ -22,7 +22,8 @@ class AdminAuthController extends BaseAuthController {
   // Cached current admin profile to avoid refetching on every navigation
   final currentAdminProfile = Rxn<AdminProfileEntity>();
 
-  AdminAuthController(this.adminAuthRepository, this.adminRepository) : super() {
+  AdminAuthController(this.adminAuthRepository, this.adminRepository)
+    : super() {
     signUpUseCase = AdminSignUpUseCase(adminAuthRepository);
     signInUseCase = AdminSignInUseCase(adminAuthRepository);
     signOutUseCase = AdminSignOutUseCase(adminAuthRepository);
@@ -50,7 +51,8 @@ class AdminAuthController extends BaseAuthController {
   String? get currentAccessLevel => currentAdminProfile.value?.accessLevel;
 
   /// Check if current admin is super admin
-  bool get isSuperAdmin => currentAccessLevel == AppConstants.accessLevelSuperAdmin;
+  bool get isSuperAdmin =>
+      currentAccessLevel == AppConstants.accessLevelSuperAdmin;
 
   @override
   String get signUpRole => AppConstants.roleAdmin;
@@ -127,10 +129,7 @@ class AdminAuthController extends BaseAuthController {
     isLoading.value = true;
     errorMessage.value = '';
 
-    final result = await signInUseCase(
-      email: email,
-      password: password,
-    );
+    final result = await signInUseCase(email: email, password: password);
 
     result.fold(
       (failure) {

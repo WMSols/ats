@@ -31,4 +31,3 @@ abstract class CandidateAuthRepository {
   /// Get the current authenticated candidate user
   UserEntity? getCurrentUser();
 }
-

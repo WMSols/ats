@@ -52,21 +52,20 @@ class _AppDocumentViewerState extends State<AppDocumentViewer> {
     if (!kIsWeb) return;
 
     _iframeViewId = 'pdf-viewer-${DateTime.now().millisecondsSinceEpoch}';
-    
+
     try {
       // Try to register with ui_web
-      ui_web.platformViewRegistry.registerViewFactory(
-        _iframeViewId!,
-        (int viewId) {
-          final iframe = html.IFrameElement()
-            ..src = widget.documentUrl
-            ..style.border = 'none'
-            ..style.width = '100%'
-            ..style.height = '100%'
-            ..allowFullscreen = true;
-          return iframe;
-        },
-      );
+      ui_web.platformViewRegistry.registerViewFactory(_iframeViewId!, (
+        int viewId,
+      ) {
+        final iframe = html.IFrameElement()
+          ..src = widget.documentUrl
+          ..style.border = 'none'
+          ..style.width = '100%'
+          ..style.height = '100%'
+          ..allowFullscreen = true;
+        return iframe;
+      });
       _uiWebAvailable = true;
     } catch (e) {
       // ui_web not available (WebAssembly)
@@ -144,7 +143,10 @@ class _AppDocumentViewerState extends State<AppDocumentViewer> {
                   ),
                 ),
                 TextButton.icon(
-                  onPressed: () => _downloadDocument(widget.documentUrl, widget.documentName),
+                  onPressed: () => _downloadDocument(
+                    widget.documentUrl,
+                    widget.documentName,
+                  ),
                   icon: Icon(
                     Iconsax.document_download,
                     color: AppColors.primary,
@@ -226,18 +228,11 @@ class _AppDocumentViewerState extends State<AppDocumentViewer> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Iconsax.document_text,
-              size: 48,
-              color: AppColors.primary,
-            ),
+            Icon(Iconsax.document_text, size: 48, color: AppColors.primary),
             const SizedBox(height: 16),
             Text(
               'Opening PDF in new tab...',
-              style: TextStyle(
-                color: AppColors.black,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: AppColors.black, fontSize: 16),
               textAlign: TextAlign.center,
             ),
           ],

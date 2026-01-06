@@ -29,4 +29,3 @@ abstract class AdminAuthRepository {
   /// Get the current authenticated admin user
   UserEntity? getCurrentUser();
 }
-

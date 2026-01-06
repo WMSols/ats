@@ -29,10 +29,7 @@ class AppNavigationChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(
             AppResponsive.radius(context, factor: 5),
           ),
-          border: Border.all(
-            color: AppColors.lightGrey,
-            width: 1,
-          ),
+          border: Border.all(color: AppColors.lightGrey, width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

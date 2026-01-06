@@ -26,7 +26,8 @@ class AdminRepositoryImpl implements AdminRepository {
 
   @override
   Future<Either<Failure, AdminProfileEntity>> getAdminProfile(
-      String userId) async {
+    String userId,
+  ) async {
     try {
       // Get user data to find profileId
       final userData = await firestoreDataSource.getUser(userId);
@@ -48,20 +49,23 @@ class AdminRepositoryImpl implements AdminRepository {
       final firstName = profileData['firstName'] ?? '';
       final lastName = profileData['lastName'] ?? '';
       final name = '$firstName $lastName'.trim();
-      final finalName = name.isEmpty 
+      final finalName = name.isEmpty
           ? (firstName.isNotEmpty ? firstName : lastName)
           : name;
 
       // Get user email from already fetched userData
       final email = userData['email'] ?? '';
 
-      return Right(AdminProfileEntity(
-        profileId: profileId,
-        userId: userId,
-        name: finalName,
-        accessLevel: profileData['accessLevel'] ?? AppConstants.accessLevelRecruiter,
-        email: email,
-      ));
+      return Right(
+        AdminProfileEntity(
+          profileId: profileId,
+          userId: userId,
+          name: finalName,
+          accessLevel:
+              profileData['accessLevel'] ?? AppConstants.accessLevelRecruiter,
+          email: email,
+        ),
+      );
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -73,36 +77,37 @@ class AdminRepositoryImpl implements AdminRepository {
   Future<Either<Failure, List<UserEntity>>> getCandidates() async {
     try {
       final candidatesData = await firestoreDataSource.getCandidates();
-      
+
       final candidates = <UserEntity>[];
-      
+
       for (var data in candidatesData) {
         try {
           final userId = data['userId'] as String?;
           final email = data['email'] as String?;
-          
+
           if (userId == null || userId.isEmpty) {
             continue;
           }
-          
+
           if (email == null || email.isEmpty) {
             continue;
           }
-          
+
           final candidate = UserModel(
             userId: userId,
             email: email,
             role: data['role'] ?? AppConstants.roleCandidate,
             profileId: data['profileId'] as String?,
-            createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+            createdAt:
+                (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
           ).toEntity();
-          
+
           candidates.add(candidate);
         } catch (e) {
           continue;
         }
       }
-      
+
       return Right(candidates);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -129,20 +134,22 @@ class AdminRepositoryImpl implements AdminRepository {
           accessLevel: accessLevel,
         );
 
-        return Right(AdminProfileEntity(
-          profileId: result['profileId'] as String,
-          userId: result['userId'] as String,
-          name: result['name'] as String,
-          accessLevel: result['accessLevel'] as String,
-          email: result['email'] as String,
-        ));
+        return Right(
+          AdminProfileEntity(
+            profileId: result['profileId'] as String,
+            userId: result['userId'] as String,
+            name: result['name'] as String,
+            accessLevel: result['accessLevel'] as String,
+            email: result['email'] as String,
+          ),
+        );
       } else {
         // Fallback to direct Firebase (legacy approach)
         // Split name into firstName and lastName
         final nameParts = name.trim().split(' ');
         final firstName = nameParts.isNotEmpty ? nameParts.first : '';
-        final lastName = nameParts.length > 1 
-            ? nameParts.sublist(1).join(' ') 
+        final lastName = nameParts.length > 1
+            ? nameParts.sublist(1).join(' ')
             : '';
 
         // Create Firebase Auth user (this will automatically sign in the new user)
@@ -182,13 +189,15 @@ class AdminRepositoryImpl implements AdminRepository {
         await authDataSource.signOut();
 
         // Return the created admin profile entity
-        return Right(AdminProfileEntity(
-          profileId: profileId,
-          userId: userId,
-          name: name,
-          accessLevel: accessLevel,
-          email: email,
-        ));
+        return Right(
+          AdminProfileEntity(
+            profileId: profileId,
+            userId: userId,
+            name: name,
+            accessLevel: accessLevel,
+            email: email,
+          ),
+        );
       }
     } on AuthException catch (e) {
       return Left(AuthFailure(e.message));
@@ -223,9 +232,13 @@ class AdminRepositoryImpl implements AdminRepository {
 
         // Get the created profile to return full entity
         final profileId = result['profileId'] as String;
-        final profileData = await firestoreDataSource.getCandidateProfile(profileId);
+        final profileData = await firestoreDataSource.getCandidateProfile(
+          profileId,
+        );
         if (profileData == null) {
-          return const Left(ServerFailure('Failed to retrieve created profile'));
+          return const Left(
+            ServerFailure('Failed to retrieve created profile'),
+          );
         }
 
         final profileModel = CandidateProfileModel(
@@ -282,9 +295,13 @@ class AdminRepositoryImpl implements AdminRepository {
         await authDataSource.signOut();
 
         // Get the created profile to return full entity
-        final profileData = await firestoreDataSource.getCandidateProfile(profileId);
+        final profileData = await firestoreDataSource.getCandidateProfile(
+          profileId,
+        );
         if (profileData == null) {
-          return const Left(ServerFailure('Failed to retrieve created profile'));
+          return const Left(
+            ServerFailure('Failed to retrieve created profile'),
+          );
         }
 
         final profileModel = CandidateProfileModel(
@@ -312,7 +329,8 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<Either<Failure, List<AdminProfileEntity>>> getAllAdminProfiles() async {
+  Future<Either<Failure, List<AdminProfileEntity>>>
+  getAllAdminProfiles() async {
     try {
       final profilesData = await firestoreDataSource.getAllAdminProfiles();
       final profiles = <AdminProfileEntity>[];
@@ -321,7 +339,7 @@ class AdminRepositoryImpl implements AdminRepository {
         final firstName = profileData['firstName'] ?? '';
         final lastName = profileData['lastName'] ?? '';
         final name = '$firstName $lastName'.trim();
-        final finalName = name.isEmpty 
+        final finalName = name.isEmpty
             ? (firstName.isNotEmpty ? firstName : lastName)
             : name;
 
@@ -330,13 +348,16 @@ class AdminRepositoryImpl implements AdminRepository {
         final userData = await firestoreDataSource.getUser(userId);
         final email = userData?['email'] ?? '';
 
-        profiles.add(AdminProfileEntity(
-          profileId: profileData['profileId'] ?? '',
-          userId: userId,
-          name: finalName,
-          accessLevel: profileData['accessLevel'] ?? AppConstants.accessLevelRecruiter,
-          email: email,
-        ));
+        profiles.add(
+          AdminProfileEntity(
+            profileId: profileData['profileId'] ?? '',
+            userId: userId,
+            name: finalName,
+            accessLevel:
+                profileData['accessLevel'] ?? AppConstants.accessLevelRecruiter,
+            email: email,
+          ),
+        );
       }
 
       return Right(profiles);
@@ -368,7 +389,7 @@ class AdminRepositoryImpl implements AdminRepository {
       final firstName = profileData['firstName'] ?? '';
       final lastName = profileData['lastName'] ?? '';
       final name = '$firstName $lastName'.trim();
-      final finalName = name.isEmpty 
+      final finalName = name.isEmpty
           ? (firstName.isNotEmpty ? firstName : lastName)
           : name;
 
@@ -377,13 +398,15 @@ class AdminRepositoryImpl implements AdminRepository {
       final userData = await firestoreDataSource.getUser(userId);
       final email = userData != null ? (userData['email'] ?? '') : '';
 
-      return Right(AdminProfileEntity(
-        profileId: profileId,
-        userId: userId,
-        name: finalName,
-        accessLevel: accessLevel,
-        email: email,
-      ));
+      return Right(
+        AdminProfileEntity(
+          profileId: profileId,
+          userId: userId,
+          name: finalName,
+          accessLevel: accessLevel,
+          email: email,
+        ),
+      );
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -409,14 +432,14 @@ class AdminRepositoryImpl implements AdminRepository {
         // Fallback to direct Firebase (legacy approach)
         // Note: This won't delete Storage files or handle all cleanup properly
         // For full cleanup, Firebase Functions with Admin SDK is required
-        
+
         // Note: Full candidate deletion with Storage cleanup requires Firebase Functions
         // Fallback mode will only delete Firestore data, not Storage files
         // For production, always use Firebase Functions
-        
+
         // Get candidate documents to delete from Storage (if we had access)
         // For now, we'll just delete Firestore records
-        
+
         // Delete candidate profile from Firestore
         // Note: We need direct Firestore access for this
         // Since we have FirestoreDataSource, we'll need to add a method or use direct access
@@ -433,9 +456,11 @@ class AdminRepositoryImpl implements AdminRepository {
         } on AuthException catch (e) {
           // If deletion from Auth fails (e.g., trying to delete a different user),
           // we still consider it a partial success since Firestore data is deleted
-          return Left(AuthFailure(
-            'Candidate deleted from Firestore, but Auth deletion requires Admin SDK: ${e.message}',
-          ));
+          return Left(
+            AuthFailure(
+              'Candidate deleted from Firestore, but Auth deletion requires Admin SDK: ${e.message}',
+            ),
+          );
         }
 
         return const Right(null);
@@ -479,9 +504,11 @@ class AdminRepositoryImpl implements AdminRepository {
         } on AuthException catch (e) {
           // If deletion from Auth fails (e.g., trying to delete a different user),
           // we still consider it a partial success since Firestore data is deleted
-          return Left(AuthFailure(
-            'User deleted from Firestore, but Auth deletion requires Admin SDK: ${e.message}',
-          ));
+          return Left(
+            AuthFailure(
+              'User deleted from Firestore, but Auth deletion requires Admin SDK: ${e.message}',
+            ),
+          );
         }
 
         return const Right(null);
@@ -495,4 +522,3 @@ class AdminRepositoryImpl implements AdminRepository {
     }
   }
 }
-

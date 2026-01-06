@@ -31,28 +31,30 @@ class AppNavigationItem extends StatelessWidget {
             currentRoute[item.route.length] == '/');
 
     final isEnabled = item.enabled;
-    
+
     return InkWell(
-      onTap: isEnabled ? () {
-        if (onTap != null) {
-          onTap!();
-        }
-        if (Get.currentRoute != item.route) {
-          // If dashboard route is provided and we're not going to dashboard,
-          // use offNamedUntil to keep dashboard in stack for back navigation
-          if (dashboardRoute != null &&
-              item.route != dashboardRoute &&
-              currentRoute != dashboardRoute) {
-            Get.offNamedUntil(
-              item.route,
-              (route) => route.settings.name == dashboardRoute,
-            );
-          } else {
-            // For dashboard or if no dashboard route specified, use regular navigation
-            Get.toNamed(item.route);
-          }
-        }
-      } : null,
+      onTap: isEnabled
+          ? () {
+              if (onTap != null) {
+                onTap!();
+              }
+              if (Get.currentRoute != item.route) {
+                // If dashboard route is provided and we're not going to dashboard,
+                // use offNamedUntil to keep dashboard in stack for back navigation
+                if (dashboardRoute != null &&
+                    item.route != dashboardRoute &&
+                    currentRoute != dashboardRoute) {
+                  Get.offNamedUntil(
+                    item.route,
+                    (route) => route.settings.name == dashboardRoute,
+                  );
+                } else {
+                  // For dashboard or if no dashboard route specified, use regular navigation
+                  Get.toNamed(item.route);
+                }
+              }
+            }
+          : null,
       child: Opacity(
         opacity: isEnabled ? 1.0 : 0.5,
         child: Container(
@@ -76,8 +78,8 @@ class AppNavigationItem extends StatelessWidget {
               Icon(
                 item.icon,
                 size: AppResponsive.iconSize(context, factor: 1.2),
-                color: isCurrentlyActive 
-                    ? AppColors.white 
+                color: isCurrentlyActive
+                    ? AppColors.white
                     : (isEnabled ? AppColors.secondary : AppColors.white),
               ),
               AppSpacing.horizontal(context, 0.01),

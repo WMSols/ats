@@ -91,7 +91,9 @@ class FirebaseAuthDataSourceImpl implements FirebaseAuthDataSource {
       } else {
         // If the user to delete is not the current user, we need to use Admin SDK
         // For now, throw an exception as client SDK can only delete current user
-        throw AuthException('Cannot delete user: Only the current user can be deleted');
+        throw AuthException(
+          'Cannot delete user: Only the current user can be deleted',
+        );
       }
     } on FirebaseAuthException catch (e) {
       throw AuthException(e.message ?? 'Failed to delete user');
@@ -106,4 +108,3 @@ class FirebaseAuthDataSourceImpl implements FirebaseAuthDataSource {
   @override
   User? getCurrentUser() => firebaseAuth.currentUser;
 }
-

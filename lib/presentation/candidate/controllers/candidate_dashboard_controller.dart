@@ -55,47 +55,50 @@ class CandidateDashboardController extends GetxController {
     _totalAppsSubscription = applicationRepository
         .streamApplications(candidateId: currentUser.userId)
         .listen(
-      (apps) {
-        totalApplicationsCount.value = apps.length;
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
+          (apps) {
+            totalApplicationsCount.value = apps.length;
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
 
     // Load available jobs count (open jobs)
     _jobsSubscription?.cancel();
     _jobsSubscription = jobRepository
         .streamJobs(status: AppConstants.jobStatusOpen)
         .listen(
-      (jobs) {
-        availableJobsCount.value = jobs.length;
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
+          (jobs) {
+            availableJobsCount.value = jobs.length;
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
 
     // Load documents count by status
     _allDocumentsSubscription?.cancel();
     _allDocumentsSubscription = documentRepository
         .streamCandidateDocuments(currentUser.userId)
         .listen(
-      (documents) {
-        pendingDocumentsCount.value = documents
-            .where((doc) => doc.status == AppConstants.documentStatusPending)
-            .length;
-        approvedDocumentsCount.value = documents
-            .where((doc) => doc.status == AppConstants.documentStatusApproved)
-            .length;
-        rejectedDocumentsCount.value = documents
-            .where((doc) => doc.status == AppConstants.documentStatusDenied)
-            .length;
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
+          (documents) {
+            pendingDocumentsCount.value = documents
+                .where(
+                  (doc) => doc.status == AppConstants.documentStatusPending,
+                )
+                .length;
+            approvedDocumentsCount.value = documents
+                .where(
+                  (doc) => doc.status == AppConstants.documentStatusApproved,
+                )
+                .length;
+            rejectedDocumentsCount.value = documents
+                .where((doc) => doc.status == AppConstants.documentStatusDenied)
+                .length;
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
   }
 }
-

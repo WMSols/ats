@@ -151,9 +151,11 @@ class DocumentRepositoryImpl implements DocumentRepository {
         // Web: filePath is not available, need to get bytes from PlatformFile
         // This method will be called with filePath, but for web we need bytes
         // The actual file handling should be done in the controller
-        return const Left(StorageFailure(
-          'Web platform requires file bytes. Use uploadDocumentWithFile method instead.',
-        ));
+        return const Left(
+          StorageFailure(
+            'Web platform requires file bytes. Use uploadDocumentWithFile method instead.',
+          ),
+        );
       } else {
         // Mobile: use File
         file = File(filePath);
@@ -220,17 +222,19 @@ class DocumentRepositoryImpl implements DocumentRepository {
 
       // Before uploading, delete any previous denied documents with the same docTypeId
       try {
-        final allDocs = await firestoreDataSource.getCandidateDocuments(candidateId);
+        final allDocs = await firestoreDataSource.getCandidateDocuments(
+          candidateId,
+        );
         final deniedDocs = allDocs.where((doc) {
-          return doc['docTypeId'] == docTypeId && 
-                 doc['status'] == AppConstants.documentStatusDenied;
+          return doc['docTypeId'] == docTypeId &&
+              doc['status'] == AppConstants.documentStatusDenied;
         }).toList();
 
         // Delete all denied documents for this docTypeId
         for (final deniedDoc in deniedDocs) {
           final deniedDocId = deniedDoc['candidateDocId'] as String;
           final deniedStorageUrl = deniedDoc['storageUrl'] as String? ?? '';
-          
+
           // Delete from storage first
           if (deniedStorageUrl.isNotEmpty) {
             try {
@@ -239,7 +243,7 @@ class DocumentRepositoryImpl implements DocumentRepository {
               // Continue - storage deletion failure shouldn't block reupload
             }
           }
-          
+
           // Delete from Firestore
           await firestoreDataSource.deleteCandidateDocument(deniedDocId);
         }
@@ -254,13 +258,17 @@ class DocumentRepositoryImpl implements DocumentRepository {
       if (kIsWeb) {
         // Web: use bytes
         if (platformFile.bytes == null) {
-          return const Left(StorageFailure('File bytes are required for web platform'));
+          return const Left(
+            StorageFailure('File bytes are required for web platform'),
+          );
         }
         bytes = platformFile.bytes;
       } else {
         // Mobile: use File
         if (platformFile.path == null) {
-          return const Left(StorageFailure('File path is required for mobile platform'));
+          return const Left(
+            StorageFailure('File path is required for mobile platform'),
+          );
         }
         file = File(platformFile.path!);
         if (!await file.exists()) {
@@ -358,9 +366,11 @@ class DocumentRepositoryImpl implements DocumentRepository {
 
       if (kIsWeb) {
         // Web: filePath is not available, need to get bytes from PlatformFile
-        return const Left(StorageFailure(
-          'Web platform requires file bytes. Use createUserDocumentWithFile method instead.',
-        ));
+        return const Left(
+          StorageFailure(
+            'Web platform requires file bytes. Use createUserDocumentWithFile method instead.',
+          ),
+        );
       } else {
         // Mobile: use File
         file = File(filePath);
@@ -437,13 +447,17 @@ class DocumentRepositoryImpl implements DocumentRepository {
       if (kIsWeb) {
         // Web: use bytes
         if (platformFile.bytes == null) {
-          return const Left(StorageFailure('File bytes are required for web platform'));
+          return const Left(
+            StorageFailure('File bytes are required for web platform'),
+          );
         }
         bytes = platformFile.bytes;
       } else {
         // Mobile: use File
         if (platformFile.path == null) {
-          return const Left(StorageFailure('File path is required for mobile platform'));
+          return const Left(
+            StorageFailure('File path is required for mobile platform'),
+          );
         }
         file = File(platformFile.path!);
         if (!await file.exists()) {
@@ -506,7 +520,9 @@ class DocumentRepositoryImpl implements DocumentRepository {
     String candidateId,
   ) async {
     try {
-      final docsData = await firestoreDataSource.getCandidateDocuments(candidateId);
+      final docsData = await firestoreDataSource.getCandidateDocuments(
+        candidateId,
+      );
       final docs = docsData.map((data) {
         return CandidateDocumentModel(
           candidateDocId: data['candidateDocId'] ?? '',
@@ -515,7 +531,8 @@ class DocumentRepositoryImpl implements DocumentRepository {
           documentName: data['documentName'] ?? '',
           storageUrl: data['storageUrl'] ?? '',
           status: data['status'] ?? AppConstants.documentStatusPending,
-          uploadedAt: (data['uploadedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          uploadedAt:
+              (data['uploadedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
           title: data['title'] as String?,
           description: data['description'] as String?,
         ).toEntity();
@@ -532,7 +549,9 @@ class DocumentRepositoryImpl implements DocumentRepository {
   Stream<List<CandidateDocumentEntity>> streamCandidateDocuments(
     String candidateId,
   ) {
-    return firestoreDataSource.streamCandidateDocuments(candidateId).map((docsData) {
+    return firestoreDataSource.streamCandidateDocuments(candidateId).map((
+      docsData,
+    ) {
       return docsData.map((data) {
         return CandidateDocumentModel(
           candidateDocId: data['candidateDocId'] ?? '',
@@ -541,7 +560,8 @@ class DocumentRepositoryImpl implements DocumentRepository {
           documentName: data['documentName'] ?? '',
           storageUrl: data['storageUrl'] ?? '',
           status: data['status'] ?? AppConstants.documentStatusPending,
-          uploadedAt: (data['uploadedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          uploadedAt:
+              (data['uploadedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
           title: data['title'] as String?,
           description: data['description'] as String?,
         ).toEntity();
@@ -610,4 +630,3 @@ class DocumentRepositoryImpl implements DocumentRepository {
     return const Right(null);
   }
 }
-

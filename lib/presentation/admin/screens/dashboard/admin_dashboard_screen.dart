@@ -51,10 +51,7 @@ class AdminDashboardScreen extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFFFF9800),
-                  const Color(0xFFFFC107),
-                ],
+                colors: [const Color(0xFFFF9800), const Color(0xFFFFC107)],
               ),
               iconColor: AppColors.white,
               textColor: AppColors.white,
@@ -68,10 +65,7 @@ class AdminDashboardScreen extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFF4CAF50),
-                  const Color(0xFF8BC34A),
-                ],
+                colors: [const Color(0xFF4CAF50), const Color(0xFF8BC34A)],
               ),
               iconColor: AppColors.white,
               textColor: AppColors.white,
@@ -85,10 +79,7 @@ class AdminDashboardScreen extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFFF44336),
-                  const Color(0xFFE91E63),
-                ],
+                colors: [const Color(0xFFF44336), const Color(0xFFE91E63)],
               ),
               iconColor: AppColors.white,
               textColor: AppColors.white,
