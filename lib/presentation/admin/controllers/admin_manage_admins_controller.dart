@@ -35,12 +35,10 @@ class AdminManageAdminsController extends GetxController {
     } else {
       final query = searchQuery.value.toLowerCase();
       filteredAdminProfiles.value = adminProfiles
-          .where((profile) =>
-              profile.name.toLowerCase().contains(query))
+          .where((profile) => profile.name.toLowerCase().contains(query))
           .toList();
     }
   }
-
 
   Future<void> loadAdminProfiles() async {
     isLoadingList.value = true;
@@ -82,7 +80,8 @@ class AdminManageAdminsController extends GetxController {
     }
 
     // Determine new access level (toggle between super_admin and recruiter)
-    final newAccessLevel = profile.accessLevel == AppConstants.accessLevelSuperAdmin
+    final newAccessLevel =
+        profile.accessLevel == AppConstants.accessLevelSuperAdmin
         ? AppConstants.accessLevelRecruiter
         : AppConstants.accessLevelSuperAdmin;
 
@@ -136,13 +135,10 @@ class AdminManageAdminsController extends GetxController {
       },
       (_) {
         // Remove the profile from the list
-        adminProfiles.removeWhere(
-          (p) => p.profileId == profile.profileId,
-        );
+        adminProfiles.removeWhere((p) => p.profileId == profile.profileId);
         _applyFilters();
         AppSnackbar.success('User deleted successfully');
       },
     );
   }
 }
-

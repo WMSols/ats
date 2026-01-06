@@ -10,7 +10,7 @@ typedef UploadProgressCallback = void Function(double progress);
 abstract class FirebaseStorageDataSource {
   /// Uploads a file to Firebase Storage
   /// Supports both File (mobile) and Uint8List (web)
-  /// 
+  ///
   /// [path] - Storage path (e.g., 'documents/userId')
   /// [fileName] - Name of the file to store
   /// [file] - File object for mobile platforms
@@ -29,7 +29,7 @@ abstract class FirebaseStorageDataSource {
   /// Deletes a file from Firebase Storage
   /// [path] - Full storage path (e.g., 'documents/userId/fileName') or storage URL
   Future<void> deleteFile(String path);
-  
+
   /// Deletes a file from Firebase Storage using its download URL
   Future<void> deleteFileByUrl(String downloadUrl);
 
@@ -90,7 +90,7 @@ class FirebaseStorageDataSourceImpl implements FirebaseStorageDataSource {
 
       // Wait for upload to complete
       final snapshot = await uploadTask;
-      
+
       // Get download URL
       final downloadUrl = await snapshot.ref.getDownloadURL();
       return downloadUrl;
@@ -145,4 +145,3 @@ class FirebaseStorageDataSourceImpl implements FirebaseStorageDataSource {
     }
   }
 }
-

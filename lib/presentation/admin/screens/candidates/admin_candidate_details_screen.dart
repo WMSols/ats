@@ -20,7 +20,8 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
   ) {
     AppAlertDialog.show(
       title: AppTexts.deleteCandidate,
-      subtitle: '${AppTexts.deleteCandidateConfirmation} "$candidateName"?\n\n${AppTexts.deleteCandidateWarning}',
+      subtitle:
+          '${AppTexts.deleteCandidateConfirmation} "$candidateName"?\n\n${AppTexts.deleteCandidateWarning}',
       primaryButtonText: AppTexts.delete,
       secondaryButtonText: AppTexts.cancel,
       onPrimaryPressed: () => controller.deleteCandidate(),
@@ -56,7 +57,9 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
         final documentsCount = controller.getDocumentsCount();
         final applicationsCount = controller.getApplicationsCount();
         final agentName = controller.getCandidateAgentName(candidate.userId);
-        final assignedAgentProfileId = controller.getAssignedAgentProfileId(candidate.userId);
+        final assignedAgentProfileId = controller.getAssignedAgentProfileId(
+          candidate.userId,
+        );
 
         final jobTitles = <String, String>{};
         for (var app in controller.candidateApplications) {
@@ -70,14 +73,15 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
           length: 3,
           child: Column(
             children: [
-              TabBar(dividerColor: AppColors.primary,
+              TabBar(
+                dividerColor: AppColors.primary,
                 labelStyle: AppTextStyles.bodyText(context).copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.secondary,
                 ),
-                unselectedLabelStyle: AppTextStyles.bodyText(context).copyWith(
-                  color: AppColors.primary,
-                ),
+                unselectedLabelStyle: AppTextStyles.bodyText(
+                  context,
+                ).copyWith(color: AppColors.primary),
                 tabs: [
                   Tab(text: AppTexts.profile),
                   Tab(text: AppTexts.documents),
@@ -102,10 +106,11 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
                             availableAgents: availableAgents,
                             assignedAgentProfileId: assignedAgentProfileId,
                             onAgentChanged: controller.isSuperAdmin
-                                ? (agentProfileId) => controller.updateCandidateAgent(
-                                      userId: candidate.userId,
-                                      agentId: agentProfileId,
-                                    )
+                                ? (agentProfileId) =>
+                                      controller.updateCandidateAgent(
+                                        userId: candidate.userId,
+                                        agentId: agentProfileId,
+                                      )
                                 : null,
                             userId: candidate.userId,
                           ),
@@ -120,17 +125,28 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
                                     text: AppTexts.edit,
                                     icon: Iconsax.edit,
                                     onPressed: () {
-                                      Get.toNamed(AppConstants.routeAdminEditCandidate);
+                                      Get.toNamed(
+                                        AppConstants.routeAdminEditCandidate,
+                                      );
                                     },
                                   ),
                                 ),
-                                SizedBox(width: AppSpacing.horizontal(context, 0.02).width),
+                                SizedBox(
+                                  width: AppSpacing.horizontal(
+                                    context,
+                                    0.02,
+                                  ).width,
+                                ),
                                 Expanded(
                                   child: AppButton(
                                     text: AppTexts.deleteCandidate,
                                     icon: Iconsax.trash,
                                     onPressed: () {
-                                      _showDeleteConfirmation(context, controller, name);
+                                      _showDeleteConfirmation(
+                                        context,
+                                        controller,
+                                        name,
+                                      );
                                     },
                                     backgroundColor: AppColors.error,
                                   ),
@@ -161,10 +177,15 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
                         // Find the document name for display
                         String? documentName;
                         try {
-                          final document = controller.candidateDocuments.firstWhere(
-                            (doc) => doc.storageUrl == storageUrl,
-                          );
-                          documentName = document.title ?? AppFileValidator.extractOriginalFileName(document.documentName);
+                          final document = controller.candidateDocuments
+                              .firstWhere(
+                                (doc) => doc.storageUrl == storageUrl,
+                              );
+                          documentName =
+                              document.title ??
+                              AppFileValidator.extractOriginalFileName(
+                                document.documentName,
+                              );
                         } catch (e) {
                           // Document not found, use default name
                           documentName = null;

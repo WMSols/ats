@@ -11,4 +11,3 @@ class DocumentTypeEntity {
     required this.isRequired,
   });
 }
-

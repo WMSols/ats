@@ -20,11 +20,10 @@ class AppTextButton extends StatelessWidget {
       onPressed: onPressed,
       child: Text(
         text,
-        style: AppTextStyles.bodyText(context).copyWith(
-          color: textColor ?? AppColors.primary,
-        ),
+        style: AppTextStyles.bodyText(
+          context,
+        ).copyWith(color: textColor ?? AppColors.primary),
       ),
     );
   }
 }
-

@@ -18,7 +18,9 @@ class CandidateProfileRepositoryImpl implements CandidateProfileRepository {
     return workHistoryData
         .map((item) {
           if (item is Map) {
-            return Map<String, dynamic>.from(item.map((key, value) => MapEntry(key.toString(), value)));
+            return Map<String, dynamic>.from(
+              item.map((key, value) => MapEntry(key.toString(), value)),
+            );
           }
           return <String, dynamic>{};
         })
@@ -46,7 +48,9 @@ class CandidateProfileRepositoryImpl implements CandidateProfileRepository {
         workHistory: workHistory,
       );
 
-      final profileData = await firestoreDataSource.getCandidateProfile(profileId);
+      final profileData = await firestoreDataSource.getCandidateProfile(
+        profileId,
+      );
       if (profileData == null) {
         return const Left(ServerFailure('Failed to retrieve profile'));
       }
@@ -90,7 +94,9 @@ class CandidateProfileRepositoryImpl implements CandidateProfileRepository {
       // Handle assignedAgentId: if provided (not null), include it in update
       // Empty string means unassign (set to null), otherwise use the value
       if (assignedAgentId != null) {
-        updateData['assignedAgentId'] = assignedAgentId.isEmpty ? null : assignedAgentId;
+        updateData['assignedAgentId'] = assignedAgentId.isEmpty
+            ? null
+            : assignedAgentId;
       }
 
       await firestoreDataSource.updateCandidateProfile(
@@ -98,7 +104,9 @@ class CandidateProfileRepositoryImpl implements CandidateProfileRepository {
         data: updateData,
       );
 
-      final profileData = await firestoreDataSource.getCandidateProfile(profileId);
+      final profileData = await firestoreDataSource.getCandidateProfile(
+        profileId,
+      );
       if (profileData == null) {
         return const Left(ServerFailure('Failed to retrieve updated profile'));
       }
@@ -123,9 +131,13 @@ class CandidateProfileRepositoryImpl implements CandidateProfileRepository {
   }
 
   @override
-  Future<Either<Failure, CandidateProfileEntity>> getProfile(String userId) async {
+  Future<Either<Failure, CandidateProfileEntity>> getProfile(
+    String userId,
+  ) async {
     try {
-      final profileData = await firestoreDataSource.getCandidateProfileByUserId(userId);
+      final profileData = await firestoreDataSource.getCandidateProfileByUserId(
+        userId,
+      );
       if (profileData == null) {
         return const Left(ServerFailure('Profile not found'));
       }
@@ -173,4 +185,3 @@ class CandidateProfileRepositoryImpl implements CandidateProfileRepository {
     });
   }
 }
-

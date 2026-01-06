@@ -112,8 +112,12 @@ class AdminCreateCandidateController extends GetxController {
       password: passwordValue.value,
       firstName: firstNameValue.value.trim(),
       lastName: lastNameValue.value.trim(),
-      phone: phoneValue.value.trim().isNotEmpty ? phoneValue.value.trim() : null,
-      address: addressValue.value.trim().isNotEmpty ? addressValue.value.trim() : null,
+      phone: phoneValue.value.trim().isNotEmpty
+          ? phoneValue.value.trim()
+          : null,
+      address: addressValue.value.trim().isNotEmpty
+          ? addressValue.value.trim()
+          : null,
     );
 
     result.fold(
@@ -144,7 +148,7 @@ class AdminCreateCandidateController extends GetxController {
         passwordError.value = null;
         phoneError.value = null;
         addressError.value = null;
-        
+
         AppSnackbar.success('Candidate created successfully');
         // Navigate to AdminCandidatesListScreen
         Get.offNamed(AppConstants.routeAdminCandidates);

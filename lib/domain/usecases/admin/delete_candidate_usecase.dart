@@ -11,9 +11,6 @@ class DeleteCandidateUseCase {
     required String userId,
     required String profileId,
   }) {
-    return repository.deleteCandidate(
-      userId: userId,
-      profileId: profileId,
-    );
+    return repository.deleteCandidate(userId: userId, profileId: profileId);
   }
 }

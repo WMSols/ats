@@ -40,4 +40,3 @@ class ApplicationModel extends ApplicationEntity {
     );
   }
 }
-

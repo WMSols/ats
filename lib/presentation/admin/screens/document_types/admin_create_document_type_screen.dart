@@ -10,10 +10,12 @@ class AdminCreateDocumentTypeScreen extends StatefulWidget {
   const AdminCreateDocumentTypeScreen({super.key});
 
   @override
-  State<AdminCreateDocumentTypeScreen> createState() => _AdminCreateDocumentTypeScreenState();
+  State<AdminCreateDocumentTypeScreen> createState() =>
+      _AdminCreateDocumentTypeScreenState();
 }
 
-class _AdminCreateDocumentTypeScreenState extends State<AdminCreateDocumentTypeScreen> {
+class _AdminCreateDocumentTypeScreenState
+    extends State<AdminCreateDocumentTypeScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController titleController;
   late final TextEditingController descriptionController;
@@ -50,20 +52,22 @@ class _AdminCreateDocumentTypeScreenState extends State<AdminCreateDocumentTypeS
                 descriptionController: descriptionController,
               ),
               AppSpacing.vertical(context, 0.03),
-              Obx(() => AppButton(
-                    text: AppTexts.create,
-                    icon: Iconsax.add,
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        controller.createDocumentType(
-                          name: titleController.text.trim(),
-                          description: descriptionController.text.trim(),
-                          isRequired: false,
-                        );
-                      }
-                    },
-                    isLoading: controller.isLoading.value,
-                  )),
+              Obx(
+                () => AppButton(
+                  text: AppTexts.create,
+                  icon: Iconsax.add,
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      controller.createDocumentType(
+                        name: titleController.text.trim(),
+                        description: descriptionController.text.trim(),
+                        isRequired: false,
+                      );
+                    }
+                  },
+                  isLoading: controller.isLoading.value,
+                ),
+              ),
             ],
           ),
         ),

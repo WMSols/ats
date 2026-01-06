@@ -50,7 +50,8 @@ class AdminCandidatesController extends GetxController {
   final candidateDocuments = <CandidateDocumentEntity>[].obs;
   final applicationJobs = <String, JobEntity?>{}.obs;
   final availableAgents = <AdminProfileEntity>[].obs;
-  final candidateProfileStreams = <String, StreamSubscription<CandidateProfileEntity?>>{};
+  final candidateProfileStreams =
+      <String, StreamSubscription<CandidateProfileEntity?>>{};
 
   late final UpdateApplicationStatusUseCase updateApplicationStatusUseCase;
   late final UpdateDocumentStatusUseCase updateDocumentStatusUseCase;
@@ -61,19 +62,26 @@ class AdminCandidatesController extends GetxController {
   StreamSubscription<List<ApplicationEntity>>? _applicationsSubscription;
   StreamSubscription<List<CandidateDocumentEntity>>? _documentsSubscription;
   StreamSubscription<CandidateProfileEntity?>? _profileSubscription;
-  final Map<String, StreamSubscription<List<CandidateDocumentEntity>>> _candidateDocumentsSubscriptions = {};
+  final Map<String, StreamSubscription<List<CandidateDocumentEntity>>>
+  _candidateDocumentsSubscriptions = {};
 
   @override
   void onInit() {
     super.onInit();
     // Initialize use cases after repositories are registered
-    updateApplicationStatusUseCase = UpdateApplicationStatusUseCase(Get.find<ApplicationRepository>());
-    updateDocumentStatusUseCase = UpdateDocumentStatusUseCase(Get.find<DocumentRepository>());
-    sendDocumentDenialEmailUseCase = SendDocumentDenialEmailUseCase(Get.find<EmailRepository>());
+    updateApplicationStatusUseCase = UpdateApplicationStatusUseCase(
+      Get.find<ApplicationRepository>(),
+    );
+    updateDocumentStatusUseCase = UpdateDocumentStatusUseCase(
+      Get.find<DocumentRepository>(),
+    );
+    sendDocumentDenialEmailUseCase = SendDocumentDenialEmailUseCase(
+      Get.find<EmailRepository>(),
+    );
     deleteCandidateUseCase = DeleteCandidateUseCase(adminRepository);
     loadCandidates();
     loadAvailableAgents();
-    
+
     // Observe admin profile changes to re-apply filters when profile loads
     try {
       final authController = Get.find<AdminAuthController>();
@@ -106,51 +114,54 @@ class AdminCandidatesController extends GetxController {
   void loadCandidates() {
     isLoading.value = true;
     errorMessage.value = '';
-    
-    adminRepository.getCandidates().then((result) {
-      result.fold(
-        (failure) {
-          errorMessage.value = failure.message;
+
+    adminRepository
+        .getCandidates()
+        .then((result) {
+          result.fold(
+            (failure) {
+              errorMessage.value = failure.message;
+              isLoading.value = false;
+            },
+            (candidatesList) {
+              candidates.value = candidatesList;
+              isLoading.value = false;
+              _applyFilters();
+
+              // Load profiles and documents for all candidates
+              for (var candidate in candidatesList) {
+                loadCandidateProfile(candidate.userId);
+                loadCandidateDocumentsForList(candidate.userId);
+              }
+            },
+          );
+        })
+        .catchError((error) {
+          errorMessage.value = error.toString();
           isLoading.value = false;
-        },
-        (candidatesList) {
-          candidates.value = candidatesList;
-          isLoading.value = false;
-          _applyFilters();
-          
-          // Load profiles and documents for all candidates
-          for (var candidate in candidatesList) {
-            loadCandidateProfile(candidate.userId);
-            loadCandidateDocumentsForList(candidate.userId);
-          }
-        },
-      );
-    }).catchError((error) {
-      errorMessage.value = error.toString();
-      isLoading.value = false;
-    });
+        });
   }
 
   void loadCandidateProfile(String userId) {
     // Cancel existing subscription if any
     candidateProfileStreams[userId]?.cancel();
-    
+
     // Use stream to get profile with profileId
     final subscription = candidateProfileRepository
         .streamProfile(userId)
         .listen(
-      (profile) {
-        if (profile != null) {
-          candidateProfiles[userId] = profile;
-          candidateProfiles.refresh(); // Trigger reactivity
-          _applyFilters(); // Re-apply filters when profile loads
-        }
-      },
-      onError: (error) {
-        // Silently handle errors
-      },
-    );
-    
+          (profile) {
+            if (profile != null) {
+              candidateProfiles[userId] = profile;
+              candidateProfiles.refresh(); // Trigger reactivity
+              _applyFilters(); // Re-apply filters when profile loads
+            }
+          },
+          onError: (error) {
+            // Silently handle errors
+          },
+        );
+
     candidateProfileStreams[userId] = subscription;
   }
 
@@ -166,31 +177,32 @@ class AdminCandidatesController extends GetxController {
     _profileSubscription = candidateProfileRepository
         .streamProfile(userId)
         .listen(
-      (profile) {
-        selectedCandidateProfile.value = profile;
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
+          (profile) {
+            selectedCandidateProfile.value = profile;
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
   }
 
   void loadCandidateApplications(String candidateId) {
-    _applicationsSubscription?.cancel(); // Cancel previous subscription if exists
+    _applicationsSubscription
+        ?.cancel(); // Cancel previous subscription if exists
     _applicationsSubscription = applicationRepository
         .streamApplications(candidateId: candidateId)
         .listen(
-      (apps) {
-        candidateApplications.value = apps;
-        // Load job details for each application
-        for (var app in apps) {
-          loadJobDetails(app.jobId);
-        }
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
+          (apps) {
+            candidateApplications.value = apps;
+            // Load job details for each application
+            for (var app in apps) {
+              loadJobDetails(app.jobId);
+            }
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
   }
 
   void loadJobDetails(String jobId) {
@@ -208,13 +220,13 @@ class AdminCandidatesController extends GetxController {
     _documentsSubscription = documentRepository
         .streamCandidateDocuments(candidateId)
         .listen(
-      (docs) {
-        candidateDocuments.value = docs;
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
+          (docs) {
+            candidateDocuments.value = docs;
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
   }
 
   Future<void> updateDocumentStatus({
@@ -254,7 +266,7 @@ class AdminCandidatesController extends GetxController {
     // Get candidate and document information
     final candidate = selectedCandidate.value;
     final profile = selectedCandidateProfile.value;
-    
+
     if (candidate == null) {
       errorMessage.value = 'Candidate not selected';
       isLoading.value = false;
@@ -268,7 +280,9 @@ class AdminCandidatesController extends GetxController {
       orElse: () => candidateDocuments.first, // Fallback, but should not happen
     );
 
-    final documentName = document.title ?? AppFileValidator.extractOriginalFileName(document.documentName);
+    final documentName =
+        document.title ??
+        AppFileValidator.extractOriginalFileName(document.documentName);
     final candidateEmail = candidate.email;
     final candidateName = profile != null
         ? '${profile.firstName} ${profile.lastName}'.trim()
@@ -297,7 +311,10 @@ class AdminCandidatesController extends GetxController {
   }
 
   /// Updates document status after email is sent successfully
-  void _updateDocumentStatusAfterEmail(String candidateDocId, String status) async {
+  void _updateDocumentStatusAfterEmail(
+    String candidateDocId,
+    String status,
+  ) async {
     final result = await updateDocumentStatusUseCase(
       candidateDocId: candidateDocId,
       status: status,
@@ -307,7 +324,9 @@ class AdminCandidatesController extends GetxController {
       (failure) {
         errorMessage.value = failure.message;
         isLoading.value = false;
-        AppSnackbar.error('Failed to update document status: ${failure.message}');
+        AppSnackbar.error(
+          'Failed to update document status: ${failure.message}',
+        );
       },
       (document) {
         isLoading.value = false;
@@ -378,49 +397,54 @@ class AdminCandidatesController extends GetxController {
   void loadCandidateDocumentsForList(String candidateId) {
     // Cancel existing subscription if any
     _candidateDocumentsSubscriptions[candidateId]?.cancel();
-    
+
     // Create new subscription
     final subscription = documentRepository
         .streamCandidateDocuments(candidateId)
         .listen(
-      (docs) {
-        candidateDocumentsMap[candidateId] = docs;
-        candidateDocumentsMap.refresh(); // Trigger reactivity
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
-    
+          (docs) {
+            candidateDocumentsMap[candidateId] = docs;
+            candidateDocumentsMap.refresh(); // Trigger reactivity
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
+
     _candidateDocumentsSubscriptions[candidateId] = subscription;
   }
 
   String getCandidateStatus(String userId) {
     final documents = candidateDocumentsMap[userId] ?? [];
-    
+
     if (documents.isEmpty) {
       return AppConstants.documentStatusPending; // No documents means pending
     }
-    
+
     // Check if any document is rejected/denied
-    final hasRejected = documents.any((doc) => 
-      doc.status == AppConstants.documentStatusDenied);
+    final hasRejected = documents.any(
+      (doc) => doc.status == AppConstants.documentStatusDenied,
+    );
     if (hasRejected) {
       return AppConstants.documentStatusDenied;
     }
-    
+
     // Check if any document is pending
-    final hasPending = documents.any((doc) => doc.status == AppConstants.documentStatusPending);
+    final hasPending = documents.any(
+      (doc) => doc.status == AppConstants.documentStatusPending,
+    );
     if (hasPending) {
       return AppConstants.documentStatusPending;
     }
-    
+
     // Check if all documents are approved
-    final allApproved = documents.every((doc) => doc.status == AppConstants.documentStatusApproved);
+    final allApproved = documents.every(
+      (doc) => doc.status == AppConstants.documentStatusApproved,
+    );
     if (allApproved) {
       return AppConstants.documentStatusApproved;
     }
-    
+
     // Default to pending if status is unclear
     return AppConstants.documentStatusPending;
   }
@@ -439,7 +463,10 @@ class AdminCandidatesController extends GetxController {
       return 'No work history';
     }
     return profile.workHistory!
-        .map((work) => '${work['company'] ?? 'N/A'} - ${work['position'] ?? 'N/A'}')
+        .map(
+          (work) =>
+              '${work['company'] ?? 'N/A'} - ${work['position'] ?? 'N/A'}',
+        )
         .join('\n');
   }
 
@@ -477,25 +504,25 @@ class AdminCandidatesController extends GetxController {
         if (candidate.email.toLowerCase().contains(query)) {
           return true;
         }
-        
+
         // Search by name
         final name = getCandidateName(candidate.userId).toLowerCase();
         if (name.contains(query)) {
           return true;
         }
-        
+
         // Search by company
         final company = getCandidateCompany(candidate.userId).toLowerCase();
         if (company.contains(query)) {
           return true;
         }
-        
+
         // Search by position
         final position = getCandidatePosition(candidate.userId).toLowerCase();
         if (position.contains(query)) {
           return true;
         }
-        
+
         return false;
       }).toList();
     }
@@ -509,18 +536,21 @@ class AdminCandidatesController extends GetxController {
   /// Source: adminProfilesCollection in Firestore
   /// Each profile contains: userId, name (firstName + lastName), accessLevel, email
   void loadAvailableAgents() {
-    adminRepository.getAllAdminProfiles().then((result) {
-      result.fold(
-        (failure) {
-          AppSnackbar.error('Failed to load agents: ${failure.message}');
-        },
-        (profiles) {
-          availableAgents.value = profiles;
-        },
-      );
-    }).catchError((error) {
-      AppSnackbar.error('Failed to load agents: $error');
-    });
+    adminRepository
+        .getAllAdminProfiles()
+        .then((result) {
+          result.fold(
+            (failure) {
+              AppSnackbar.error('Failed to load agents: ${failure.message}');
+            },
+            (profiles) {
+              availableAgents.value = profiles;
+            },
+          );
+        })
+        .catchError((error) {
+          AppSnackbar.error('Failed to load agents: $error');
+        });
   }
 
   /// Get list of available agent names (for debugging/info purposes)
@@ -589,7 +619,8 @@ class AdminCandidatesController extends GetxController {
   /// agentId should be the profileId (document ID) from adminProfiles collection
   Future<void> updateCandidateAgent({
     required String userId,
-    required String? agentId, // This is the profileId from adminProfiles collection
+    required String?
+    agentId, // This is the profileId from adminProfiles collection
   }) async {
     final profile = candidateProfiles[userId];
     if (profile == null) {
@@ -611,7 +642,7 @@ class AdminCandidatesController extends GetxController {
 
     // Convert null to empty string to represent unassign
     final agentIdToUpdate = agentId ?? '';
-    
+
     final result = await candidateProfileRepository.updateProfile(
       profileId: profileId,
       assignedAgentId: agentIdToUpdate,
@@ -702,10 +733,7 @@ class AdminCandidatesController extends GetxController {
       return;
     }
 
-    await deleteCandidateById(
-      userId: candidate.userId,
-      profileId: profileId,
-    );
+    await deleteCandidateById(userId: candidate.userId, profileId: profileId);
   }
 
   /// Delete candidate by ID (can be called from list or details screen)
@@ -730,28 +758,28 @@ class AdminCandidatesController extends GetxController {
       (_) {
         isLoading.value = false;
         AppSnackbar.success('Candidate deleted successfully');
-        
+
         // Clear selected candidate if it's the one being deleted
         if (selectedCandidate.value?.userId == userId) {
           selectedCandidate.value = null;
           selectedCandidateProfile.value = null;
         }
-        
+
         // Remove from local lists
         candidates.removeWhere((c) => c.userId == userId);
         filteredCandidates.removeWhere((c) => c.userId == userId);
         candidateProfiles.remove(userId);
         candidateDocumentsMap.remove(userId);
-        
+
         // Cancel any active streams for this candidate
         candidateProfileStreams[userId]?.cancel();
         candidateProfileStreams.remove(userId);
         _candidateDocumentsSubscriptions[userId]?.cancel();
         _candidateDocumentsSubscriptions.remove(userId);
-        
+
         // Reload candidates list to ensure consistency
         loadCandidates();
-        
+
         // If we're on details screen, navigate back
         if (Get.currentRoute == AppConstants.routeAdminCandidateDetails) {
           Get.offNamed(AppConstants.routeAdminCandidates);
@@ -760,4 +788,3 @@ class AdminCandidatesController extends GetxController {
     );
   }
 }
-

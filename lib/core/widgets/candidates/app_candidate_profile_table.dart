@@ -45,7 +45,10 @@ class AppCandidateProfileTable extends StatelessWidget {
           columns: [
             DataColumn(
               label: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8.0,
+                  horizontal: 4.0,
+                ),
                 child: Text(
                   AppTexts.field,
                   style: AppTextStyles.bodyText(context).copyWith(
@@ -57,7 +60,10 @@ class AppCandidateProfileTable extends StatelessWidget {
             ),
             DataColumn(
               label: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8.0,
+                  horizontal: 4.0,
+                ),
                 child: Text(
                   AppTexts.value,
                   style: AppTextStyles.bodyText(context).copyWith(
@@ -73,13 +79,22 @@ class AppCandidateProfileTable extends StatelessWidget {
               cells: [
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-                    child: Text(AppTexts.name, style: AppTextStyles.bodyText(context)),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 4.0,
+                    ),
+                    child: Text(
+                      AppTexts.name,
+                      style: AppTextStyles.bodyText(context),
+                    ),
                   ),
                 ),
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 4.0,
+                    ),
                     child: Text(
                       name,
                       style: AppTextStyles.bodyText(context),
@@ -93,13 +108,22 @@ class AppCandidateProfileTable extends StatelessWidget {
               cells: [
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-                    child: Text(AppTexts.email, style: AppTextStyles.bodyText(context)),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 4.0,
+                    ),
+                    child: Text(
+                      AppTexts.email,
+                      style: AppTextStyles.bodyText(context),
+                    ),
                   ),
                 ),
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 4.0,
+                    ),
                     child: Text(
                       email,
                       style: AppTextStyles.bodyText(context),
@@ -113,7 +137,10 @@ class AppCandidateProfileTable extends StatelessWidget {
               cells: [
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 4.0,
+                    ),
                     child: Text(
                       AppTexts.workHistory,
                       style: AppTextStyles.bodyText(context),
@@ -122,7 +149,10 @@ class AppCandidateProfileTable extends StatelessWidget {
                 ),
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 4.0,
+                    ),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         minWidth: 200,
@@ -143,7 +173,10 @@ class AppCandidateProfileTable extends StatelessWidget {
               cells: [
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 4.0,
+                    ),
                     child: Text(
                       AppTexts.documentsUploadedCount,
                       style: AppTextStyles.bodyText(context),
@@ -152,7 +185,10 @@ class AppCandidateProfileTable extends StatelessWidget {
                 ),
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 4.0,
+                    ),
                     child: Text(
                       documentsCount.toString(),
                       style: AppTextStyles.bodyText(context),
@@ -166,7 +202,10 @@ class AppCandidateProfileTable extends StatelessWidget {
               cells: [
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 4.0,
+                    ),
                     child: Text(
                       AppTexts.jobsAppliedCount,
                       style: AppTextStyles.bodyText(context),
@@ -175,7 +214,10 @@ class AppCandidateProfileTable extends StatelessWidget {
                 ),
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 4.0,
+                    ),
                     child: Text(
                       applicationsCount.toString(),
                       style: AppTextStyles.bodyText(context),
@@ -189,7 +231,10 @@ class AppCandidateProfileTable extends StatelessWidget {
               cells: [
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 4.0,
+                    ),
                     child: Text(
                       AppTexts.agent,
                       style: AppTextStyles.bodyText(context),
@@ -198,9 +243,17 @@ class AppCandidateProfileTable extends StatelessWidget {
                 ),
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 4.0,
+                    ),
                     child: isSuperAdmin && onAgentChanged != null
-                        ? _buildAgentDropdown(context, userId, agentName, assignedAgentProfileId)
+                        ? _buildAgentDropdown(
+                            context,
+                            userId,
+                            agentName,
+                            assignedAgentProfileId,
+                          )
                         : Text(
                             agentName,
                             style: AppTextStyles.bodyText(context),
@@ -216,14 +269,21 @@ class AppCandidateProfileTable extends StatelessWidget {
     );
   }
 
-  Widget _buildAgentDropdown(BuildContext context, String userId, String currentAgentName, String? assignedAgentProfileId) {
+  Widget _buildAgentDropdown(
+    BuildContext context,
+    String userId,
+    String currentAgentName,
+    String? assignedAgentProfileId,
+  ) {
     // Use the assignedAgentProfileId directly from the candidate profile
     // This is the profileId of the admin profile assigned to this candidate
     String? currentAgentProfileId = assignedAgentProfileId;
-    
+
     // Validate that the profileId exists in available agents
     if (currentAgentProfileId != null && currentAgentProfileId.isNotEmpty) {
-      final agentExists = availableAgents.any((a) => a.profileId == currentAgentProfileId);
+      final agentExists = availableAgents.any(
+        (a) => a.profileId == currentAgentProfileId,
+      );
       if (!agentExists) {
         // If the assigned agent is not in the available list, reset to null
         currentAgentProfileId = null;
@@ -289,7 +349,8 @@ class AppCandidateProfileTable extends StatelessWidget {
       onChanged: availableAgents.isEmpty || onAgentChanged == null
           ? null // Disable dropdown if no agents available or callback not provided
           : (String? newAgentProfileId) {
-              if (newAgentProfileId != currentAgentProfileId && newAgentProfileId != '') {
+              if (newAgentProfileId != currentAgentProfileId &&
+                  newAgentProfileId != '') {
                 onAgentChanged!(newAgentProfileId);
               }
             },

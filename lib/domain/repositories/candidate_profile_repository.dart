@@ -26,4 +26,3 @@ abstract class CandidateProfileRepository {
 
   Stream<CandidateProfileEntity?> streamProfile(String userId);
 }
-

@@ -15,7 +15,9 @@ class ApplicationsController extends GetxController {
 
   ApplicationsController(this.applicationRepository, this.authRepository);
 
-  final createApplicationUseCase = CreateApplicationUseCase(Get.find<ApplicationRepository>());
+  final createApplicationUseCase = CreateApplicationUseCase(
+    Get.find<ApplicationRepository>(),
+  );
 
   final isLoading = false.obs;
   final errorMessage = ''.obs;
@@ -42,22 +44,23 @@ class ApplicationsController extends GetxController {
     final currentUser = authRepository.getCurrentUser();
     if (currentUser == null) return;
 
-    _applicationsSubscription?.cancel(); // Cancel previous subscription if exists
+    _applicationsSubscription
+        ?.cancel(); // Cancel previous subscription if exists
     _applicationsSubscription = applicationRepository
         .streamApplications(candidateId: currentUser.userId)
         .listen(
-      (appsList) {
-        applications.value = appsList;
-        // Load job details for each application
-        for (final app in appsList) {
-          loadJobDetails(app.jobId);
-        }
-      },
-      onError: (error) {
-        // Silently handle permission errors (user might have signed out)
-        // Don't show errors for permission-denied as it's expected after sign-out
-      },
-    );
+          (appsList) {
+            applications.value = appsList;
+            // Load job details for each application
+            for (final app in appsList) {
+              loadJobDetails(app.jobId);
+            }
+          },
+          onError: (error) {
+            // Silently handle permission errors (user might have signed out)
+            // Don't show errors for permission-denied as it's expected after sign-out
+          },
+        );
   }
 
   Future<void> loadJobDetails(String jobId) async {
@@ -65,10 +68,7 @@ class ApplicationsController extends GetxController {
 
     final jobRepo = Get.find<JobRepository>();
     final result = await jobRepo.getJob(jobId);
-    result.fold(
-      (failure) => null,
-      (job) => jobs[jobId] = job,
-    );
+    result.fold((failure) => null, (job) => jobs[jobId] = job);
   }
 
   String getStatusText(String status) {
@@ -100,7 +100,9 @@ class ApplicationsController extends GetxController {
 
     // Find and delete the old denied application for this job
     final deniedApp = applications.firstWhereOrNull(
-      (app) => app.jobId == jobId && app.status == AppConstants.applicationStatusDenied,
+      (app) =>
+          app.jobId == jobId &&
+          app.status == AppConstants.applicationStatusDenied,
     );
 
     if (deniedApp != null) {
@@ -141,4 +143,3 @@ class ApplicationsController extends GetxController {
     );
   }
 }
-

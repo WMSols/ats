@@ -23,4 +23,3 @@ class CandidateDocumentEntity {
 
   bool get isUserAdded => docTypeId.isEmpty;
 }
-

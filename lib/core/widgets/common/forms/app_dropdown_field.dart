@@ -65,34 +65,21 @@ class AppDropDownField<T> extends StatelessWidget {
               borderRadius: BorderRadius.circular(
                 AppResponsive.radius(context, factor: 5),
               ),
-              borderSide: const BorderSide(
-                color: AppColors.primary,
-                width: 2,
-              ),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(
                 AppResponsive.radius(context, factor: 5),
               ),
-              borderSide: const BorderSide(
-                color: AppColors.error,
-                width: 1,
-              ),
+              borderSide: const BorderSide(color: AppColors.error, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(
                 AppResponsive.radius(context, factor: 5),
               ),
-              borderSide: const BorderSide(
-                color: AppColors.error,
-                width: 2,
-              ),
+              borderSide: const BorderSide(color: AppColors.error, width: 2),
             ),
-            contentPadding: AppSpacing.symmetric(
-              context,
-              h: 0.04,
-              v: 0.02,
-            ),
+            contentPadding: AppSpacing.symmetric(context, h: 0.04, v: 0.02),
             errorText: errorText,
           ),
           items: items,
@@ -104,4 +91,3 @@ class AppDropDownField<T> extends StatelessWidget {
     );
   }
 }
-

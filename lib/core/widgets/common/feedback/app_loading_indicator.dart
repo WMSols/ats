@@ -7,16 +7,12 @@ class AppLoadingIndicator extends StatelessWidget {
   final bool isPrimary;
   final double? size;
 
-  const AppLoadingIndicator({
-    super.key,
-    this.isPrimary = true,
-    this.size,
-  });
+  const AppLoadingIndicator({super.key, this.isPrimary = true, this.size});
 
   @override
   Widget build(BuildContext context) {
     final loadingSize = size ?? AppResponsive.iconSize(context, factor: 2);
-    
+
     return Center(
       child: SizedBox(
         width: loadingSize,
@@ -31,4 +27,3 @@ class AppLoadingIndicator extends StatelessWidget {
     );
   }
 }
-

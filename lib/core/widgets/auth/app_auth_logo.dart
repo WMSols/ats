@@ -11,19 +11,17 @@ class AppAuthLogo extends StatelessWidget {
     final logoSize = AppResponsive.isDesktop(context)
         ? 200.0
         : AppResponsive.isTablet(context)
-            ? 180.0
-            : 160.0;
+        ? 180.0
+        : 160.0;
 
     return Center(
       child: Image.asset(
         AppImages.appLogo,
         width: logoSize,
-        height: logoSize/2,
+        height: logoSize / 2,
         fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => _buildLogoFallback(
-          context,
-          logoSize,
-        ),
+        errorBuilder: (context, error, stackTrace) =>
+            _buildLogoFallback(context, logoSize),
       ),
     );
   }
@@ -46,4 +44,3 @@ class AppAuthLogo extends StatelessWidget {
     );
   }
 }
-

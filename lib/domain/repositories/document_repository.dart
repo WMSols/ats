@@ -60,4 +60,3 @@ abstract class DocumentRepository {
     required String storageUrl,
   });
 }
-

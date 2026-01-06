@@ -58,50 +58,51 @@ class AdminDashboardController extends GetxController {
     _pendingAppsSubscription = applicationRepository
         .streamApplications(status: AppConstants.applicationStatusPending)
         .listen(
-      (apps) {
-        pendingApplicationsCount.value = apps.length;
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
+          (apps) {
+            pendingApplicationsCount.value = apps.length;
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
 
     // Load approved applications count
     _approvedAppsSubscription?.cancel();
     _approvedAppsSubscription = applicationRepository
         .streamApplications(status: AppConstants.applicationStatusApproved)
         .listen(
-      (apps) {
-        approvedApplicationsCount.value = apps.length;
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
+          (apps) {
+            approvedApplicationsCount.value = apps.length;
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
 
     // Load rejected/denied applications count
     _rejectedAppsSubscription?.cancel();
     _rejectedAppsSubscription = applicationRepository
         .streamApplications(status: AppConstants.applicationStatusDenied)
         .listen(
-      (apps) {
-        rejectedApplicationsCount.value = apps.length;
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
+          (apps) {
+            rejectedApplicationsCount.value = apps.length;
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
 
     // Load open jobs count
     _jobsSubscription?.cancel();
-    _jobsSubscription = jobRepository.streamJobs(status: AppConstants.jobStatusOpen).listen(
-      (jobs) {
-        openJobsCount.value = jobs.length;
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
+    _jobsSubscription = jobRepository
+        .streamJobs(status: AppConstants.jobStatusOpen)
+        .listen(
+          (jobs) {
+            openJobsCount.value = jobs.length;
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
   }
 }
-

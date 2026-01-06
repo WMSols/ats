@@ -13,4 +13,3 @@ class AdminProfileEntity {
     required this.email,
   });
 }
-

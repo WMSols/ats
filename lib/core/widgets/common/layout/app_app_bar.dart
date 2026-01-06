@@ -7,20 +7,12 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
   final Widget? leading;
 
-  const AppAppBar({
-    super.key,
-    required this.title,
-    this.actions,
-    this.leading,
-  });
+  const AppAppBar({super.key, required this.title, this.actions, this.leading});
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(
-        title,
-        style: AppTextStyles.heading(context),
-      ),
+      title: Text(title, style: AppTextStyles.heading(context)),
       backgroundColor: AppColors.white,
       foregroundColor: AppColors.black,
       elevation: 0,
@@ -32,4 +24,3 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
-

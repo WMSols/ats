@@ -13,7 +13,8 @@ class AdminEditCandidateScreen extends StatefulWidget {
   const AdminEditCandidateScreen({super.key});
 
   @override
-  State<AdminEditCandidateScreen> createState() => _AdminEditCandidateScreenState();
+  State<AdminEditCandidateScreen> createState() =>
+      _AdminEditCandidateScreenState();
 }
 
 class _AdminEditCandidateScreenState extends State<AdminEditCandidateScreen> {
@@ -112,13 +113,21 @@ class _AdminEditCandidateScreenState extends State<AdminEditCandidateScreen> {
     });
   }
 
-  void _initializeWorkHistoryControllers(List<Map<String, dynamic>>? workHistory) {
+  void _initializeWorkHistoryControllers(
+    List<Map<String, dynamic>>? workHistory,
+  ) {
     if (workHistory == null) return;
     for (var work in workHistory) {
       workHistoryControllers.add({
-        'company': TextEditingController(text: work['company']?.toString() ?? ''),
-        'position': TextEditingController(text: work['position']?.toString() ?? ''),
-        'description': TextEditingController(text: work['description']?.toString() ?? ''),
+        'company': TextEditingController(
+          text: work['company']?.toString() ?? '',
+        ),
+        'position': TextEditingController(
+          text: work['position']?.toString() ?? '',
+        ),
+        'description': TextEditingController(
+          text: work['description']?.toString() ?? '',
+        ),
       });
     }
   }
@@ -157,17 +166,21 @@ class _AdminEditCandidateScreenState extends State<AdminEditCandidateScreen> {
   }
 
   List<Map<String, dynamic>> _getWorkHistoryFromControllers() {
-    return workHistoryControllers.map((controllers) {
-      return {
-        'company': controllers['company']!.text.trim(),
-        'position': controllers['position']!.text.trim(),
-        'description': controllers['description']!.text.trim(),
-      };
-    }).where((work) => 
-      work['company']!.isNotEmpty || 
-      work['position']!.isNotEmpty || 
-      work['description']!.isNotEmpty
-    ).toList();
+    return workHistoryControllers
+        .map((controllers) {
+          return {
+            'company': controllers['company']!.text.trim(),
+            'position': controllers['position']!.text.trim(),
+            'description': controllers['description']!.text.trim(),
+          };
+        })
+        .where(
+          (work) =>
+              work['company']!.isNotEmpty ||
+              work['position']!.isNotEmpty ||
+              work['description']!.isNotEmpty,
+        )
+        .toList();
   }
 
   @override

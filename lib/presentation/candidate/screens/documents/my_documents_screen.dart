@@ -87,14 +87,23 @@ class MyDocumentsScreen extends StatelessWidget {
 
                     return Obx(() {
                       // Re-read reactive values inside Obx for this specific item
-                      final isUploadingThisItem = controller.uploadingDocTypeId.value == docType.docTypeId;
+                      final isUploadingThisItem =
+                          controller.uploadingDocTypeId.value ==
+                          docType.docTypeId;
                       final currentProgress = controller.uploadProgress.value;
-                      final currentHasDoc = controller.hasDocument(docType.docTypeId);
-                      final currentDocument = controller.getDocumentByType(docType.docTypeId);
+                      final currentHasDoc = controller.hasDocument(
+                        docType.docTypeId,
+                      );
+                      final currentDocument = controller.getDocumentByType(
+                        docType.docTypeId,
+                      );
                       final documentStatus = currentDocument?.status ?? '';
-                      final isPending = documentStatus == AppConstants.documentStatusPending;
-                      final isDenied = documentStatus == AppConstants.documentStatusDenied;
-                      final hasStorageUrl = currentDocument?.storageUrl.isNotEmpty ?? false;
+                      final isPending =
+                          documentStatus == AppConstants.documentStatusPending;
+                      final isDenied =
+                          documentStatus == AppConstants.documentStatusDenied;
+                      final hasStorageUrl =
+                          currentDocument?.storageUrl.isNotEmpty ?? false;
 
                       return Column(
                         children: [
@@ -107,91 +116,103 @@ class MyDocumentsScreen extends StatelessWidget {
                                     width: 120,
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
                                       children: [
                                         LinearProgressIndicator(
                                           value: currentProgress,
-                                          backgroundColor: AppColors.grey.withValues(alpha: 0.2),
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            AppColors.primary,
-                                          ),
+                                          backgroundColor: AppColors.grey
+                                              .withValues(alpha: 0.2),
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                AppColors.primary,
+                                              ),
                                           minHeight: 6,
                                         ),
                                         AppSpacing.vertical(context, 0.005),
                                         Text(
                                           '${(currentProgress * 100).toStringAsFixed(0)}%',
-                                          style: AppTextStyles.bodyText(context).copyWith(
-                                            fontSize: AppTextStyles.bodyText(context).fontSize! * 0.75,
-                                            color: AppColors.primary,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                          style: AppTextStyles.bodyText(context)
+                                              .copyWith(
+                                                fontSize:
+                                                    AppTextStyles.bodyText(
+                                                      context,
+                                                    ).fontSize! *
+                                                    0.75,
+                                                color: AppColors.primary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                           textAlign: TextAlign.center,
                                         ),
                                       ],
                                     ),
                                   )
-                              : currentHasDoc
-                                  ? Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        AppStatusChip(status: documentStatus),
-                                        // Show view button when document has been uploaded
-                                        if (hasStorageUrl) ...[
-                                          AppSpacing.horizontal(context, 0.01),
-                                          AppActionButton(
-                                            text: AppTexts.view,
-                                            onPressed: () {
-                                              AppDocumentViewer.show(
-                                                documentUrl: currentDocument!.storageUrl,
-                                                documentName: docType.name,
-                                              );
-                                            },
-                                            backgroundColor: AppColors.information,
-                                            foregroundColor: AppColors.white,
-                                          ),
-                                        ],
-                                        // Show delete button when pending
-                                        if (isPending) ...[
-                                          AppSpacing.horizontal(context, 0.01),
-                                          AppActionButton(
-                                            text: AppTexts.delete,
-                                            onPressed: () => _showDeleteConfirmation(
-                                              context,
-                                              controller,
-                                              currentDocument!.candidateDocId,
-                                              currentDocument.storageUrl,
-                                              docType.name,
-                                            ),
-                                            backgroundColor: AppColors.error,
-                                            foregroundColor: AppColors.white,
-                                          ),
-                                        ],
-                                        // Show reupload button when denied
-                                        if (isDenied) ...[
-                                          AppSpacing.horizontal(context, 0.01),
-                                          AppActionButton(
-                                            text: AppTexts.reupload,
-                                            onPressed: () => controller.uploadDocument(
-                                              docType.docTypeId,
-                                              docType.name,
-                                            ),
-                                            backgroundColor: AppColors.warning,
-                                            foregroundColor: AppColors.black,
-                                          ),
-                                        ],
-                                        // Approved: Only show status (no buttons)
+                                : currentHasDoc
+                                ? Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      AppStatusChip(status: documentStatus),
+                                      // Show view button when document has been uploaded
+                                      if (hasStorageUrl) ...[
+                                        AppSpacing.horizontal(context, 0.01),
+                                        AppActionButton(
+                                          text: AppTexts.view,
+                                          onPressed: () {
+                                            AppDocumentViewer.show(
+                                              documentUrl:
+                                                  currentDocument!.storageUrl,
+                                              documentName: docType.name,
+                                            );
+                                          },
+                                          backgroundColor:
+                                              AppColors.information,
+                                          foregroundColor: AppColors.white,
+                                        ),
                                       ],
-                                    )
-                                  : AppButton(
-                                      backgroundColor: AppColors.primary,
-                                      text: AppTexts.upload,
-                                      icon: Iconsax.document_upload,
-                                      onPressed: () => controller.uploadDocument(
-                                        docType.docTypeId,
-                                        docType.name,
-                                      ),
-                                      isFullWidth: false,
+                                      // Show delete button when pending
+                                      if (isPending) ...[
+                                        AppSpacing.horizontal(context, 0.01),
+                                        AppActionButton(
+                                          text: AppTexts.delete,
+                                          onPressed: () =>
+                                              _showDeleteConfirmation(
+                                                context,
+                                                controller,
+                                                currentDocument!.candidateDocId,
+                                                currentDocument.storageUrl,
+                                                docType.name,
+                                              ),
+                                          backgroundColor: AppColors.error,
+                                          foregroundColor: AppColors.white,
+                                        ),
+                                      ],
+                                      // Show reupload button when denied
+                                      if (isDenied) ...[
+                                        AppSpacing.horizontal(context, 0.01),
+                                        AppActionButton(
+                                          text: AppTexts.reupload,
+                                          onPressed: () =>
+                                              controller.uploadDocument(
+                                                docType.docTypeId,
+                                                docType.name,
+                                              ),
+                                          backgroundColor: AppColors.warning,
+                                          foregroundColor: AppColors.black,
+                                        ),
+                                      ],
+                                      // Approved: Only show status (no buttons)
+                                    ],
+                                  )
+                                : AppButton(
+                                    backgroundColor: AppColors.primary,
+                                    text: AppTexts.upload,
+                                    icon: Iconsax.document_upload,
+                                    onPressed: () => controller.uploadDocument(
+                                      docType.docTypeId,
+                                      docType.name,
                                     ),
+                                    isFullWidth: false,
+                                  ),
                             onTap: null,
                           ),
                         ],
@@ -200,23 +221,30 @@ class MyDocumentsScreen extends StatelessWidget {
                   } else {
                     // User-added documents
                     final userDocIndex = index - adminDocs.length;
-                    
+
                     return Obx(() {
                       // Re-read reactive values inside Obx for this specific item
                       // Get the current document from the reactive list
-                      final currentUserDocs = controller.filteredUserDocuments.toList();
+                      final currentUserDocs = controller.filteredUserDocuments
+                          .toList();
                       if (userDocIndex >= currentUserDocs.length) {
                         // Document was deleted, return empty container
                         return const SizedBox.shrink();
                       }
-                      
+
                       final userDoc = currentUserDocs[userDocIndex];
-                      final isPending = userDoc.status == AppConstants.documentStatusPending;
-                      final isDenied = userDoc.status == AppConstants.documentStatusDenied;
+                      final isPending =
+                          userDoc.status == AppConstants.documentStatusPending;
+                      final isDenied =
+                          userDoc.status == AppConstants.documentStatusDenied;
                       final hasStorageUrl = userDoc.storageUrl.isNotEmpty;
 
                       return AppListCard(
-                        title: userDoc.title ?? AppFileValidator.extractOriginalFileName(userDoc.documentName),
+                        title:
+                            userDoc.title ??
+                            AppFileValidator.extractOriginalFileName(
+                              userDoc.documentName,
+                            ),
                         subtitle: userDoc.description ?? '',
                         icon: Iconsax.document_text,
                         trailing: Row(
@@ -231,7 +259,11 @@ class MyDocumentsScreen extends StatelessWidget {
                                 onPressed: () {
                                   AppDocumentViewer.show(
                                     documentUrl: userDoc.storageUrl,
-                                    documentName: userDoc.title ?? AppFileValidator.extractOriginalFileName(userDoc.documentName),
+                                    documentName:
+                                        userDoc.title ??
+                                        AppFileValidator.extractOriginalFileName(
+                                          userDoc.documentName,
+                                        ),
                                   );
                                 },
                                 backgroundColor: AppColors.information,
@@ -248,7 +280,10 @@ class MyDocumentsScreen extends StatelessWidget {
                                   controller,
                                   userDoc.candidateDocId,
                                   userDoc.storageUrl,
-                                  userDoc.title ?? AppFileValidator.extractOriginalFileName(userDoc.documentName),
+                                  userDoc.title ??
+                                      AppFileValidator.extractOriginalFileName(
+                                        userDoc.documentName,
+                                      ),
                                 ),
                                 backgroundColor: AppColors.error,
                                 foregroundColor: AppColors.white,
@@ -261,7 +296,9 @@ class MyDocumentsScreen extends StatelessWidget {
                                 text: AppTexts.reupload,
                                 onPressed: () {
                                   // Navigate to create document screen with pre-filled data
-                                  Get.toNamed(AppConstants.routeCandidateCreateDocument);
+                                  Get.toNamed(
+                                    AppConstants.routeCandidateCreateDocument,
+                                  );
                                 },
                                 backgroundColor: AppColors.warning,
                                 foregroundColor: AppColors.black,

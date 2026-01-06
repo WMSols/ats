@@ -11,7 +11,8 @@ import 'package:ats/core/widgets/app_widgets.dart';
 class AppCandidateDocumentsList extends StatelessWidget {
   final List<CandidateDocumentEntity> documents;
   final Function(String candidateDocId, String status) onStatusUpdate;
-  final Function(String candidateDocId, String status, String? denialReason)? onDeny;
+  final Function(String candidateDocId, String status, String? denialReason)?
+  onDeny;
   final Function(String storageUrl)? onView;
 
   const AppCandidateDocumentsList({
@@ -42,7 +43,9 @@ class AppCandidateDocumentsList extends StatelessWidget {
 
         return AppListCard(
           key: ValueKey('document_${doc.candidateDocId}'),
-          title: doc.title ?? AppFileValidator.extractOriginalFileName(doc.documentName),
+          title:
+              doc.title ??
+              AppFileValidator.extractOriginalFileName(doc.documentName),
           subtitle: '${AppTexts.status}: ${doc.status}',
           icon: Iconsax.document_text,
           trailing: Row(
@@ -74,7 +77,11 @@ class AppCandidateDocumentsList extends StatelessWidget {
                 AppActionButton(
                   text: AppTexts.deny,
                   onPressed: () {
-                    final documentName = doc.title ?? AppFileValidator.extractOriginalFileName(doc.documentName);
+                    final documentName =
+                        doc.title ??
+                        AppFileValidator.extractOriginalFileName(
+                          doc.documentName,
+                        );
                     AppDocumentDenialDialog.show(
                       documentName: documentName,
                       onConfirm: (reason) {
@@ -118,7 +125,11 @@ class AppCandidateDocumentsList extends StatelessWidget {
                 AppActionButton(
                   text: AppTexts.deny,
                   onPressed: () {
-                    final documentName = doc.title ?? AppFileValidator.extractOriginalFileName(doc.documentName);
+                    final documentName =
+                        doc.title ??
+                        AppFileValidator.extractOriginalFileName(
+                          doc.documentName,
+                        );
                     AppDocumentDenialDialog.show(
                       documentName: documentName,
                       onConfirm: (reason) {

@@ -5,7 +5,7 @@ import 'package:ats/firebase_options.dart';
 class AppInitializer {
   static Future<void> initialize() async {
     WidgetsFlutterBinding.ensureInitialized();
-    
+
     // Initialize Firebase
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -15,4 +15,3 @@ class AppInitializer {
     // (AdminBindings and CandidateBindings) for complete isolation
   }
 }
-

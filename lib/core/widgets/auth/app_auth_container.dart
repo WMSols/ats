@@ -5,10 +5,7 @@ import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 class AppAuthContainer extends StatelessWidget {
   final Widget child;
 
-  const AppAuthContainer({
-    super.key,
-    required this.child,
-  });
+  const AppAuthContainer({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -31,4 +28,3 @@ class AppAuthContainer extends StatelessWidget {
     return double.infinity;
   }
 }
-

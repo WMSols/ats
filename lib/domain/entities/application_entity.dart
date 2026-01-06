@@ -13,4 +13,3 @@ class ApplicationEntity {
     required this.appliedAt,
   });
 }
-

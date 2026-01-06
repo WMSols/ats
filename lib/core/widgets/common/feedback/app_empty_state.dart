@@ -8,11 +8,7 @@ class AppEmptyState extends StatelessWidget {
   final String message;
   final IconData? icon;
 
-  const AppEmptyState({
-    super.key,
-    required this.message,
-    this.icon,
-  });
+  const AppEmptyState({super.key, required this.message, this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +24,9 @@ class AppEmptyState extends StatelessWidget {
           SizedBox(height: AppResponsive.screenHeight(context) * 0.02),
           Text(
             message,
-            style: AppTextStyles.bodyText(context).copyWith(
-              color: AppColors.grey,
-            ),
+            style: AppTextStyles.bodyText(
+              context,
+            ).copyWith(color: AppColors.grey),
             textAlign: TextAlign.center,
           ),
         ],
@@ -38,4 +34,3 @@ class AppEmptyState extends StatelessWidget {
     );
   }
 }
-

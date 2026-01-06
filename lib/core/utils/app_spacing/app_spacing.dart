@@ -38,7 +38,7 @@ class AppSpacing {
     final width = AppResponsive.screenWidth(context);
     final height = AppResponsive.screenHeight(context);
     double horizontal, vertical;
-    
+
     if (AppResponsive.isMobile(context)) {
       horizontal = width * h;
       vertical = height * v;
@@ -50,11 +50,8 @@ class AppSpacing {
       horizontal = (width * h).clamp(16.0, 48.0);
       vertical = (height * v).clamp(8.0, 24.0);
     }
-    
-    return EdgeInsets.symmetric(
-      horizontal: horizontal,
-      vertical: vertical,
-    );
+
+    return EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical);
   }
 
   static SizedBox vertical(BuildContext context, double factor) {

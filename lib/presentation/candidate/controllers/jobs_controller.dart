@@ -15,7 +15,11 @@ class JobsController extends GetxController {
   final ApplicationRepository applicationRepository;
   final CandidateAuthRepository authRepository;
 
-  JobsController(this.jobRepository, this.applicationRepository, this.authRepository);
+  JobsController(
+    this.jobRepository,
+    this.applicationRepository,
+    this.authRepository,
+  );
 
   final isLoading = false.obs;
   final errorMessage = ''.obs;
@@ -24,7 +28,9 @@ class JobsController extends GetxController {
   final applications = <ApplicationEntity>[].obs;
 
   final getJobsUseCase = GetJobsUseCase(Get.find<JobRepository>());
-  final createApplicationUseCase = CreateApplicationUseCase(Get.find<ApplicationRepository>());
+  final createApplicationUseCase = CreateApplicationUseCase(
+    Get.find<ApplicationRepository>(),
+  );
 
   // Stream subscriptions
   StreamSubscription<List<JobEntity>>? _jobsSubscription;
@@ -47,33 +53,36 @@ class JobsController extends GetxController {
 
   void loadJobs() {
     _jobsSubscription?.cancel(); // Cancel previous subscription if exists
-    _jobsSubscription = jobRepository.streamJobs(status: AppConstants.jobStatusOpen).listen(
-      (jobsList) {
-        jobs.value = jobsList;
-      },
-      onError: (error) {
-        // Silently handle permission errors (user might have signed out)
-        // Don't show errors for permission-denied as it's expected after sign-out
-      },
-    );
+    _jobsSubscription = jobRepository
+        .streamJobs(status: AppConstants.jobStatusOpen)
+        .listen(
+          (jobsList) {
+            jobs.value = jobsList;
+          },
+          onError: (error) {
+            // Silently handle permission errors (user might have signed out)
+            // Don't show errors for permission-denied as it's expected after sign-out
+          },
+        );
   }
 
   void loadApplications() {
     final currentUser = authRepository.getCurrentUser();
     if (currentUser == null) return;
 
-    _applicationsSubscription?.cancel(); // Cancel previous subscription if exists
+    _applicationsSubscription
+        ?.cancel(); // Cancel previous subscription if exists
     _applicationsSubscription = applicationRepository
         .streamApplications(candidateId: currentUser.userId)
         .listen(
-      (appsList) {
-        applications.value = appsList;
-      },
-      onError: (error) {
-        // Silently handle permission errors (user might have signed out)
-        // Don't show errors for permission-denied as it's expected after sign-out
-      },
-    );
+          (appsList) {
+            applications.value = appsList;
+          },
+          onError: (error) {
+            // Silently handle permission errors (user might have signed out)
+            // Don't show errors for permission-denied as it's expected after sign-out
+          },
+        );
   }
 
   void selectJob(JobEntity job) {
@@ -118,4 +127,3 @@ class JobsController extends GetxController {
     );
   }
 }
-

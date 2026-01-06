@@ -19,7 +19,8 @@ class DocumentsController extends GetxController {
   final isLoading = false.obs;
   final uploadProgress = 0.0.obs;
   final isUploading = false.obs;
-  final uploadingDocTypeId = ''.obs; // Track which document type is being uploaded
+  final uploadingDocTypeId =
+      ''.obs; // Track which document type is being uploaded
   final errorMessage = ''.obs;
   final documentTypes = <DocumentTypeEntity>[].obs;
   final candidateDocuments = <CandidateDocumentEntity>[].obs;
@@ -194,9 +195,12 @@ class DocumentsController extends GetxController {
       }
 
       // Sanitize document name
-      final sanitizedDocTypeName = AppFileValidator.sanitizeFileName(docTypeName);
+      final sanitizedDocTypeName = AppFileValidator.sanitizeFileName(
+        docTypeName,
+      );
       final sanitizedFileName = AppFileValidator.sanitizeFileName(file.name);
-      final documentName = '${currentUser.userId}_${sanitizedDocTypeName}_$sanitizedFileName';
+      final documentName =
+          '${currentUser.userId}_${sanitizedDocTypeName}_$sanitizedFileName';
 
       // Reset progress and track which document is being uploaded
       uploadProgress.value = 0.0;
@@ -206,7 +210,7 @@ class DocumentsController extends GetxController {
 
       // Use the repository implementation directly to access helper method
       final repositoryImpl = documentRepository as DocumentRepositoryImpl;
-      
+
       final uploadResult = await repositoryImpl.uploadDocumentWithFile(
         candidateId: currentUser.userId,
         docTypeId: docTypeId,
@@ -352,7 +356,8 @@ class DocumentsController extends GetxController {
       // Sanitize title and file name
       final sanitizedTitle = AppFileValidator.sanitizeFileName(title);
       final sanitizedFileName = AppFileValidator.sanitizeFileName(file.name);
-      final documentName = '${currentUser.userId}_${sanitizedTitle}_$sanitizedFileName';
+      final documentName =
+          '${currentUser.userId}_${sanitizedTitle}_$sanitizedFileName';
 
       // Use the repository implementation directly to access helper method
       final repositoryImpl = documentRepository as DocumentRepositoryImpl;

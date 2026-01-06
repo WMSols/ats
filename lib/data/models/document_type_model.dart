@@ -20,11 +20,7 @@ class DocumentTypeModel extends DocumentTypeEntity {
   }
 
   Map<String, dynamic> toFirestore() {
-    return {
-      'name': name,
-      'description': description,
-      'isRequired': isRequired,
-    };
+    return {'name': name, 'description': description, 'isRequired': isRequired};
   }
 
   DocumentTypeEntity toEntity() {
@@ -36,4 +32,3 @@ class DocumentTypeModel extends DocumentTypeEntity {
     );
   }
 }
-

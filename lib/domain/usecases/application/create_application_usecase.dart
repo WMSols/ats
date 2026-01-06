@@ -12,10 +12,6 @@ class CreateApplicationUseCase {
     required String candidateId,
     required String jobId,
   }) {
-    return repository.createApplication(
-      candidateId: candidateId,
-      jobId: jobId,
-    );
+    return repository.createApplication(candidateId: candidateId, jobId: jobId);
   }
 }
-

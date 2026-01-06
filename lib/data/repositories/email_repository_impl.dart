@@ -7,9 +7,7 @@ import 'package:dartz/dartz.dart';
 class EmailRepositoryImpl implements EmailRepository {
   final FirebaseFunctionsDataSource functionsDataSource;
 
-  EmailRepositoryImpl({
-    required this.functionsDataSource,
-  });
+  EmailRepositoryImpl({required this.functionsDataSource});
 
   @override
   Future<Either<Failure, void>> sendDocumentDenialEmail({
@@ -33,4 +31,3 @@ class EmailRepositoryImpl implements EmailRepository {
     }
   }
 }
-

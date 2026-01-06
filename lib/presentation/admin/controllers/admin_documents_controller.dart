@@ -33,16 +33,19 @@ class AdminDocumentsController extends GetxController {
   }
 
   void loadDocumentTypes() {
-    _documentTypesSubscription?.cancel(); // Cancel previous subscription if exists
-    _documentTypesSubscription = documentRepository.streamDocumentTypes().listen(
-      (types) {
-        documentTypes.value = types;
-        _applyFilters();
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
+    _documentTypesSubscription
+        ?.cancel(); // Cancel previous subscription if exists
+    _documentTypesSubscription = documentRepository
+        .streamDocumentTypes()
+        .listen(
+          (types) {
+            documentTypes.value = types;
+            _applyFilters();
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
   }
 
   void setSearchQuery(String query) {
@@ -57,9 +60,11 @@ class AdminDocumentsController extends GetxController {
     if (searchQuery.value.isNotEmpty) {
       final query = searchQuery.value.toLowerCase();
       filtered = filtered
-          .where((docType) =>
-              docType.name.toLowerCase().contains(query) ||
-              docType.description.toLowerCase().contains(query))
+          .where(
+            (docType) =>
+                docType.name.toLowerCase().contains(query) ||
+                docType.description.toLowerCase().contains(query),
+          )
           .toList();
     }
 
@@ -90,7 +95,8 @@ class AdminDocumentsController extends GetxController {
         AppSnackbar.success('Document type created successfully');
         Get.offNamedUntil(
           AppConstants.routeAdminDocumentTypes,
-          (route) => route.settings.name == AppConstants.routeAdminDocumentTypes,
+          (route) =>
+              route.settings.name == AppConstants.routeAdminDocumentTypes,
         );
       },
     );
@@ -122,7 +128,8 @@ class AdminDocumentsController extends GetxController {
         AppSnackbar.success('Document type updated successfully');
         Get.offNamedUntil(
           AppConstants.routeAdminDocumentTypes,
-          (route) => route.settings.name == AppConstants.routeAdminDocumentTypes,
+          (route) =>
+              route.settings.name == AppConstants.routeAdminDocumentTypes,
         );
       },
     );
@@ -146,4 +153,3 @@ class AdminDocumentsController extends GetxController {
     );
   }
 }
-

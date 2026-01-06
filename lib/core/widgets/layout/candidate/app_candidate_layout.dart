@@ -34,7 +34,7 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
   void _setupProfileCompletionCheck() {
     final profileController = Get.find<ProfileController>();
     final currentRoute = Get.currentRoute;
-    
+
     // Only set up redirect check if not on profile screen
     if (currentRoute != AppConstants.routeCandidateProfile) {
       // Watch profile changes and redirect if incomplete
@@ -43,8 +43,8 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
         if (mounted && profile != null) {
           // Profile has loaded, check if it's complete
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && 
-                !profileController.isProfileCompleted() && 
+            if (mounted &&
+                !profileController.isProfileCompleted() &&
                 Get.currentRoute != AppConstants.routeCandidateProfile) {
               Get.offNamed(AppConstants.routeCandidateProfile);
               AppSnackbar.show(
@@ -55,13 +55,14 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
           });
         }
       });
-      
+
       // Check after a delay to allow profile stream to load
       // Don't redirect if profile is null (still loading), only if it's loaded and incomplete
       Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted && 
-            profileController.profile.value != null && // Only check if profile has loaded
-            !profileController.isProfileCompleted() && 
+        if (mounted &&
+            profileController.profile.value !=
+                null && // Only check if profile has loaded
+            !profileController.isProfileCompleted() &&
             Get.currentRoute != AppConstants.routeCandidateProfile) {
           Get.offNamed(AppConstants.routeCandidateProfile);
           AppSnackbar.show(
@@ -83,13 +84,16 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
       // Controller not found, create it using the repository
       // Get.find will trigger lazy initialization if repository is registered with lazyPut
       final authRepo = Get.find<CandidateAuthRepository>();
-      authController = Get.put(CandidateAuthController(authRepo), permanent: false);
+      authController = Get.put(
+        CandidateAuthController(authRepo),
+        permanent: false,
+      );
     }
     final profileController = Get.find<ProfileController>();
 
     return Obx(() {
       final isProfileCompleted = profileController.isProfileCompleted();
-      
+
       final navigationItems = [
         AppNavigationItemModel(
           title: AppTexts.dashboard,
@@ -133,4 +137,3 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
     });
   }
 }
-

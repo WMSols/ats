@@ -12,10 +12,7 @@ import 'package:ats/core/widgets/app_widgets.dart';
 class AppDocumentUploadWidget extends StatelessWidget {
   final DocumentsController controller;
 
-  const AppDocumentUploadWidget({
-    super.key,
-    required this.controller,
-  });
+  const AppDocumentUploadWidget({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +21,9 @@ class AppDocumentUploadWidget extends StatelessWidget {
       children: [
         Text(
           AppTexts.documentFile,
-          style: AppTextStyles.bodyText(context).copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.bodyText(
+            context,
+          ).copyWith(fontWeight: FontWeight.w600),
         ),
         AppSpacing.vertical(context, 0.01),
         Obx(() {
@@ -57,9 +54,9 @@ class AppDocumentUploadWidget extends StatelessWidget {
                             children: [
                               Text(
                                 fileName,
-                                style: AppTextStyles.bodyText(context).copyWith(
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: AppTextStyles.bodyText(
+                                  context,
+                                ).copyWith(fontWeight: FontWeight.w500),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               if (fileSize.isNotEmpty)
@@ -67,11 +64,13 @@ class AppDocumentUploadWidget extends StatelessWidget {
                                   fileSize,
                                   style: AppTextStyles.bodyText(context)
                                       .copyWith(
-                                    fontSize: AppTextStyles
-                                        .bodyText(context)
-                                        .fontSize! * 0.85,
-                                    color: AppColors.grey,
-                                  ),
+                                        fontSize:
+                                            AppTextStyles.bodyText(
+                                              context,
+                                            ).fontSize! *
+                                            0.85,
+                                        color: AppColors.grey,
+                                      ),
                                 ),
                             ],
                           ),
@@ -93,17 +92,16 @@ class AppDocumentUploadWidget extends StatelessWidget {
                         value: uploadProgress,
                         backgroundColor: AppColors.grey.withValues(alpha: 0.2),
                         valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.primary),
+                          AppColors.primary,
+                        ),
                         minHeight: 6,
                       ),
                       AppSpacing.vertical(context, 0.005),
                       Text(
-                        'Uploading: ${(uploadProgress * 100).toStringAsFixed(
-                            0)}%',
+                        'Uploading: ${(uploadProgress * 100).toStringAsFixed(0)}%',
                         style: AppTextStyles.bodyText(context).copyWith(
-                          fontSize: AppTextStyles
-                              .bodyText(context)
-                              .fontSize! * 0.85,
+                          fontSize:
+                              AppTextStyles.bodyText(context).fontSize! * 0.85,
                           color: AppColors.primary,
                           fontWeight: FontWeight.w500,
                         ),
@@ -124,9 +122,9 @@ class AppDocumentUploadWidget extends StatelessWidget {
                     Expanded(
                       child: Text(
                         AppTexts.noFileSelected,
-                        style: AppTextStyles.bodyText(context).copyWith(
-                          color: AppColors.grey,
-                        ),
+                        style: AppTextStyles.bodyText(
+                          context,
+                        ).copyWith(color: AppColors.grey),
                       ),
                     ),
                   ],
@@ -158,13 +156,12 @@ class AppDocumentUploadWidget extends StatelessWidget {
             ),
             child: Text(
               controller.errorMessage.value,
-              style: AppTextStyles.bodyText(context).copyWith(
-                color: AppColors.error,
-              ),
+              style: AppTextStyles.bodyText(
+                context,
+              ).copyWith(color: AppColors.error),
             ),
           ),
       ],
     );
   }
 }
-

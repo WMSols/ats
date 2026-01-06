@@ -110,7 +110,8 @@ class AdminJobsListScreen extends StatelessWidget {
   ) {
     AppAlertDialog.show(
       title: AppTexts.deleteJob,
-      subtitle: '${AppTexts.deleteJobConfirmation} "$jobTitle"?\n\n${AppTexts.deleteJobWarning}',
+      subtitle:
+          '${AppTexts.deleteJobConfirmation} "$jobTitle"?\n\n${AppTexts.deleteJobWarning}',
       primaryButtonText: AppTexts.delete,
       secondaryButtonText: AppTexts.cancel,
       onPrimaryPressed: () => controller.deleteJob(jobId),

@@ -48,4 +48,3 @@ class JobModel extends JobEntity {
     );
   }
 }
-

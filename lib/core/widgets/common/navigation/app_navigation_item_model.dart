@@ -13,4 +13,3 @@ class AppNavigationItemModel {
     this.enabled = true,
   });
 }
-

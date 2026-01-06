@@ -7,14 +7,10 @@ class AppFileValidator {
   static const int maxFileSizeBytes = 20 * 1024 * 1024;
 
   // Allowed file extensions - PDF only
-  static const List<String> allowedExtensions = [
-    'pdf',
-  ];
+  static const List<String> allowedExtensions = ['pdf'];
 
   // Allowed MIME types - PDF only
-  static const List<String> allowedMimeTypes = [
-    'application/pdf',
-  ];
+  static const List<String> allowedMimeTypes = ['application/pdf'];
 
   /// Validates a file from file picker
   /// Returns null if valid, error message if invalid
@@ -144,14 +140,13 @@ class AppFileValidator {
 
     // Split by underscore
     final parts = documentName.split('_');
-    
+
     // If there's only one part or empty, return as is
     if (parts.length <= 1) {
       return documentName;
     }
-    
+
     // Remove the first segment (userId) and join the rest
     return parts.sublist(1).join('_');
   }
 }
-

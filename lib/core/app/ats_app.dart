@@ -8,10 +8,7 @@ enum AppType { candidate, admin, unified }
 class ATSApp extends StatelessWidget {
   final AppType appType;
 
-  const ATSApp({
-    super.key,
-    this.appType = AppType.unified,
-  });
+  const ATSApp({super.key, this.appType = AppType.unified});
 
   @override
   Widget build(BuildContext context) {
@@ -25,4 +22,3 @@ class ATSApp extends StatelessWidget {
     }
   }
 }
-

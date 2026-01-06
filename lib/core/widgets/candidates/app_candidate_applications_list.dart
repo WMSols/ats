@@ -47,9 +47,7 @@ class AppCandidateApplicationsList extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Show only status chip when application is approved
-              if (isApproved) ...[
-                AppStatusChip(status: app.status),
-              ],
+              if (isApproved) ...[AppStatusChip(status: app.status)],
               // Show approve/deny buttons only when application is pending
               if (isPending) ...[
                 AppActionButton(
@@ -73,9 +71,7 @@ class AppCandidateApplicationsList extends StatelessWidget {
                 ),
               ],
               // Show status chip when application is denied (no buttons for admin)
-              if (isDenied) ...[
-                AppStatusChip(status: app.status),
-              ],
+              if (isDenied) ...[AppStatusChip(status: app.status)],
             ],
           ),
           onTap: null,
@@ -84,4 +80,3 @@ class AppCandidateApplicationsList extends StatelessWidget {
     );
   }
 }
-

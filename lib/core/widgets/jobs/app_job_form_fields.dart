@@ -68,4 +68,3 @@ class AppJobFormFields extends StatelessWidget {
     );
   }
 }
-

@@ -61,18 +61,20 @@ class AdminJobsController extends GetxController {
 
   void loadApplicationCounts() {
     _applicationsSubscription?.cancel();
-    _applicationsSubscription = applicationRepository.streamApplications().listen(
-      (applications) {
-        final counts = <String, int>{};
-        for (var app in applications) {
-          counts[app.jobId] = (counts[app.jobId] ?? 0) + 1;
-        }
-        jobApplicationCounts.value = counts;
-      },
-      onError: (error) {
-        // Silently handle permission errors
-      },
-    );
+    _applicationsSubscription = applicationRepository
+        .streamApplications()
+        .listen(
+          (applications) {
+            final counts = <String, int>{};
+            for (var app in applications) {
+              counts[app.jobId] = (counts[app.jobId] ?? 0) + 1;
+            }
+            jobApplicationCounts.value = counts;
+          },
+          onError: (error) {
+            // Silently handle permission errors
+          },
+        );
   }
 
   int getApplicationCount(String jobId) {
@@ -103,9 +105,11 @@ class AdminJobsController extends GetxController {
     if (searchQuery.value.isNotEmpty) {
       final query = searchQuery.value.toLowerCase();
       filtered = filtered
-          .where((job) =>
-              job.title.toLowerCase().contains(query) ||
-              job.description.toLowerCase().contains(query))
+          .where(
+            (job) =>
+                job.title.toLowerCase().contains(query) ||
+                job.description.toLowerCase().contains(query),
+          )
           .toList();
     }
 
@@ -174,7 +178,7 @@ class AdminJobsController extends GetxController {
     isLoading.value = true;
     errorMessage.value = '';
 
-      final result = await updateJobUseCase(
+    final result = await updateJobUseCase(
       jobId: jobId,
       title: title,
       description: description,
@@ -204,10 +208,7 @@ class AdminJobsController extends GetxController {
     isLoading.value = true;
     errorMessage.value = '';
 
-    final result = await updateJobUseCase(
-      jobId: jobId,
-      status: status,
-    );
+    final result = await updateJobUseCase(jobId: jobId, status: status);
 
     result.fold(
       (failure) {

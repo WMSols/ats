@@ -59,7 +59,9 @@ class AppAlertDialog extends StatelessWidget {
     return Dialog(
       backgroundColor: AppColors.secondary,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppResponsive.radius(context,factor: 1.5)),
+        borderRadius: BorderRadius.circular(
+          AppResponsive.radius(context, factor: 1.5),
+        ),
       ),
       child: Container(
         padding: AppSpacing.all(context, factor: 1.5),
