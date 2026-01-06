@@ -93,6 +93,7 @@ class MyDocumentsScreen extends StatelessWidget {
                       final documentStatus = currentDocument?.status ?? '';
                       final isPending = documentStatus == AppConstants.documentStatusPending;
                       final isDenied = documentStatus == AppConstants.documentStatusDenied;
+                      final hasStorageUrl = currentDocument?.storageUrl.isNotEmpty ?? false;
 
                       return Column(
                         children: [
@@ -133,6 +134,21 @@ class MyDocumentsScreen extends StatelessWidget {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         AppStatusChip(status: documentStatus),
+                                        // Show view button when document has been uploaded
+                                        if (hasStorageUrl) ...[
+                                          AppSpacing.horizontal(context, 0.01),
+                                          AppActionButton(
+                                            text: AppTexts.view,
+                                            onPressed: () {
+                                              AppDocumentViewer.show(
+                                                documentUrl: currentDocument!.storageUrl,
+                                                documentName: docType.name,
+                                              );
+                                            },
+                                            backgroundColor: AppColors.information,
+                                            foregroundColor: AppColors.white,
+                                          ),
+                                        ],
                                         // Show delete button when pending
                                         if (isPending) ...[
                                           AppSpacing.horizontal(context, 0.01),
@@ -196,6 +212,7 @@ class MyDocumentsScreen extends StatelessWidget {
                       final userDoc = currentUserDocs[userDocIndex];
                       final isPending = userDoc.status == AppConstants.documentStatusPending;
                       final isDenied = userDoc.status == AppConstants.documentStatusDenied;
+                      final hasStorageUrl = userDoc.storageUrl.isNotEmpty;
 
                       return AppListCard(
                         title: userDoc.title ?? userDoc.documentName,
@@ -205,6 +222,21 @@ class MyDocumentsScreen extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             AppStatusChip(status: userDoc.status),
+                            // Show view button when document has been uploaded
+                            if (hasStorageUrl) ...[
+                              AppSpacing.horizontal(context, 0.01),
+                              AppActionButton(
+                                text: AppTexts.view,
+                                onPressed: () {
+                                  AppDocumentViewer.show(
+                                    documentUrl: userDoc.storageUrl,
+                                    documentName: userDoc.title ?? userDoc.documentName,
+                                  );
+                                },
+                                backgroundColor: AppColors.information,
+                                foregroundColor: AppColors.white,
+                              ),
+                            ],
                             // Show delete button when pending
                             if (isPending) ...[
                               AppSpacing.horizontal(context, 0.01),
