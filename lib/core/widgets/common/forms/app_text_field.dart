@@ -172,13 +172,13 @@ class _AppTextFieldState extends State<AppTextField> {
           borderRadius: BorderRadius.circular(
             AppResponsive.radius(context, factor: 5),
           ),
-          borderSide: BorderSide(color: AppColors.white.withValues(alpha: 0.3)),
+          borderSide: BorderSide(color: AppColors.primary),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(
             AppResponsive.radius(context, factor: 5),
           ),
-          borderSide: BorderSide(color: AppColors.white.withValues(alpha: 0.3)),
+          borderSide: BorderSide(color: AppColors.primary),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(

@@ -20,15 +20,28 @@ class _AdminCreateDocumentTypeScreenState
   late final TextEditingController titleController;
   late final TextEditingController descriptionController;
 
+  bool get _canSubmit {
+    return titleController.text.trim().isNotEmpty &&
+        descriptionController.text.trim().isNotEmpty;
+  }
+
+  void _onTextChanged() {
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
     titleController = TextEditingController();
     descriptionController = TextEditingController();
+    titleController.addListener(_onTextChanged);
+    descriptionController.addListener(_onTextChanged);
   }
 
   @override
   void dispose() {
+    titleController.removeListener(_onTextChanged);
+    descriptionController.removeListener(_onTextChanged);
     titleController.dispose();
     descriptionController.dispose();
     super.dispose();
@@ -56,15 +69,17 @@ class _AdminCreateDocumentTypeScreenState
                 () => AppButton(
                   text: AppTexts.create,
                   icon: Iconsax.add,
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      controller.createDocumentType(
-                        name: titleController.text.trim(),
-                        description: descriptionController.text.trim(),
-                        isRequired: false,
-                      );
-                    }
-                  },
+                  onPressed: _canSubmit && !controller.isLoading.value
+                      ? () {
+                          if (_formKey.currentState!.validate()) {
+                            controller.createDocumentType(
+                              name: titleController.text.trim(),
+                              description: descriptionController.text.trim(),
+                              isRequired: false,
+                            );
+                          }
+                        }
+                      : null,
                   isLoading: controller.isLoading.value,
                 ),
               ),
