@@ -88,9 +88,9 @@ class EducationSection extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(
-                    AppResponsive.radius(context, factor: 5),
+                    AppResponsive.radius(context, factor: 1.5),
                   ),
-                  border: Border.all(color: AppColors.primary),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,

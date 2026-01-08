@@ -31,6 +31,14 @@ class AppDropDownField<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final defaultPadding = AppSpacing.symmetric(context, h: 0.04, v: 0.02);
+    final contentPadding = prefixIcon == null
+        ? EdgeInsets.only(
+            left: defaultPadding.horizontal * 0.1,
+            right: defaultPadding.horizontal,
+          )
+        : defaultPadding;
+
     final dropdown = DropdownButtonFormField<T>(
       value: value,
       decoration: InputDecoration(
@@ -79,7 +87,7 @@ class AppDropDownField<T> extends StatelessWidget {
           ),
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
-        contentPadding: AppSpacing.symmetric(context, h: 0.04, v: 0.02),
+        contentPadding: contentPadding,
         errorText: errorText,
       ),
       items: items,

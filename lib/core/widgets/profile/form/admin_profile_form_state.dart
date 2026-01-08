@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:ats/presentation/candidate/controllers/profile_controller.dart';
 import 'package:ats/core/widgets/profile/sections/sections.dart';
 import 'package:ats/core/widgets/profile/form/profile_form_data_helper.dart';
 
-/// Manages all form controllers and state for candidate profile
-class ProfileFormState {
-  final ProfileController controller;
-
+/// Manages all form controllers and state for admin candidate profile creation/editing
+class AdminProfileFormState {
   // Candidate Profile Controllers
   late final TextEditingController firstNameController;
   late final TextEditingController middleNameController;
@@ -18,7 +15,6 @@ class ProfileFormState {
   late final TextEditingController stateController;
   late final TextEditingController zipController;
   late final TextEditingController ssnController;
-  late final TextEditingController passwordController; // For candidate side (read-only, prefilled with email)
 
   // Phones
   final List<PhoneEntry> phoneEntries = [];
@@ -46,7 +42,7 @@ class ProfileFormState {
   // Work History
   final List<WorkHistoryEntry> workHistoryEntries = [];
 
-  ProfileFormState(this.controller) {
+  AdminProfileFormState() {
     _initializeControllers();
   }
 
@@ -54,66 +50,29 @@ class ProfileFormState {
     firstNameController = TextEditingController();
     middleNameController = TextEditingController();
     lastNameController = TextEditingController();
-    
-    // Get email from current user account (unchangeable)
-    final currentUser = controller.authRepository.getCurrentUser();
-    final userEmail = currentUser?.email ?? '';
-    emailController = TextEditingController(text: userEmail);
-    
+    emailController = TextEditingController();
     address1Controller = TextEditingController();
     address2Controller = TextEditingController();
     cityController = TextEditingController();
     stateController = TextEditingController();
     zipController = TextEditingController();
     ssnController = TextEditingController();
-    
-    // Password field prefilled with masked placeholder (read-only for candidate)
-    // Use a placeholder that represents a password, not the email
-    passwordController = TextEditingController(text: '••••••••');
   }
 
   void loadFromProfile(dynamic profile) {
     if (profile == null) return;
 
     // Candidate Profile
-    if (firstNameController.text.isEmpty) {
-      firstNameController.text = profile.firstName ?? '';
-    }
-    if (middleNameController.text.isEmpty) {
-      middleNameController.text = profile.middleName ?? '';
-    }
-    if (lastNameController.text.isEmpty) {
-      lastNameController.text = profile.lastName ?? '';
-    }
-    // Email is always from user account, don't override it
-    // Only set if empty (shouldn't happen, but just in case)
-    if (emailController.text.isEmpty) {
-      final currentUser = controller.authRepository.getCurrentUser();
-      emailController.text = currentUser?.email ?? '';
-    }
-    // Password field should show masked placeholder (read-only for candidate)
-    // Keep it as masked placeholder, not the email value
-    if (passwordController.text.isEmpty) {
-      passwordController.text = '••••••••';
-    }
-    if (address1Controller.text.isEmpty) {
-      address1Controller.text = profile.address1 ?? '';
-    }
-    if (address2Controller.text.isEmpty) {
-      address2Controller.text = profile.address2 ?? '';
-    }
-    if (cityController.text.isEmpty) {
-      cityController.text = profile.city ?? '';
-    }
-    if (stateController.text.isEmpty) {
-      stateController.text = profile.state ?? '';
-    }
-    if (zipController.text.isEmpty) {
-      zipController.text = profile.zip ?? '';
-    }
-    if (ssnController.text.isEmpty) {
-      ssnController.text = profile.ssn ?? '';
-    }
+    firstNameController.text = profile.firstName ?? '';
+    middleNameController.text = profile.middleName ?? '';
+    lastNameController.text = profile.lastName ?? '';
+    emailController.text = profile.email ?? '';
+    address1Controller.text = profile.address1 ?? '';
+    address2Controller.text = profile.address2 ?? '';
+    cityController.text = profile.city ?? '';
+    stateController.text = profile.state ?? '';
+    zipController.text = profile.zip ?? '';
+    ssnController.text = profile.ssn ?? '';
 
     // Phones - Clear existing and reload from profile
     for (var phone in phoneEntries) {
@@ -148,18 +107,10 @@ class ProfileFormState {
     }
 
     // Background History
-    if (liabilityAction == null) {
-      liabilityAction = profile.liabilityAction;
-    }
-    if (licenseAction == null) {
-      licenseAction = profile.licenseAction;
-    }
-    if (previouslyTraveled == null) {
-      previouslyTraveled = profile.previouslyTraveled;
-    }
-    if (terminatedFromAssignment == null) {
-      terminatedFromAssignment = profile.terminatedFromAssignment;
-    }
+    liabilityAction = profile.liabilityAction;
+    licenseAction = profile.licenseAction;
+    previouslyTraveled = profile.previouslyTraveled;
+    terminatedFromAssignment = profile.terminatedFromAssignment;
 
     // Licensure
     licensureState = profile.licensureState;
@@ -308,9 +259,6 @@ class ProfileFormState {
     workHistoryEntries[index].fromDateController.dispose();
     workHistoryEntries[index].toDateController.dispose();
     workHistoryEntries.removeAt(index);
-    controller.clearWorkHistoryEntryErrors(index);
-    final workHistory = ProfileFormDataHelper.getWorkHistoryData(workHistoryEntries);
-    controller.validateWorkHistory(workHistory.isEmpty ? null : workHistory);
   }
 
   void dispose() {
@@ -324,14 +272,13 @@ class ProfileFormState {
     stateController.dispose();
     zipController.dispose();
     ssnController.dispose();
-    passwordController.dispose();
-    // No need to dispose specialties list
-    npiController.dispose();
 
     for (var phone in phoneEntries) {
       phone.countryCodeController.dispose();
       phone.numberController.dispose();
     }
+
+    npiController.dispose();
 
     for (var edu in educationEntries) {
       edu.institutionController.dispose();

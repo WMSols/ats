@@ -72,7 +72,7 @@ class _AppExpandableSectionState extends State<AppExpandableSection> {
                           ).copyWith(fontWeight: FontWeight.w700),
                         ),
                         if (widget.hasError) ...[
-                          AppSpacing.horizontal(context, 0.02),
+                          AppSpacing.horizontal(context, 0.001),
                           Icon(
                             Iconsax.danger,
                             color: AppColors.error,
@@ -83,7 +83,7 @@ class _AppExpandableSectionState extends State<AppExpandableSection> {
                     ),
                   ),
                   Icon(
-                    _isExpanded ? Iconsax.arrow_up_2 : Iconsax.arrow_down_2,
+                    _isExpanded ? Iconsax.arrow_up_2 : Iconsax.arrow_down_1,
                     size: AppResponsive.iconSize(context),
                     color: AppColors.primary,
                   ),

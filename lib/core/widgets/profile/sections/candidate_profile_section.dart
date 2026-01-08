@@ -16,9 +16,13 @@ class CandidateProfileSection extends StatelessWidget {
   final TextEditingController stateController;
   final TextEditingController zipController;
   final TextEditingController ssnController;
+  final TextEditingController? passwordController; // Optional, for admin side or candidate side
+  final bool emailEnabled; // Controls if email field is editable
+  final bool passwordEnabled; // Controls if password field is editable
   final String? Function(String?)? onFirstNameChanged;
   final String? Function(String?)? onLastNameChanged;
   final String? Function(String?)? onEmailChanged;
+  final String? Function(String?)? onPasswordChanged; // Optional, for admin side or candidate side
   final String? Function(String?)? onAddress1Changed;
   final String? Function(String?)? onCityChanged;
   final String? Function(String?)? onStateChanged;
@@ -26,6 +30,7 @@ class CandidateProfileSection extends StatelessWidget {
   final Rxn<String>? firstNameError;
   final Rxn<String>? lastNameError;
   final Rxn<String>? emailError;
+  final Rxn<String>? passwordError; // Optional, for admin side only
   final Rxn<String>? address1Error;
   final Rxn<String>? cityError;
   final Rxn<String>? stateError;
@@ -44,9 +49,13 @@ class CandidateProfileSection extends StatelessWidget {
     required this.stateController,
     required this.zipController,
     required this.ssnController,
+    this.passwordController,
+    this.emailEnabled = false, // Default to disabled (read-only)
+    this.passwordEnabled = false, // Default to disabled (read-only)
     this.onFirstNameChanged,
     this.onLastNameChanged,
     this.onEmailChanged,
+    this.onPasswordChanged,
     this.onAddress1Changed,
     this.onCityChanged,
     this.onStateChanged,
@@ -54,6 +63,7 @@ class CandidateProfileSection extends StatelessWidget {
     this.firstNameError,
     this.lastNameError,
     this.emailError,
+    this.passwordError,
     this.address1Error,
     this.cityError,
     this.stateError,
@@ -123,13 +133,13 @@ class CandidateProfileSection extends StatelessWidget {
             ),
           AppSpacing.vertical(context, 0.02),
 
-          // Email (read-only, from user account)
+          // Email
           AppTextField(
             controller: emailController,
             labelText: '${AppTexts.email}(*)',
             showLabelAbove: true,
             keyboardType: TextInputType.emailAddress,
-            enabled: false, // Email is unchangeable as it's tied to the account
+            enabled: emailEnabled, // Controlled by parameter
             onChanged: onEmailChanged,
           ),
           if (emailError != null)
@@ -147,6 +157,33 @@ class CandidateProfileSection extends StatelessWidget {
                   : const SizedBox.shrink(),
             ),
           AppSpacing.vertical(context, 0.02),
+
+          // Password (admin side or candidate side)
+          if (passwordController != null) ...[
+            AppTextField(
+              controller: passwordController!,
+              labelText: '${AppTexts.password}(*)',
+              showLabelAbove: true,
+              obscureText: true, // Always obscured, even when read-only
+              enabled: passwordEnabled, // Controlled by parameter
+              onChanged: onPasswordChanged,
+            ),
+            if (passwordError != null)
+              Obx(
+                () => passwordError!.value != null
+                    ? Padding(
+                        padding: EdgeInsets.only(
+                          top: AppSpacing.vertical(context, 0.01).height!,
+                        ),
+                        child: AppErrorMessage(
+                          message: passwordError!.value!,
+                          icon: Iconsax.info_circle,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            AppSpacing.vertical(context, 0.02),
+          ],
 
           // Address 1
           AppTextField(

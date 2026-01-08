@@ -36,6 +36,8 @@ class WorkHistorySectionWidget extends StatelessWidget {
   final void Function(int index, String? toDate)? onToDateChanged;
   final VoidCallback onAdd;
   final void Function(int) onRemove;
+  final String? Function(int index, String fieldName)? getFieldError;
+  final Rxn<String>? generalError;
   final bool hasError;
 
   const WorkHistorySectionWidget({
@@ -48,12 +50,21 @@ class WorkHistorySectionWidget extends StatelessWidget {
     this.onToDateChanged,
     required this.onAdd,
     required this.onRemove,
+    this.getFieldError,
+    this.generalError,
     this.hasError = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<ProfileController>();
+    // Try to get ProfileController if available (for candidate screens)
+    ProfileController? profileController;
+    try {
+      profileController = Get.find<ProfileController>();
+    } catch (e) {
+      // ProfileController not available (e.g., in admin screens)
+      profileController = null;
+    }
 
     return AppExpandableSection(
       title: AppTexts.workHistory,
@@ -81,9 +92,9 @@ class WorkHistorySectionWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(
-                    AppResponsive.radius(context, factor: 5),
+                    AppResponsive.radius(context, factor: 1.5),
                   ),
-                  border: Border.all(color: AppColors.primary),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -115,26 +126,49 @@ class WorkHistorySectionWidget extends StatelessWidget {
                       showLabelAbove: true,
                       onChanged: (value) => onCompanyChanged?.call(index, value),
                     ),
-                    Obx(
-                      () => controller.getWorkHistoryFieldError(
-                                index,
-                                'company',
-                              ) !=
-                              null
-                          ? Padding(
-                              padding: EdgeInsets.only(
-                                top: AppSpacing.vertical(context, 0.01).height!,
-                              ),
-                              child: AppErrorMessage(
-                                message: controller.getWorkHistoryFieldError(
-                                  index,
-                                  'company',
-                                )!,
-                                icon: Iconsax.info_circle,
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
+                    if (getFieldError != null)
+                      Obx(
+                        () {
+                          final error = getFieldError!(index, 'company');
+                          return error != null
+                              ? Padding(
+                                  padding: EdgeInsets.only(
+                                    top: AppSpacing.vertical(context, 0.01).height!,
+                                  ),
+                                  child: AppErrorMessage(
+                                    message: error,
+                                    icon: Iconsax.info_circle,
+                                  ),
+                                )
+                              : const SizedBox.shrink();
+                        },
+                      )
+                    else if (profileController != null)
+                      Builder(
+                        builder: (context) {
+                          final controller = profileController!;
+                          return Obx(
+                            () => controller.getWorkHistoryFieldError(
+                                      index,
+                                      'company',
+                                    ) !=
+                                    null
+                                ? Padding(
+                                    padding: EdgeInsets.only(
+                                      top: AppSpacing.vertical(context, 0.01).height!,
+                                    ),
+                                    child: AppErrorMessage(
+                                      message: controller.getWorkHistoryFieldError(
+                                        index,
+                                        'company',
+                                      ) ?? '',
+                                      icon: Iconsax.info_circle,
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          );
+                        },
+                      ),
                     AppSpacing.vertical(context, 0.01),
                     
                     // Position
@@ -144,26 +178,49 @@ class WorkHistorySectionWidget extends StatelessWidget {
                       showLabelAbove: true,
                       onChanged: (value) => onPositionChanged?.call(index, value),
                     ),
-                    Obx(
-                      () => controller.getWorkHistoryFieldError(
-                                index,
-                                'position',
-                              ) !=
-                              null
-                          ? Padding(
-                              padding: EdgeInsets.only(
-                                top: AppSpacing.vertical(context, 0.01).height!,
-                              ),
-                              child: AppErrorMessage(
-                                message: controller.getWorkHistoryFieldError(
-                                  index,
-                                  'position',
-                                )!,
-                                icon: Iconsax.info_circle,
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
+                    if (getFieldError != null)
+                      Obx(
+                        () {
+                          final error = getFieldError!(index, 'position');
+                          return error != null
+                              ? Padding(
+                                  padding: EdgeInsets.only(
+                                    top: AppSpacing.vertical(context, 0.01).height!,
+                                  ),
+                                  child: AppErrorMessage(
+                                    message: error,
+                                    icon: Iconsax.info_circle,
+                                  ),
+                                )
+                              : const SizedBox.shrink();
+                        },
+                      )
+                    else if (profileController != null)
+                      Builder(
+                        builder: (context) {
+                          final controller = profileController!;
+                          return Obx(
+                            () => controller.getWorkHistoryFieldError(
+                                      index,
+                                      'position',
+                                    ) !=
+                                    null
+                                ? Padding(
+                                    padding: EdgeInsets.only(
+                                      top: AppSpacing.vertical(context, 0.01).height!,
+                                    ),
+                                    child: AppErrorMessage(
+                                      message: controller.getWorkHistoryFieldError(
+                                        index,
+                                        'position',
+                                      ) ?? '',
+                                      icon: Iconsax.info_circle,
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          );
+                        },
+                      ),
                     AppSpacing.vertical(context, 0.01),
                     
                     // Description
@@ -214,19 +271,39 @@ class WorkHistorySectionWidget extends StatelessWidget {
               ),
             );
           }),
-          Obx(
-            () => controller.workHistoryError.value != null
-                ? Padding(
-                    padding: EdgeInsets.only(
-                      top: AppSpacing.vertical(context, 0.01).height!,
-                    ),
-                    child: AppErrorMessage(
-                      message: controller.workHistoryError.value!,
-                      icon: Iconsax.info_circle,
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          ),
+          if (generalError != null)
+            Obx(
+              () => generalError!.value != null
+                  ? Padding(
+                      padding: EdgeInsets.only(
+                        top: AppSpacing.vertical(context, 0.01).height!,
+                      ),
+                      child: AppErrorMessage(
+                        message: generalError!.value!,
+                        icon: Iconsax.info_circle,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            )
+          else if (profileController != null)
+            Builder(
+              builder: (context) {
+                final controller = profileController!;
+                return Obx(
+                  () => controller.workHistoryError.value != null
+                      ? Padding(
+                          padding: EdgeInsets.only(
+                            top: AppSpacing.vertical(context, 0.01).height!,
+                          ),
+                          child: AppErrorMessage(
+                            message: controller.workHistoryError.value ?? '',
+                            icon: Iconsax.info_circle,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                );
+              },
+            ),
         ],
       ),
     );

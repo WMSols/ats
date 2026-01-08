@@ -214,24 +214,74 @@ class AdminRepositoryImpl implements AdminRepository {
     required String password,
     required String firstName,
     required String lastName,
-    String? phone,
-    String? address,
+    String? middleName,
+    String? address1,
+    String? address2,
+    String? city,
+    String? state,
+    String? zip,
+    String? ssn,
+    List<Map<String, dynamic>>? phones,
+    String? profession,
+    String? specialties,
+    String? liabilityAction,
+    String? licenseAction,
+    String? previouslyTraveled,
+    String? terminatedFromAssignment,
+    String? licensureState,
+    String? npi,
+    List<Map<String, dynamic>>? education,
+    List<Map<String, dynamic>>? certifications,
+    List<Map<String, dynamic>>? workHistory,
   }) async {
     try {
       // Use Firebase Functions if available (Firebase Admin SDK), otherwise fall back to direct Firebase
       if (functionsDataSource != null) {
         // Use Firebase Functions - creates user without auto-login
+        // Note: Functions may not support all new fields, so we'll update after creation
         final result = await functionsDataSource!.createCandidate(
           email: email,
           password: password,
           firstName: firstName,
           lastName: lastName,
-          phone: phone,
-          address: address,
+          phone: null, // Functions may not support new fields
+          address: null,
         );
 
         // Get the created profile to return full entity
         final profileId = result['profileId'] as String;
+        final userId = result['userId'] as String;
+
+        // Update profile with all additional fields
+        final updateData = <String, dynamic>{};
+        if (middleName != null && middleName.isNotEmpty) updateData['middleName'] = middleName;
+        if (address1 != null && address1.isNotEmpty) updateData['address1'] = address1;
+        if (address2 != null && address2.isNotEmpty) updateData['address2'] = address2;
+        if (city != null && city.isNotEmpty) updateData['city'] = city;
+        if (state != null && state.isNotEmpty) updateData['state'] = state;
+        if (zip != null && zip.isNotEmpty) updateData['zip'] = zip;
+        if (ssn != null && ssn.isNotEmpty) updateData['ssn'] = ssn;
+        if (phones != null && phones.isNotEmpty) updateData['phones'] = phones;
+        if (profession != null && profession.isNotEmpty) updateData['profession'] = profession;
+        if (specialties != null && specialties.isNotEmpty) updateData['specialties'] = specialties;
+        if (liabilityAction != null && liabilityAction.isNotEmpty) updateData['liabilityAction'] = liabilityAction;
+        if (licenseAction != null && licenseAction.isNotEmpty) updateData['licenseAction'] = licenseAction;
+        if (previouslyTraveled != null && previouslyTraveled.isNotEmpty) updateData['previouslyTraveled'] = previouslyTraveled;
+        if (terminatedFromAssignment != null && terminatedFromAssignment.isNotEmpty) updateData['terminatedFromAssignment'] = terminatedFromAssignment;
+        if (licensureState != null && licensureState.isNotEmpty) updateData['licensureState'] = licensureState;
+        if (npi != null && npi.isNotEmpty) updateData['npi'] = npi;
+        if (education != null && education.isNotEmpty) updateData['education'] = education;
+        if (certifications != null && certifications.isNotEmpty) updateData['certifications'] = certifications;
+        if (workHistory != null && workHistory.isNotEmpty) updateData['workHistory'] = workHistory;
+        if (email.isNotEmpty) updateData['email'] = email;
+
+        if (updateData.isNotEmpty) {
+          await firestoreDataSource.updateCandidateProfile(
+            profileId: profileId,
+            data: updateData,
+          );
+        }
+
         final profileData = await firestoreDataSource.getCandidateProfile(
           profileId,
         );
@@ -241,17 +291,7 @@ class AdminRepositoryImpl implements AdminRepository {
           );
         }
 
-        final profileModel = CandidateProfileModel(
-          profileId: profileId,
-          userId: result['userId'] as String,
-          firstName: result['firstName'] as String,
-          lastName: result['lastName'] as String,
-          workHistory: profileData['workHistory'] != null
-              ? List<Map<String, dynamic>>.from(profileData['workHistory'])
-              : null,
-          assignedAgentId: profileData['assignedAgentId'] as String?,
-        );
-
+        final profileModel = _createProfileModelFromData(profileData, profileId, userId);
         return Right(profileModel.toEntity());
       } else {
         // Fallback to direct Firebase (legacy approach)
@@ -273,7 +313,7 @@ class AdminRepositoryImpl implements AdminRepository {
           role: AppConstants.roleCandidate,
         );
 
-        // Create candidate profile
+        // Create candidate profile with basic fields
         final profileId = await firestoreDataSource.createCandidateProfile(
           userId: userId,
           firstName: firstName,
@@ -285,6 +325,36 @@ class AdminRepositoryImpl implements AdminRepository {
           userId: userId,
           data: {'profileId': profileId},
         );
+
+        // Update profile with all additional fields
+        final updateData = <String, dynamic>{};
+        if (middleName != null && middleName.isNotEmpty) updateData['middleName'] = middleName;
+        if (address1 != null && address1.isNotEmpty) updateData['address1'] = address1;
+        if (address2 != null && address2.isNotEmpty) updateData['address2'] = address2;
+        if (city != null && city.isNotEmpty) updateData['city'] = city;
+        if (state != null && state.isNotEmpty) updateData['state'] = state;
+        if (zip != null && zip.isNotEmpty) updateData['zip'] = zip;
+        if (ssn != null && ssn.isNotEmpty) updateData['ssn'] = ssn;
+        if (phones != null && phones.isNotEmpty) updateData['phones'] = phones;
+        if (profession != null && profession.isNotEmpty) updateData['profession'] = profession;
+        if (specialties != null && specialties.isNotEmpty) updateData['specialties'] = specialties;
+        if (liabilityAction != null && liabilityAction.isNotEmpty) updateData['liabilityAction'] = liabilityAction;
+        if (licenseAction != null && licenseAction.isNotEmpty) updateData['licenseAction'] = licenseAction;
+        if (previouslyTraveled != null && previouslyTraveled.isNotEmpty) updateData['previouslyTraveled'] = previouslyTraveled;
+        if (terminatedFromAssignment != null && terminatedFromAssignment.isNotEmpty) updateData['terminatedFromAssignment'] = terminatedFromAssignment;
+        if (licensureState != null && licensureState.isNotEmpty) updateData['licensureState'] = licensureState;
+        if (npi != null && npi.isNotEmpty) updateData['npi'] = npi;
+        if (education != null && education.isNotEmpty) updateData['education'] = education;
+        if (certifications != null && certifications.isNotEmpty) updateData['certifications'] = certifications;
+        if (workHistory != null && workHistory.isNotEmpty) updateData['workHistory'] = workHistory;
+        if (email.isNotEmpty) updateData['email'] = email;
+
+        if (updateData.isNotEmpty) {
+          await firestoreDataSource.updateCandidateProfile(
+            profileId: profileId,
+            data: updateData,
+          );
+        }
 
         // Note: createUserWithEmailAndPassword automatically signs in the new user
         // Sign out the newly created user to prevent auto-login
@@ -300,17 +370,7 @@ class AdminRepositoryImpl implements AdminRepository {
           );
         }
 
-        final profileModel = CandidateProfileModel(
-          profileId: profileId,
-          userId: userId,
-          firstName: firstName,
-          lastName: lastName,
-          workHistory: profileData['workHistory'] != null
-              ? List<Map<String, dynamic>>.from(profileData['workHistory'])
-              : null,
-          assignedAgentId: profileData['assignedAgentId'] as String?,
-        );
-
+        final profileModel = _createProfileModelFromData(profileData, profileId, userId);
         return Right(profileModel.toEntity());
       }
     } on AuthException catch (e) {
@@ -514,5 +574,68 @@ class AdminRepositoryImpl implements AdminRepository {
     } catch (e) {
       return Left(ServerFailure('An unexpected error occurred: $e'));
     }
+  }
+
+  // Helper method to create profile model from Firestore data
+  CandidateProfileModel _createProfileModelFromData(
+    Map<String, dynamic> data,
+    String profileId,
+    String userId,
+  ) {
+    return CandidateProfileModel(
+      profileId: profileId,
+      userId: data['userId'] ?? userId,
+      firstName: data['firstName'] ?? '',
+      lastName: data['lastName'] ?? '',
+      workHistory: _parseWorkHistory(data['workHistory']),
+      assignedAgentId: data['assignedAgentId'] as String?,
+      middleName: data['middleName'] as String?,
+      email: data['email'] as String?,
+      address1: data['address1'] as String?,
+      address2: data['address2'] as String?,
+      city: data['city'] as String?,
+      state: data['state'] as String?,
+      zip: data['zip'] as String?,
+      ssn: data['ssn'] as String?,
+      phones: _parseListOfMaps(data['phones']),
+      profession: data['profession'] as String?,
+      specialties: data['specialties'] as String?,
+      liabilityAction: data['liabilityAction'] as String?,
+      licenseAction: data['licenseAction'] as String?,
+      previouslyTraveled: data['previouslyTraveled'] as String?,
+      terminatedFromAssignment: data['terminatedFromAssignment'] as String?,
+      licensureState: data['licensureState'] as String?,
+      npi: data['npi'] as String?,
+      education: _parseListOfMaps(data['education']),
+      certifications: _parseListOfMaps(data['certifications']),
+    );
+  }
+
+  // Helper method to parse work history
+  List<Map<String, dynamic>>? _parseWorkHistory(dynamic data) {
+    if (data == null) return null;
+    if (data is List) {
+      return data.map((item) {
+        if (item is Map<String, dynamic>) {
+          return item;
+        }
+        return Map<String, dynamic>.from(item);
+      }).toList();
+    }
+    return null;
+  }
+
+  // Helper method to parse list of maps
+  List<Map<String, dynamic>>? _parseListOfMaps(dynamic data) {
+    if (data == null) return null;
+    if (data is List) {
+      return data.map((item) {
+        if (item is Map<String, dynamic>) {
+          return item;
+        }
+        return Map<String, dynamic>.from(item);
+      }).toList();
+    }
+    return null;
   }
 }
