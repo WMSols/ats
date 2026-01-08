@@ -69,9 +69,11 @@ class PhonesSection extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(
-                    AppResponsive.radius(context, factor: 5),
+                    AppResponsive.radius(context, factor: 1.5),
                   ),
-                  border: Border.all(color: AppColors.primary),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.5),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -81,9 +83,9 @@ class PhonesSection extends StatelessWidget {
                       children: [
                         Text(
                           '${AppTexts.phone} ${index + 1}',
-                          style: AppTextStyles.bodyText(context).copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTextStyles.bodyText(
+                            context,
+                          ).copyWith(fontWeight: FontWeight.w600),
                         ),
                         if (phoneEntries.length > 1)
                           IconButton(
@@ -101,7 +103,8 @@ class PhonesSection extends StatelessWidget {
                         Expanded(
                           flex: 2,
                           child: AppCountryCodePicker(
-                            initialValue: phone.countryCodeController.text.isEmpty
+                            initialValue:
+                                phone.countryCodeController.text.isEmpty
                                 ? '+1'
                                 : phone.countryCodeController.text,
                             labelText: AppTexts.countryCode,
@@ -120,7 +123,8 @@ class PhonesSection extends StatelessWidget {
                             labelText: '${AppTexts.number}(*)',
                             showLabelAbove: true,
                             keyboardType: TextInputType.phone,
-                            onChanged: (value) => onNumberChanged?.call(index, value),
+                            onChanged: (value) =>
+                                onNumberChanged?.call(index, value),
                           ),
                         ),
                       ],
@@ -130,7 +134,10 @@ class PhonesSection extends StatelessWidget {
                         () => phone.numberError!.value != null
                             ? Padding(
                                 padding: EdgeInsets.only(
-                                  top: AppSpacing.vertical(context, 0.01).height!,
+                                  top: AppSpacing.vertical(
+                                    context,
+                                    0.01,
+                                  ).height!,
                                 ),
                                 child: AppErrorMessage(
                                   message: phone.numberError!.value!,
@@ -148,5 +155,4 @@ class PhonesSection extends StatelessWidget {
       ),
     );
   }
-
 }

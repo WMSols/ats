@@ -65,6 +65,9 @@ class _CandidateProfileFormState extends State<CandidateProfileForm> {
             middleNameController: formState.middleNameController,
             lastNameController: formState.lastNameController,
             emailController: formState.emailController,
+            passwordController: formState.passwordController,
+            emailEnabled: false, // Email is read-only for candidates
+            passwordEnabled: false, // Password is read-only for candidates (prefilled with email)
             address1Controller: formState.address1Controller,
             address2Controller: formState.address2Controller,
             cityController: formState.cityController,

@@ -3,11 +3,12 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:ats/presentation/admin/controllers/admin_candidates_controller.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
-import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
-import 'package:ats/core/utils/app_colors/app_colors.dart';
-import 'package:ats/core/utils/app_responsive/app_responsive.dart';
+import 'package:ats/core/utils/app_validators/app_validators.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
+import 'package:ats/core/widgets/profile/sections/sections.dart';
+import 'package:ats/core/widgets/profile/form/admin_profile_form_state.dart';
+import 'package:ats/core/widgets/profile/form/admin_profile_form_data_helper.dart';
 
 class AdminEditCandidateScreen extends StatefulWidget {
   const AdminEditCandidateScreen({super.key});
@@ -19,184 +20,90 @@ class AdminEditCandidateScreen extends StatefulWidget {
 
 class _AdminEditCandidateScreenState extends State<AdminEditCandidateScreen> {
   final controller = Get.find<AdminCandidatesController>();
-  late final TextEditingController firstNameController;
-  late final TextEditingController lastNameController;
-  late final TextEditingController phoneController;
-  late final TextEditingController addressController;
+  late final AdminProfileFormState formState;
 
-  // Work history controllers
-  final List<Map<String, TextEditingController>> workHistoryControllers = [];
+  // Password field (for admin side only)
+  final passwordController = TextEditingController();
+  final passwordError = Rxn<String>();
+
+  // Validation errors
+  final firstNameError = Rxn<String>();
+  final lastNameError = Rxn<String>();
+  final address1Error = Rxn<String>();
+  final cityError = Rxn<String>();
+  final stateError = Rxn<String>();
+  final zipError = Rxn<String>();
+  final professionError = Rxn<String>();
+  final specialtiesError = Rxn<String>();
+  final licensureStateError = Rxn<String>();
+  final phonesError = Rxn<String>();
+  final educationError = Rxn<String>();
+  final workHistoryError = Rxn<String>();
+
+  // Phone validation errors
+  final phoneErrors = <int, Rxn<String>>{}.obs;
 
   @override
   void initState() {
     super.initState();
-    firstNameController = TextEditingController();
-    lastNameController = TextEditingController();
-    phoneController = TextEditingController();
-    addressController = TextEditingController();
+    formState = AdminProfileFormState();
+    
+    // Set password field to masked placeholder (read-only in edit mode)
+    passwordController.text = '••••••••';
 
     // Load existing profile data when it becomes available
     ever(controller.selectedCandidateProfile, (profile) {
       if (profile != null && mounted) {
-        // Only update if controllers are empty or different
-        if (firstNameController.text.isEmpty ||
-            firstNameController.text != profile.firstName) {
-          firstNameController.text = profile.firstName;
-        }
-        if (lastNameController.text.isEmpty ||
-            lastNameController.text != profile.lastName) {
-          lastNameController.text = profile.lastName;
-        }
-        // Phone and address are now in phones and address1 fields
-        // Get first phone if available
-        if (profile.phones != null && profile.phones!.isNotEmpty) {
-          final firstPhone = profile.phones!.first;
-          final phoneNumber = firstPhone['number']?.toString() ?? '';
-          if (phoneController.text.isEmpty || phoneController.text != phoneNumber) {
-            phoneController.text = phoneNumber;
-          }
-        }
-        // Use address1 if available
-        if (profile.address1 != null && profile.address1!.isNotEmpty) {
-          if (addressController.text.isEmpty || addressController.text != profile.address1) {
-            addressController.text = profile.address1!;
-          }
-        }
-
-        // Load work history
-        if (profile.workHistory != null && profile.workHistory!.isNotEmpty) {
-          // Always rebuild if work history exists and controllers are empty or lengths differ
-          if (workHistoryControllers.isEmpty ||
-              workHistoryControllers.length != profile.workHistory!.length) {
-            // Clear existing and rebuild
-            for (var entry in workHistoryControllers) {
-              for (var controller in entry.values) {
-                controller.dispose();
-              }
-            }
-            workHistoryControllers.clear();
-
-            _initializeWorkHistoryControllers(profile.workHistory);
-            if (mounted) setState(() {});
-          }
-        } else if (workHistoryControllers.isNotEmpty) {
-          // If profile has no work history but controllers exist, clear them
-          for (var entry in workHistoryControllers) {
-            for (var controller in entry.values) {
-              controller.dispose();
-            }
-          }
-          workHistoryControllers.clear();
-          if (mounted) setState(() {});
-        }
+        formState.loadFromProfile(profile);
+        setState(() {});
       }
     });
 
     // Load initial profile if already available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (controller.selectedCandidateProfile.value != null && mounted) {
-        final profile = controller.selectedCandidateProfile.value!;
-        if (firstNameController.text.isEmpty) {
-          firstNameController.text = profile.firstName;
-        }
-        if (lastNameController.text.isEmpty) {
-          lastNameController.text = profile.lastName;
-        }
-        // Phone and address are now in phones and address1 fields
-        // Get first phone if available
-        if (profile.phones != null && profile.phones!.isNotEmpty) {
-          final firstPhone = profile.phones!.first;
-          final phoneNumber = firstPhone['number']?.toString() ?? '';
-          if (phoneController.text.isEmpty) {
-            phoneController.text = phoneNumber;
-          }
-        }
-        // Use address1 if available
-        if (profile.address1 != null && profile.address1!.isNotEmpty) {
-          if (addressController.text.isEmpty) {
-            addressController.text = profile.address1!;
-          }
-        }
-
-        // Load work history if available and controllers are empty
-        if (profile.workHistory != null &&
-            profile.workHistory!.isNotEmpty &&
-            workHistoryControllers.isEmpty) {
-          _initializeWorkHistoryControllers(profile.workHistory);
-          setState(() {});
-        }
+        formState.loadFromProfile(controller.selectedCandidateProfile.value);
+        setState(() {});
       }
     });
-  }
-
-  void _initializeWorkHistoryControllers(
-    List<Map<String, dynamic>>? workHistory,
-  ) {
-    if (workHistory == null) return;
-    for (var work in workHistory) {
-      workHistoryControllers.add({
-        'company': TextEditingController(
-          text: work['company']?.toString() ?? '',
-        ),
-        'position': TextEditingController(
-          text: work['position']?.toString() ?? '',
-        ),
-        'description': TextEditingController(
-          text: work['description']?.toString() ?? '',
-        ),
-      });
-    }
   }
 
   @override
   void dispose() {
-    firstNameController.dispose();
-    lastNameController.dispose();
-    phoneController.dispose();
-    addressController.dispose();
-    for (var entry in workHistoryControllers) {
-      for (var controller in entry.values) {
-        controller.dispose();
-      }
-    }
+    formState.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
-  void _addWorkHistoryEntry() {
-    setState(() {
-      workHistoryControllers.add({
-        'company': TextEditingController(),
-        'position': TextEditingController(),
-        'description': TextEditingController(),
-      });
-    });
-  }
+  void _saveProfile() {
+    final profileData = AdminProfileFormDataHelper.getProfileData(formState);
 
-  void _removeWorkHistoryEntry(int index) {
-    setState(() {
-      for (var controller in workHistoryControllers[index].values) {
-        controller.dispose();
-      }
-      workHistoryControllers.removeAt(index);
-    });
-  }
-
-  List<Map<String, dynamic>> _getWorkHistoryFromControllers() {
-    return workHistoryControllers
-        .map((controllers) {
-          return {
-            'company': controllers['company']!.text.trim(),
-            'position': controllers['position']!.text.trim(),
-            'description': controllers['description']!.text.trim(),
-          };
-        })
-        .where(
-          (work) =>
-              work['company']!.isNotEmpty ||
-              work['position']!.isNotEmpty ||
-              work['description']!.isNotEmpty,
-        )
-        .toList();
+    controller.updateCandidateProfile(
+      firstName: formState.firstNameController.text.trim(),
+      lastName: formState.lastNameController.text.trim(),
+      middleName: profileData['middleName'] as String?,
+      email: formState.emailController.text.trim().isEmpty
+          ? null
+          : formState.emailController.text.trim(),
+      address1: profileData['address1'] as String?,
+      address2: profileData['address2'] as String?,
+      city: profileData['city'] as String?,
+      state: profileData['state'] as String?,
+      zip: profileData['zip'] as String?,
+      ssn: profileData['ssn'] as String?,
+      phones: profileData['phones'] as List<Map<String, dynamic>>?,
+      profession: profileData['profession'] as String?,
+      specialties: profileData['specialties'] as String?,
+      liabilityAction: profileData['liabilityAction'] as String?,
+      licenseAction: profileData['licenseAction'] as String?,
+      previouslyTraveled: profileData['previouslyTraveled'] as String?,
+      terminatedFromAssignment: profileData['terminatedFromAssignment'] as String?,
+      licensureState: profileData['licensureState'] as String?,
+      npi: profileData['npi'] as String?,
+      education: profileData['education'] as List<Map<String, dynamic>>?,
+      certifications: profileData['certifications'] as List<Map<String, dynamic>>?,
+      workHistory: profileData['workHistory'] as List<Map<String, dynamic>>?,
+    );
   }
 
   @override
@@ -217,113 +124,244 @@ class _AdminEditCandidateScreenState extends State<AdminEditCandidateScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // First Name
-              AppTextField(
-                controller: firstNameController,
-                labelText: AppTexts.firstName,
-                showLabelAbove: true,
+              // Candidate Profile Section
+              Obx(
+                () => CandidateProfileSection(
+                  firstNameController: formState.firstNameController,
+                  middleNameController: formState.middleNameController,
+                  lastNameController: formState.lastNameController,
+                  emailController: formState.emailController,
+                  passwordController: passwordController,
+                  emailEnabled: false, // Email is disabled in admin edit
+                  passwordEnabled: false, // Password is disabled in admin edit
+                  address1Controller: formState.address1Controller,
+                  address2Controller: formState.address2Controller,
+                  cityController: formState.cityController,
+                  stateController: formState.stateController,
+                  zipController: formState.zipController,
+                  ssnController: formState.ssnController,
+                  firstNameError: firstNameError,
+                  lastNameError: lastNameError,
+                  emailError: Rxn<String>(),
+                  passwordError: passwordError,
+                  address1Error: address1Error,
+                  cityError: cityError,
+                  stateError: stateError,
+                  zipError: zipError,
+                  onFirstNameChanged: (_) => null,
+                  onLastNameChanged: (_) => null,
+                  onEmailChanged: (_) => null,
+                  onPasswordChanged: (value) {
+                    passwordError.value = AppValidators.validatePassword(value);
+                    return null;
+                  },
+                  onAddress1Changed: (_) => null,
+                  onCityChanged: (_) => null,
+                  onStateChanged: (_) => null,
+                  onZipChanged: (_) => null,
+                  hasError: firstNameError.value != null ||
+                      lastNameError.value != null ||
+                      address1Error.value != null ||
+                      cityError.value != null ||
+                      stateError.value != null ||
+                      zipError.value != null,
+                ),
               ),
               AppSpacing.vertical(context, 0.02),
 
-              // Last Name
-              AppTextField(
-                controller: lastNameController,
-                labelText: AppTexts.lastName,
-                showLabelAbove: true,
+              // Phones Section
+              Obx(
+                () => PhonesSection(
+                  phoneEntries: formState.phoneEntries.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final phone = entry.value;
+                    return PhoneEntry(
+                      countryCodeController: phone.countryCodeController,
+                      numberController: phone.numberController,
+                      numberError: phoneErrors[index] ?? Rxn<String>(null),
+                    );
+                  }).toList(),
+                  onCountryCodeChanged: (index, countryCode) {},
+                  onNumberChanged: (index, number) {},
+                  onAddPhone: () {
+                    setState(() {
+                      formState.addPhone();
+                    });
+                  },
+                  onRemovePhone: (index) {
+                    setState(() {
+                      formState.removePhone(index);
+                    });
+                  },
+                  hasError: phonesError.value != null ||
+                      phoneErrors.values.any((e) => e.value != null),
+                ),
               ),
               AppSpacing.vertical(context, 0.02),
 
-              // Phone
-              AppTextField(
-                controller: phoneController,
-                labelText: AppTexts.phone,
-                showLabelAbove: true,
-                keyboardType: TextInputType.phone,
+              // Specialty Section
+              Obx(
+                () => SpecialtySection(
+                  selectedProfession: formState.selectedProfession,
+                  selectedSpecialties: formState.selectedSpecialties,
+                  professionError: professionError,
+                  specialtiesError: specialtiesError,
+                  onProfessionChanged: (value) {
+                    setState(() {
+                      formState.selectedProfession = value;
+                    });
+                  },
+                  onSpecialtiesChanged: (specialties) {
+                    setState(() {
+                      formState.selectedSpecialties.clear();
+                      formState.selectedSpecialties.addAll(specialties);
+                    });
+                  },
+                  hasError: professionError.value != null ||
+                      specialtiesError.value != null,
+                ),
               ),
               AppSpacing.vertical(context, 0.02),
 
-              // Address
-              AppTextField(
-                controller: addressController,
-                labelText: AppTexts.address,
-                showLabelAbove: true,
-                maxLines: 3,
+              // Background History Section
+              BackgroundHistorySection(
+                liabilityAction: formState.liabilityAction,
+                licenseAction: formState.licenseAction,
+                previouslyTraveled: formState.previouslyTraveled,
+                terminatedFromAssignment: formState.terminatedFromAssignment,
+                onLiabilityActionChanged: (value) {
+                  setState(() {
+                    formState.liabilityAction = value;
+                  });
+                },
+                onLicenseActionChanged: (value) {
+                  setState(() {
+                    formState.licenseAction = value;
+                  });
+                },
+                onPreviouslyTraveledChanged: (value) {
+                  setState(() {
+                    formState.previouslyTraveled = value;
+                  });
+                },
+                onTerminatedFromAssignmentChanged: (value) {
+                  setState(() {
+                    formState.terminatedFromAssignment = value;
+                  });
+                },
               ),
-              AppSpacing.vertical(context, 0.03),
+              AppSpacing.vertical(context, 0.02),
+
+              // Licensure Section
+              Obx(
+                () => LicensureSection(
+                  selectedState: formState.licensureState,
+                  npiController: formState.npiController,
+                  onStateChanged: (value) {
+                    setState(() {
+                      formState.licensureState = value;
+                    });
+                  },
+                  stateError: licensureStateError,
+                  hasError: licensureStateError.value != null,
+                ),
+              ),
+              AppSpacing.vertical(context, 0.02),
+
+              // Education Section
+              Obx(
+                () => EducationSection(
+                  educationEntries: formState.educationEntries,
+                  onOngoingChanged: (index, isOngoing) {
+                    setState(() {
+                      formState.educationEntries[index] = EducationEntry(
+                        institutionController: formState.educationEntries[index].institutionController,
+                        degreeController: formState.educationEntries[index].degreeController,
+                        fromDateController: formState.educationEntries[index].fromDateController,
+                        toDateController: formState.educationEntries[index].toDateController,
+                        isOngoing: isOngoing,
+                      );
+                    });
+                  },
+                  onInstitutionChanged: (index, institution) {},
+                  onDegreeChanged: (index, degree) {},
+                  onFromDateChanged: (index, fromDate) {},
+                  onToDateChanged: (index, toDate) {},
+                  onAddEducation: () {
+                    setState(() {
+                      formState.addEducation();
+                    });
+                  },
+                  onRemoveEducation: (index) {
+                    setState(() {
+                      formState.removeEducation(index);
+                    });
+                  },
+                  generalError: educationError,
+                  hasError: educationError.value != null,
+                ),
+              ),
+              AppSpacing.vertical(context, 0.02),
+
+              // Certifications Section
+              CertificationsSection(
+                certificationEntries: formState.certificationEntries,
+                onNoExpiryChanged: (index, hasNoExpiry) {
+                  setState(() {
+                    formState.certificationEntries[index] = CertificationEntry(
+                      nameController: formState.certificationEntries[index].nameController,
+                      expiryController: formState.certificationEntries[index].expiryController,
+                      hasNoExpiry: hasNoExpiry,
+                    );
+                  });
+                },
+                onAddCertification: () {
+                  setState(() {
+                    formState.addCertification();
+                  });
+                },
+                onRemoveCertification: (index) {
+                  setState(() {
+                    formState.removeCertification(index);
+                  });
+                },
+              ),
+              AppSpacing.vertical(context, 0.02),
 
               // Work History Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppTexts.workHistory,
-                    style: AppTextStyles.bodyText(
-                      context,
-                    ).copyWith(fontWeight: FontWeight.w700),
-                  ),
-                  TextButton.icon(
-                    onPressed: _addWorkHistoryEntry,
-                    icon: Icon(
-                      Iconsax.add,
-                      size: AppResponsive.iconSize(context),
-                    ),
-                    label: Text(AppTexts.addWorkHistory),
-                  ),
-                ],
+              Obx(
+                () => WorkHistorySectionWidget(
+                  workHistoryEntries: formState.workHistoryEntries,
+                  onOngoingChanged: (index, isOngoing) {
+                    setState(() {
+                      formState.workHistoryEntries[index] = WorkHistoryEntry(
+                        companyController: formState.workHistoryEntries[index].companyController,
+                        positionController: formState.workHistoryEntries[index].positionController,
+                        descriptionController: formState.workHistoryEntries[index].descriptionController,
+                        fromDateController: formState.workHistoryEntries[index].fromDateController,
+                        toDateController: formState.workHistoryEntries[index].toDateController,
+                        isOngoing: isOngoing,
+                      );
+                    });
+                  },
+                  onCompanyChanged: (index, company) {},
+                  onPositionChanged: (index, position) {},
+                  onFromDateChanged: (index, fromDate) {},
+                  onToDateChanged: (index, toDate) {},
+                  onAdd: () {
+                    setState(() {
+                      formState.addWorkHistoryEntry();
+                    });
+                  },
+                  onRemove: (index) {
+                    setState(() {
+                      formState.removeWorkHistoryEntry(index);
+                    });
+                  },
+                  generalError: workHistoryError,
+                  hasError: workHistoryError.value != null,
+                ),
               ),
-              AppSpacing.vertical(context, 0.01),
-
-              // Work History Entries
-              ...workHistoryControllers.asMap().entries.map((entry) {
-                final index = entry.key;
-                final controllers = entry.value;
-                return Padding(
-                  padding: AppSpacing.all(context, factor: 0.8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${AppTexts.workTitle} ${index + 1}',
-                            style: AppTextStyles.bodyText(
-                              context,
-                            ).copyWith(fontWeight: FontWeight.w500),
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Iconsax.trash,
-                              color: AppColors.error,
-                            ),
-                            onPressed: () => _removeWorkHistoryEntry(index),
-                          ),
-                        ],
-                      ),
-                      AppSpacing.vertical(context, 0.01),
-                      AppTextField(
-                        controller: controllers['company']!,
-                        labelText: AppTexts.company,
-                        showLabelAbove: true,
-                      ),
-                      AppSpacing.vertical(context, 0.01),
-                      AppTextField(
-                        controller: controllers['position']!,
-                        labelText: AppTexts.position,
-                        showLabelAbove: true,
-                      ),
-                      AppSpacing.vertical(context, 0.01),
-                      AppTextField(
-                        controller: controllers['description']!,
-                        labelText: AppTexts.description,
-                        showLabelAbove: true,
-                        maxLines: 3,
-                      ),
-                    ],
-                  ),
-                );
-              }),
-
               AppSpacing.vertical(context, 0.03),
 
               // Error Message
@@ -345,27 +383,7 @@ class _AdminEditCandidateScreenState extends State<AdminEditCandidateScreen> {
               Obx(
                 () => AppButton(
                   text: AppTexts.update,
-                  onPressed: () {
-                    final workHistory = _getWorkHistoryFromControllers();
-                    controller.updateCandidateProfile(
-                      firstName: firstNameController.text.trim(),
-                      lastName: lastNameController.text.trim(),
-                      workHistory: workHistory.isEmpty ? null : workHistory,
-                      // Convert phone to phones format
-                      phones: phoneController.text.trim().isNotEmpty
-                          ? [
-                              {
-                                'countryCode': '+1',
-                                'number': phoneController.text.trim(),
-                              }
-                            ]
-                          : null,
-                      // Use address1
-                      address1: addressController.text.trim().isNotEmpty
-                          ? addressController.text.trim()
-                          : null,
-                    );
-                  },
+                  onPressed: _saveProfile,
                   isLoading: controller.isLoading.value,
                 ),
               ),

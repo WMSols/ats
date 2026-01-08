@@ -250,6 +250,7 @@ class AppTexts {
   static const String phoneNumberRequired = "Phone number is required";
   static const String phoneNumberMinLength = "Phone number must be at least 10 digits";
   static const String educationRequired = "At least one education entry is required";
+  static const String workHistoryRequired = "At least one work history entry is required";
 
   // Common
   static const String cancel = "Cancel";
