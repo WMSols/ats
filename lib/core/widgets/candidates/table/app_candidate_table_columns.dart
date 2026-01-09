@@ -29,16 +29,12 @@ class AppCandidateTableColumns {
   static DataColumn _buildColumn(BuildContext context, String label) {
     return DataColumn(
       label: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8.0,
-          horizontal: 4.0,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
         child: Text(
           label,
-          style: AppTextStyles.bodyText(context).copyWith(
-            color: AppColors.secondary,
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppTextStyles.bodyText(
+            context,
+          ).copyWith(color: AppColors.secondary, fontWeight: FontWeight.w500),
         ),
       ),
     );

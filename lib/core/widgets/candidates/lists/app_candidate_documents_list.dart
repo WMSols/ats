@@ -44,7 +44,9 @@ class AppCandidateDocumentsList extends StatelessWidget {
         final isRejected = doc.status == AppConstants.documentStatusDenied;
         final isApproved = doc.status == AppConstants.documentStatusApproved;
         final isPending = doc.status == AppConstants.documentStatusPending;
-        final expiryStatus = AppCandidateTableFormatters.formatExpiryStatus(doc);
+        final expiryStatus = AppCandidateTableFormatters.formatExpiryStatus(
+          doc,
+        );
 
         return AppListCard(
           key: ValueKey('document_${doc.candidateDocId}'),

@@ -77,7 +77,7 @@ class _MyDocumentCreateScreenState extends State<MyDocumentCreateScreen> {
         final now = DateTime.now();
         final currentMonth = DateTime(now.year, now.month);
         final selectedMonth = DateTime(expiryDate.year, expiryDate.month);
-        
+
         if (selectedMonth.isBefore(currentMonth)) {
           expiryError.value = 'Expiry date cannot be in the past';
         } else {
@@ -99,8 +99,10 @@ class _MyDocumentCreateScreenState extends State<MyDocumentCreateScreen> {
     validateExpiry();
 
     final controller = Get.find<DocumentsController>();
-    
-    if (titleError.value != null || descriptionError.value != null || expiryError.value != null) {
+
+    if (titleError.value != null ||
+        descriptionError.value != null ||
+        expiryError.value != null) {
       return false;
     }
 
@@ -157,8 +159,10 @@ class _MyDocumentCreateScreenState extends State<MyDocumentCreateScreen> {
               AppSpacing.vertical(context, 0.03),
               Obx(() {
                 final hasFile = controller.selectedFile.value != null;
-                final hasExpiry = hasNoExpiry || expiryController.text.trim().isNotEmpty;
-                final hasNoErrors = titleError.value == null &&
+                final hasExpiry =
+                    hasNoExpiry || expiryController.text.trim().isNotEmpty;
+                final hasNoErrors =
+                    titleError.value == null &&
                     descriptionError.value == null &&
                     expiryError.value == null;
                 final canCreate =
@@ -176,12 +180,17 @@ class _MyDocumentCreateScreenState extends State<MyDocumentCreateScreen> {
                           if (_validateForm()) {
                             // Parse expiry date if provided
                             DateTime? expiryDate;
-                            if (!hasNoExpiry && expiryController.text.isNotEmpty) {
+                            if (!hasNoExpiry &&
+                                expiryController.text.isNotEmpty) {
                               try {
                                 final format = DateFormat('MM/yyyy');
-                                expiryDate = format.parse(expiryController.text);
+                                expiryDate = format.parse(
+                                  expiryController.text,
+                                );
                               } catch (e) {
-                                AppSnackbar.error('Invalid expiry date format. Please use MM/YYYY');
+                                AppSnackbar.error(
+                                  'Invalid expiry date format. Please use MM/YYYY',
+                                );
                                 return;
                               }
                             }

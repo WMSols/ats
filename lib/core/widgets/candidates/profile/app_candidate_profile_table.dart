@@ -61,5 +61,4 @@ class AppCandidateProfileTable extends StatelessWidget {
       ),
     );
   }
-
 }

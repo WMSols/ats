@@ -50,21 +50,19 @@ class AppCandidatesTable extends StatelessWidget {
     // Cell padding: ~100
     // Adding extra padding: ~2200 to ensure all columns are visible, especially Actions column
     const minTableWidth = 2200.0;
-    
-    final hasActionsColumn = isSuperAdmin && (onCandidateEdit != null || onCandidateDelete != null);
-    
+
+    final hasActionsColumn =
+        isSuperAdmin && (onCandidateEdit != null || onCandidateDelete != null);
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: AppSpacing.padding(context).copyWith(
-        left: 0,
-        right: hasActionsColumn ? 16.0 : 0,
-      ),
+      padding: AppSpacing.padding(
+        context,
+      ).copyWith(left: 0, right: hasActionsColumn ? 16.0 : 0),
       child: SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: minTableWidth,
-          ),
+          constraints: BoxConstraints(minWidth: minTableWidth),
           child: SizedBox(
             width: minTableWidth,
             child: DataTable(
@@ -73,7 +71,8 @@ class AppCandidatesTable extends StatelessWidget {
               columns: AppCandidateTableColumns.buildColumns(
                 context,
                 isSuperAdmin: isSuperAdmin,
-                hasEditOrDelete: onCandidateEdit != null || onCandidateDelete != null,
+                hasEditOrDelete:
+                    onCandidateEdit != null || onCandidateDelete != null,
               ),
               rows: candidates.map((candidate) {
                 final name = getName(candidate.userId);
@@ -95,7 +94,9 @@ class AppCandidatesTable extends StatelessWidget {
                   specialties: specialties,
                   status: status,
                   agentName: agentName,
-                  assignedAgentProfileId: getAssignedAgentProfileId(candidate.userId),
+                  assignedAgentProfileId: getAssignedAgentProfileId(
+                    candidate.userId,
+                  ),
                   isSuperAdmin: isSuperAdmin,
                   availableAgents: availableAgents,
                   onAgentChanged: onAgentChanged,
@@ -110,5 +111,4 @@ class AppCandidatesTable extends StatelessWidget {
       ),
     );
   }
-
 }

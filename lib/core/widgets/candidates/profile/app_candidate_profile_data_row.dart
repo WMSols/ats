@@ -11,31 +11,23 @@ class AppCandidateProfileDataRow {
     return [
       DataColumn(
         label: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 8.0,
-            horizontal: 4.0,
-          ),
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
           child: Text(
             AppTexts.field,
-            style: AppTextStyles.bodyText(context).copyWith(
-              color: AppColors.secondary,
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTextStyles.bodyText(
+              context,
+            ).copyWith(color: AppColors.secondary, fontWeight: FontWeight.w500),
           ),
         ),
       ),
       DataColumn(
         label: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 8.0,
-            horizontal: 4.0,
-          ),
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
           child: Text(
             AppTexts.value,
-            style: AppTextStyles.bodyText(context).copyWith(
-              color: AppColors.secondary,
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTextStyles.bodyText(
+              context,
+            ).copyWith(color: AppColors.secondary, fontWeight: FontWeight.w500),
           ),
         ),
       ),
@@ -68,9 +60,7 @@ class AppCandidateProfileDataRow {
                         fontWeight: isSectionHeader
                             ? FontWeight.w600
                             : FontWeight.normal,
-                        color: isSectionHeader
-                            ? AppColors.secondary
-                            : null,
+                        color: isSectionHeader ? AppColors.secondary : null,
                       ),
                     ),
             ),
@@ -122,10 +112,7 @@ class AppCandidateProfileDataRow {
                 vertical: 8.0,
                 horizontal: 4.0,
               ),
-              child: Text(
-                'Profile',
-                style: AppTextStyles.bodyText(context),
-              ),
+              child: Text('Profile', style: AppTextStyles.bodyText(context)),
             ),
           ),
           DataCell(

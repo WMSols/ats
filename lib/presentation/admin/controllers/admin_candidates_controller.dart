@@ -546,7 +546,8 @@ class AdminCandidatesController extends GetxController {
     // If super_admin, show all candidates (no filtering by agent)
 
     // Apply agent filter
-    if (selectedAgentFilter.value != null && selectedAgentFilter.value!.isNotEmpty) {
+    if (selectedAgentFilter.value != null &&
+        selectedAgentFilter.value!.isNotEmpty) {
       filtered = filtered.where((candidate) {
         final profile = candidateProfiles[candidate.userId];
         return profile?.assignedAgentId == selectedAgentFilter.value;
@@ -554,7 +555,8 @@ class AdminCandidatesController extends GetxController {
     }
 
     // Apply status filter
-    if (selectedStatusFilter.value != null && selectedStatusFilter.value!.isNotEmpty) {
+    if (selectedStatusFilter.value != null &&
+        selectedStatusFilter.value!.isNotEmpty) {
       filtered = filtered.where((candidate) {
         final status = getCandidateStatus(candidate.userId);
         return status == selectedStatusFilter.value;
@@ -562,7 +564,8 @@ class AdminCandidatesController extends GetxController {
     }
 
     // Apply profession filter
-    if (selectedProfessionFilter.value != null && selectedProfessionFilter.value!.isNotEmpty) {
+    if (selectedProfessionFilter.value != null &&
+        selectedProfessionFilter.value!.isNotEmpty) {
       filtered = filtered.where((candidate) {
         final profession = getCandidateProfession(candidate.userId);
         return profession == selectedProfessionFilter.value;
@@ -574,7 +577,7 @@ class AdminCandidatesController extends GetxController {
       final query = searchQuery.value.toLowerCase();
       filtered = filtered.where((candidate) {
         final profile = candidateProfiles[candidate.userId];
-        
+
         // Search by email
         if (candidate.email.toLowerCase().contains(query)) {
           return true;
@@ -599,13 +602,17 @@ class AdminCandidatesController extends GetxController {
         }
 
         // Search by profession
-        final profession = getCandidateProfession(candidate.userId).toLowerCase();
+        final profession = getCandidateProfession(
+          candidate.userId,
+        ).toLowerCase();
         if (profession.contains(query)) {
           return true;
         }
 
         // Search by specialties
-        final specialties = getCandidateSpecialties(candidate.userId).toLowerCase();
+        final specialties = getCandidateSpecialties(
+          candidate.userId,
+        ).toLowerCase();
         if (specialties.contains(query)) {
           return true;
         }
@@ -624,28 +631,36 @@ class AdminCandidatesController extends GetxController {
 
         // Search by address fields
         if (profile != null) {
-          if (profile.address1 != null && profile.address1!.toLowerCase().contains(query)) {
+          if (profile.address1 != null &&
+              profile.address1!.toLowerCase().contains(query)) {
             return true;
           }
-          if (profile.address2 != null && profile.address2!.toLowerCase().contains(query)) {
+          if (profile.address2 != null &&
+              profile.address2!.toLowerCase().contains(query)) {
             return true;
           }
-          if (profile.city != null && profile.city!.toLowerCase().contains(query)) {
+          if (profile.city != null &&
+              profile.city!.toLowerCase().contains(query)) {
             return true;
           }
-          if (profile.state != null && profile.state!.toLowerCase().contains(query)) {
+          if (profile.state != null &&
+              profile.state!.toLowerCase().contains(query)) {
             return true;
           }
-          if (profile.zip != null && profile.zip!.toLowerCase().contains(query)) {
+          if (profile.zip != null &&
+              profile.zip!.toLowerCase().contains(query)) {
             return true;
           }
-          if (profile.ssn != null && profile.ssn!.toLowerCase().contains(query)) {
+          if (profile.ssn != null &&
+              profile.ssn!.toLowerCase().contains(query)) {
             return true;
           }
-          if (profile.npi != null && profile.npi!.toLowerCase().contains(query)) {
+          if (profile.npi != null &&
+              profile.npi!.toLowerCase().contains(query)) {
             return true;
           }
-          if (profile.licensureState != null && profile.licensureState!.toLowerCase().contains(query)) {
+          if (profile.licensureState != null &&
+              profile.licensureState!.toLowerCase().contains(query)) {
             return true;
           }
         }
@@ -665,8 +680,11 @@ class AdminCandidatesController extends GetxController {
           for (var work in profile!.workHistory!) {
             final company = work['company']?.toString().toLowerCase() ?? '';
             final position = work['position']?.toString().toLowerCase() ?? '';
-            final description = work['description']?.toString().toLowerCase() ?? '';
-            if (company.contains(query) || position.contains(query) || description.contains(query)) {
+            final description =
+                work['description']?.toString().toLowerCase() ?? '';
+            if (company.contains(query) ||
+                position.contains(query) ||
+                description.contains(query)) {
               return true;
             }
           }
@@ -675,7 +693,8 @@ class AdminCandidatesController extends GetxController {
         // Search in education
         if (profile?.education != null) {
           for (var edu in profile!.education!) {
-            final institution = edu['institutionName']?.toString().toLowerCase() ?? '';
+            final institution =
+                edu['institutionName']?.toString().toLowerCase() ?? '';
             final degree = edu['degree']?.toString().toLowerCase() ?? '';
             if (institution.contains(query) || degree.contains(query)) {
               return true;

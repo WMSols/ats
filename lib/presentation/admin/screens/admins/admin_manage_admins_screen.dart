@@ -75,7 +75,9 @@ class AdminManageAdminsScreen extends StatelessWidget {
                       children: [
                         AppStatusChip(
                           status: isAdmin ? 'admin' : 'recruiter',
-                          customText: isAdmin ? AppTexts.admin : AppTexts.recruiter,
+                          customText: isAdmin
+                              ? AppTexts.admin
+                              : AppTexts.recruiter,
                         ),
                         if (!isCurrentUser) ...[
                           AppActionButton(
@@ -93,8 +95,7 @@ class AdminManageAdminsScreen extends StatelessWidget {
                           AppActionButton(
                             text: AppTexts.deleteUser,
                             onPressed:
-                                (controller.isDeletingUser[profile
-                                        .profileId] ??
+                                (controller.isDeletingUser[profile.profileId] ??
                                     false)
                                 ? null
                                 : () => _showDeleteUserConfirmation(

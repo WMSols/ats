@@ -37,7 +37,7 @@ class AppStatusChip extends StatelessWidget {
     final backgroundColor = isFilter && !isSelected
         ? statusColor.withValues(alpha: 0.2)
         : statusColor;
-    
+
     final iconColor = isFilter && !isSelected ? statusColor : textColor;
     final labelColor = isFilter && !isSelected ? statusColor : textColor;
     final countBackgroundColor = isFilter && !isSelected

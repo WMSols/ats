@@ -43,7 +43,8 @@ class AppDatePicker extends StatelessWidget {
 
     final DateTime now = DateTime.now();
     // For expiry dates (monthYearOnly), set firstDate to current month/year to prevent past dates
-    final DateTime first = firstDate ?? 
+    final DateTime first =
+        firstDate ??
         (monthYearOnly ? DateTime(now.year, now.month) : DateTime(1900));
     final DateTime last = lastDate ?? DateTime(now.year + 100);
 
@@ -709,21 +710,28 @@ class AppDatePicker extends StatelessWidget {
                         final currentYear = now.year;
                         final currentMonth = now.month;
                         // Disable past months: if selected year is current year, disable months before current month
-                        final isPastMonth = selectedDate.year == currentYear && month < currentMonth;
+                        final isPastMonth =
+                            selectedDate.year == currentYear &&
+                            month < currentMonth;
                         return InkWell(
-                          onTap: isPastMonth ? null : () {
-                            setState(() {
-                              selectedDate = DateTime(selectedDate.year, month);
-                            });
-                          },
+                          onTap: isPastMonth
+                              ? null
+                              : () {
+                                  setState(() {
+                                    selectedDate = DateTime(
+                                      selectedDate.year,
+                                      month,
+                                    );
+                                  });
+                                },
                           child: Container(
                             margin: AppSpacing.all(context, factor: 0.04),
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? AppColors.primary
                                   : (isPastMonth
-                                      ? AppColors.lightGrey
-                                      : AppColors.white),
+                                        ? AppColors.lightGrey
+                                        : AppColors.white),
                               borderRadius: BorderRadius.circular(
                                 AppResponsive.radius(context, factor: 0.7),
                               ),
@@ -731,8 +739,12 @@ class AppDatePicker extends StatelessWidget {
                                 color: isSelected
                                     ? AppColors.primary
                                     : (isPastMonth
-                                        ? AppColors.grey.withValues(alpha: 0.3)
-                                        : AppColors.primary.withValues(alpha: 0.3)),
+                                          ? AppColors.grey.withValues(
+                                              alpha: 0.3,
+                                            )
+                                          : AppColors.primary.withValues(
+                                              alpha: 0.3,
+                                            )),
                               ),
                             ),
                             child: Center(
@@ -742,8 +754,8 @@ class AppDatePicker extends StatelessWidget {
                                   color: isSelected
                                       ? AppColors.white
                                       : (isPastMonth
-                                          ? AppColors.grey
-                                          : AppColors.black),
+                                            ? AppColors.grey
+                                            : AppColors.black),
                                   fontWeight: isSelected
                                       ? FontWeight.bold
                                       : FontWeight.normal,
@@ -767,13 +779,16 @@ class AppDatePicker extends StatelessWidget {
                     // Validate that selected date is not in the past (for expiry dates)
                     final now = DateTime.now();
                     final currentMonth = DateTime(now.year, now.month);
-                    final selectedMonth = DateTime(selectedDate.year, selectedDate.month);
-                    
+                    final selectedMonth = DateTime(
+                      selectedDate.year,
+                      selectedDate.month,
+                    );
+
                     if (monthYearOnly && selectedMonth.isBefore(currentMonth)) {
                       // Don't allow past dates - this shouldn't happen with disabled months, but double-check
                       return;
                     }
-                    
+
                     // Set to first day of selected month
                     final result = DateTime(
                       selectedDate.year,

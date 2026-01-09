@@ -20,10 +20,7 @@ class AppCandidateTableRows {
   ) {
     return DataCell(
       Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8.0,
-          horizontal: 4.0,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
         child: InkWell(
           onTap: onTap,
           child: Text(
@@ -43,13 +40,10 @@ class AppCandidateTableRows {
     VoidCallback onTap,
   ) {
     final formattedStatus = AppCandidateTableFormatters.formatStatus(status);
-    
+
     return DataCell(
       Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8.0,
-          horizontal: 4.0,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
         child: InkWell(
           onTap: onTap,
           child: AppStatusChip(
@@ -75,10 +69,7 @@ class AppCandidateTableRows {
   ) {
     return DataCell(
       Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8.0,
-          horizontal: 4.0,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
         child: isSuperAdmin
             ? AppCandidateAgentDropdown(
                 userId: userId,
@@ -108,10 +99,7 @@ class AppCandidateTableRows {
   ) {
     return DataCell(
       Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8.0,
-          horizontal: 4.0,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
         child: SizedBox(
           width: 120.0, // Ensure Actions column has minimum width
           child: Row(
@@ -119,19 +107,13 @@ class AppCandidateTableRows {
             children: [
               if (onEdit != null)
                 IconButton(
-                  icon: const Icon(
-                    Iconsax.edit,
-                    color: AppColors.secondary,
-                  ),
+                  icon: const Icon(Iconsax.edit, color: AppColors.secondary),
                   onPressed: () => onEdit(candidate),
                   tooltip: AppTexts.edit,
                 ),
               if (onDelete != null)
                 IconButton(
-                  icon: const Icon(
-                    Iconsax.trash,
-                    color: AppColors.error,
-                  ),
+                  icon: const Icon(Iconsax.trash, color: AppColors.error),
                   onPressed: () => onDelete(candidate),
                   tooltip: AppTexts.deleteCandidate,
                 ),
@@ -157,7 +139,8 @@ class AppCandidateTableRows {
     required String? assignedAgentProfileId,
     required bool isSuperAdmin,
     required List<AdminProfileEntity> availableAgents,
-    required Future<void> Function(String userId, String? agentId) onAgentChanged,
+    required Future<void> Function(String userId, String? agentId)
+    onAgentChanged,
     required VoidCallback onCandidateTap,
     Function(UserEntity)? onCandidateEdit,
     Function(UserEntity)? onCandidateDelete,
@@ -168,21 +151,13 @@ class AppCandidateTableRows {
         buildClickableCell(context, email, () => onCandidateTap()),
         buildClickableCell(context, company, () => onCandidateTap()),
         buildClickableCell(context, position, () => onCandidateTap()),
-        buildClickableCell(
-          context,
-          profession,
-          () => onCandidateTap(),
-        ),
+        buildClickableCell(context, profession, () => onCandidateTap()),
         buildClickableCell(
           context,
           AppCandidateTableFormatters.formatSpecialties(specialties),
           () => onCandidateTap(),
         ),
-        buildStatusCell(
-          context,
-          status,
-          () => onCandidateTap(),
-        ),
+        buildStatusCell(context, status, () => onCandidateTap()),
         buildAgentCell(
           context,
           candidate.userId,

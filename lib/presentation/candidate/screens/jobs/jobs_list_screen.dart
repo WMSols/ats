@@ -52,7 +52,8 @@ class JobsListScreen extends StatelessWidget {
                     contentBelowSubtitle: controller.hasApplied(job.jobId)
                         ? Wrap(
                             spacing: AppResponsive.screenWidth(context) * 0.01,
-                            runSpacing: AppResponsive.screenHeight(context) * 0.005,
+                            runSpacing:
+                                AppResponsive.screenHeight(context) * 0.005,
                             children: [
                               AppStatusChip(
                                 status: 'applied',
