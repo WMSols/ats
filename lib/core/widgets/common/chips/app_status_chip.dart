@@ -9,12 +9,20 @@ class AppStatusChip extends StatelessWidget {
   final String status;
   final String? customText;
   final bool showIcon;
+  final int? count;
+  final VoidCallback? onTap;
+  final bool isSelected;
+  final bool isFilter;
 
   const AppStatusChip({
     super.key,
     required this.status,
     this.customText,
     this.showIcon = true,
+    this.count,
+    this.onTap,
+    this.isSelected = false,
+    this.isFilter = false,
   });
 
   @override
@@ -22,14 +30,28 @@ class AppStatusChip extends StatelessWidget {
     final statusColor = _getStatusColor(status);
     final statusIcon = _getStatusIcon(status);
     final statusText = customText ?? status;
+    final textColor = _getTextColor(statusColor);
 
-    return Container(
+    // For filters: use low opacity when unselected, full opacity when selected
+    // For normal use: always use full opacity (old style)
+    final backgroundColor = isFilter && !isSelected
+        ? statusColor.withValues(alpha: 0.2)
+        : statusColor;
+    
+    final iconColor = isFilter && !isSelected ? statusColor : textColor;
+    final labelColor = isFilter && !isSelected ? statusColor : textColor;
+    final countBackgroundColor = isFilter && !isSelected
+        ? statusColor.withValues(alpha: 0.2)
+        : textColor.withValues(alpha: 0.3);
+    final countTextColor = isFilter && !isSelected ? statusColor : textColor;
+
+    Widget chipContent = Container(
       padding: EdgeInsets.symmetric(
         horizontal: AppResponsive.screenWidth(context) * 0.01,
         vertical: AppResponsive.screenHeight(context) * 0.005,
       ),
       decoration: BoxDecoration(
-        color: statusColor,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(
           AppResponsive.radius(context, factor: 5),
         ),
@@ -41,21 +63,56 @@ class AppStatusChip extends StatelessWidget {
             Icon(
               statusIcon,
               size: AppResponsive.iconSize(context),
-              color: _getTextColor(statusColor),
+              color: iconColor,
             ),
             SizedBox(width: AppResponsive.screenWidth(context) * 0.015),
           ],
           Text(
             statusText.toUpperCase(),
             style: AppTextStyles.bodyText(context).copyWith(
-              color: _getTextColor(statusColor),
+              color: labelColor,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.5,
             ),
           ),
+          if (count != null) ...[
+            SizedBox(width: AppResponsive.screenWidth(context) * 0.01),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppResponsive.screenWidth(context) * 0.008,
+                vertical: AppResponsive.screenHeight(context) * 0.002,
+              ),
+              decoration: BoxDecoration(
+                color: countBackgroundColor,
+                borderRadius: BorderRadius.circular(
+                  AppResponsive.radius(context, factor: 3),
+                ),
+              ),
+              child: Text(
+                count.toString(),
+                style: AppTextStyles.bodyText(context).copyWith(
+                  color: countTextColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: AppTextStyles.bodyText(context).fontSize! * 0.9,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(
+          AppResponsive.radius(context, factor: 5),
+        ),
+        child: chipContent,
+      );
+    }
+
+    return chipContent;
   }
 
   Color _getStatusColor(String status) {

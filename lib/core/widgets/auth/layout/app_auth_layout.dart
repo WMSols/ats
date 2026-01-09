@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/utils/app_colors/app_colors.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
-import 'package:ats/core/widgets/auth/app_navigation_chip.dart';
-import 'package:ats/core/widgets/auth/app_auth_logo.dart';
-import 'package:ats/core/widgets/auth/app_auth_title.dart';
-import 'package:ats/core/widgets/auth/app_auth_form_content.dart';
-import 'package:ats/core/widgets/auth/app_auth_container.dart';
+import 'package:ats/core/widgets/auth/components/app_navigation_chip.dart';
+import 'package:ats/core/widgets/auth/components/app_auth_logo.dart';
+import 'package:ats/core/widgets/auth/components/app_auth_title.dart';
+import 'package:ats/core/widgets/auth/forms/app_auth_form_content.dart';
+import 'package:ats/core/widgets/auth/layout/app_auth_container.dart';
 
 class AppAuthLayout extends StatelessWidget {
   final String title;
