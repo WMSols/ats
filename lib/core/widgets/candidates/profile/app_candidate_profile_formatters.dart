@@ -6,9 +6,7 @@ class AppCandidateProfileFormatters {
 
   /// Formats phones list to display text
   static String formatPhones(CandidateProfileEntity? profile) {
-    if (profile == null ||
-        profile.phones == null ||
-        profile.phones!.isEmpty) {
+    if (profile == null || profile.phones == null || profile.phones!.isEmpty) {
       return '';
     }
     return profile.phones!
@@ -16,9 +14,7 @@ class AppCandidateProfileFormatters {
           final countryCode = phone['countryCode']?.toString() ?? '';
           final number = phone['number']?.toString() ?? '';
           if (number.isEmpty) return null;
-          return countryCode.isNotEmpty
-              ? '$countryCode $number'
-              : number;
+          return countryCode.isNotEmpty ? '$countryCode $number' : number;
         })
         .where((phone) => phone != null)
         .join('\n');
@@ -47,10 +43,10 @@ class AppCandidateProfileFormatters {
           final dateRange = isOngoing
               ? '$fromDate - ${AppTexts.ongoing}'
               : (fromDate.isNotEmpty && toDate.isNotEmpty
-                  ? '$fromDate - $toDate'
-                  : fromDate.isNotEmpty
-                      ? fromDate
-                      : '');
+                    ? '$fromDate - $toDate'
+                    : fromDate.isNotEmpty
+                    ? fromDate
+                    : '');
 
           final parts = <String>[
             '${index + 1}. $company - $position',
@@ -85,10 +81,10 @@ class AppCandidateProfileFormatters {
           final dateRange = isOngoing
               ? '$fromDate - ${AppTexts.ongoing}'
               : (fromDate.isNotEmpty && toDate.isNotEmpty
-                  ? '$fromDate - $toDate'
-                  : fromDate.isNotEmpty
-                      ? fromDate
-                      : '');
+                    ? '$fromDate - $toDate'
+                    : fromDate.isNotEmpty
+                    ? fromDate
+                    : '');
 
           final parts = <String>[
             '${index + 1}. $institution',

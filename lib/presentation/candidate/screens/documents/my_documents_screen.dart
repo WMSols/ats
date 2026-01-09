@@ -163,8 +163,12 @@ class MyDocumentsScreen extends StatelessWidget {
                                   ),
                             contentBelowSubtitle: currentHasDoc
                                 ? Wrap(
-                                    spacing: AppResponsive.screenWidth(context) * 0.01,
-                                    runSpacing: AppResponsive.screenHeight(context) * 0.005,
+                                    spacing:
+                                        AppResponsive.screenWidth(context) *
+                                        0.01,
+                                    runSpacing:
+                                        AppResponsive.screenHeight(context) *
+                                        0.005,
                                     children: [
                                       AppStatusChip(status: documentStatus),
                                       // Show view button when document has been uploaded
@@ -237,7 +241,10 @@ class MyDocumentsScreen extends StatelessWidget {
                       final isDenied =
                           userDoc.status == AppConstants.documentStatusDenied;
                       final hasStorageUrl = userDoc.storageUrl.isNotEmpty;
-                      final expiryStatus = AppCandidateTableFormatters.formatExpiryStatus(userDoc);
+                      final expiryStatus =
+                          AppCandidateTableFormatters.formatExpiryStatus(
+                            userDoc,
+                          );
 
                       return AppListCard(
                         title:
@@ -250,14 +257,18 @@ class MyDocumentsScreen extends StatelessWidget {
                         trailing: null,
                         contentBelowSubtitle: Wrap(
                           spacing: AppResponsive.screenWidth(context) * 0.01,
-                          runSpacing: AppResponsive.screenHeight(context) * 0.005,
+                          runSpacing:
+                              AppResponsive.screenHeight(context) * 0.005,
                           children: [
                             // Expiry Status Chip
                             if (expiryStatus != null)
                               Container(
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: AppResponsive.screenWidth(context) * 0.01,
-                                  vertical: AppResponsive.screenHeight(context) * 0.005,
+                                  horizontal:
+                                      AppResponsive.screenWidth(context) * 0.01,
+                                  vertical:
+                                      AppResponsive.screenHeight(context) *
+                                      0.005,
                                 ),
                                 decoration: BoxDecoration(
                                   color: AppColors.expiry,
@@ -267,11 +278,12 @@ class MyDocumentsScreen extends StatelessWidget {
                                 ),
                                 child: Text(
                                   expiryStatus.toUpperCase(),
-                                  style: AppTextStyles.bodyText(context).copyWith(
-                                    color: AppColors.black,
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.5,
-                                  ),
+                                  style: AppTextStyles.bodyText(context)
+                                      .copyWith(
+                                        color: AppColors.black,
+                                        fontWeight: FontWeight.w500,
+                                        letterSpacing: 0.5,
+                                      ),
                                 ),
                               ),
                             AppStatusChip(status: userDoc.status),

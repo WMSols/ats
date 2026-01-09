@@ -692,7 +692,8 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
             'uploadedAt': FieldValue.serverTimestamp(),
             if (title != null) 'title': title,
             if (description != null) 'description': description,
-            if (expiryDate != null) 'expiryDate': Timestamp.fromDate(expiryDate),
+            if (expiryDate != null)
+              'expiryDate': Timestamp.fromDate(expiryDate),
             'hasNoExpiry': hasNoExpiry,
           });
       return docRef.id;

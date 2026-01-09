@@ -137,7 +137,8 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
                                     icon: Iconsax.trash,
                                     onPressed: () {
                                       final profileName = profile != null
-                                          ? '${profile.firstName} ${profile.lastName}'.trim()
+                                          ? '${profile.firstName} ${profile.lastName}'
+                                                .trim()
                                           : 'N/A';
                                       _showDeleteConfirmation(
                                         context,

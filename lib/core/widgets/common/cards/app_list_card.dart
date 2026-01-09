@@ -150,9 +150,10 @@ class AppListCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTextStyles.bodyText(
-                      context,
-                    ).copyWith(fontWeight: FontWeight.w700, color: AppColors.white),
+                    style: AppTextStyles.bodyText(context).copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.white,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
