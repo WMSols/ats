@@ -7,6 +7,7 @@ import 'package:ats/core/utils/app_colors/app_colors.dart';
 import 'package:ats/core/utils/app_file_validator/app_file_validator.dart';
 import 'package:ats/domain/entities/candidate_document_entity.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
+import 'package:ats/core/widgets/candidates/dialogs/app_document_denial_dialog.dart';
 
 class AppCandidateDocumentsList extends StatelessWidget {
   final List<CandidateDocumentEntity> documents;

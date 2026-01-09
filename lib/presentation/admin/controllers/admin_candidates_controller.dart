@@ -53,6 +53,11 @@ class AdminCandidatesController extends GetxController {
   final candidateProfileStreams =
       <String, StreamSubscription<CandidateProfileEntity?>>{};
 
+  // Filter state
+  final selectedAgentFilter = Rxn<String>(); // profileId
+  final selectedStatusFilter = Rxn<String>();
+  final selectedProfessionFilter = Rxn<String>();
+
   late final UpdateApplicationStatusUseCase updateApplicationStatusUseCase;
   late final UpdateDocumentStatusUseCase updateDocumentStatusUseCase;
   late final SendDocumentDenialEmailUseCase sendDocumentDenialEmailUseCase;
@@ -394,6 +399,16 @@ class AdminCandidatesController extends GetxController {
     return latestWork['position']?.toString() ?? 'N/A';
   }
 
+  String getCandidateProfession(String userId) {
+    final profile = candidateProfiles[userId];
+    return profile?.profession ?? 'N/A';
+  }
+
+  String getCandidateSpecialties(String userId) {
+    final profile = candidateProfiles[userId];
+    return profile?.specialties ?? 'N/A';
+  }
+
   void loadCandidateDocumentsForList(String candidateId) {
     // Cancel existing subscription if any
     _candidateDocumentsSubscriptions[candidateId]?.cancel();
@@ -475,6 +490,40 @@ class AdminCandidatesController extends GetxController {
     _applyFilters();
   }
 
+  void setAgentFilter(String? agentProfileId) {
+    selectedAgentFilter.value = agentProfileId;
+    _applyFilters();
+  }
+
+  void setStatusFilter(String? status) {
+    selectedStatusFilter.value = status;
+    _applyFilters();
+  }
+
+  void setProfessionFilter(String? profession) {
+    selectedProfessionFilter.value = profession;
+    _applyFilters();
+  }
+
+  // Get unique professions from all candidate profiles
+  List<String> getAvailableProfessions() {
+    final professions = <String>{};
+    for (var profile in candidateProfiles.values) {
+      if (profile?.profession != null && profile!.profession!.isNotEmpty) {
+        professions.add(profile.profession!);
+      }
+    }
+    return professions.toList()..sort();
+  }
+
+  // Get count of candidates by status
+  int getStatusCount(String status) {
+    return candidates.where((candidate) {
+      final candidateStatus = getCandidateStatus(candidate.userId);
+      return candidateStatus == status;
+    }).length;
+  }
+
   void _applyFilters() {
     var filtered = List<UserEntity>.from(candidates);
 
@@ -496,10 +545,36 @@ class AdminCandidatesController extends GetxController {
     }
     // If super_admin, show all candidates (no filtering by agent)
 
+    // Apply agent filter
+    if (selectedAgentFilter.value != null && selectedAgentFilter.value!.isNotEmpty) {
+      filtered = filtered.where((candidate) {
+        final profile = candidateProfiles[candidate.userId];
+        return profile?.assignedAgentId == selectedAgentFilter.value;
+      }).toList();
+    }
+
+    // Apply status filter
+    if (selectedStatusFilter.value != null && selectedStatusFilter.value!.isNotEmpty) {
+      filtered = filtered.where((candidate) {
+        final status = getCandidateStatus(candidate.userId);
+        return status == selectedStatusFilter.value;
+      }).toList();
+    }
+
+    // Apply profession filter
+    if (selectedProfessionFilter.value != null && selectedProfessionFilter.value!.isNotEmpty) {
+      filtered = filtered.where((candidate) {
+        final profession = getCandidateProfession(candidate.userId);
+        return profession == selectedProfessionFilter.value;
+      }).toList();
+    }
+
     // Apply search filter
     if (searchQuery.value.isNotEmpty) {
       final query = searchQuery.value.toLowerCase();
       filtered = filtered.where((candidate) {
+        final profile = candidateProfiles[candidate.userId];
+        
         // Search by email
         if (candidate.email.toLowerCase().contains(query)) {
           return true;
@@ -521,6 +596,101 @@ class AdminCandidatesController extends GetxController {
         final position = getCandidatePosition(candidate.userId).toLowerCase();
         if (position.contains(query)) {
           return true;
+        }
+
+        // Search by profession
+        final profession = getCandidateProfession(candidate.userId).toLowerCase();
+        if (profession.contains(query)) {
+          return true;
+        }
+
+        // Search by specialties
+        final specialties = getCandidateSpecialties(candidate.userId).toLowerCase();
+        if (specialties.contains(query)) {
+          return true;
+        }
+
+        // Search by agent name
+        final agentName = getCandidateAgentName(candidate.userId).toLowerCase();
+        if (agentName.contains(query)) {
+          return true;
+        }
+
+        // Search by status
+        final status = getCandidateStatus(candidate.userId).toLowerCase();
+        if (status.contains(query)) {
+          return true;
+        }
+
+        // Search by address fields
+        if (profile != null) {
+          if (profile.address1 != null && profile.address1!.toLowerCase().contains(query)) {
+            return true;
+          }
+          if (profile.address2 != null && profile.address2!.toLowerCase().contains(query)) {
+            return true;
+          }
+          if (profile.city != null && profile.city!.toLowerCase().contains(query)) {
+            return true;
+          }
+          if (profile.state != null && profile.state!.toLowerCase().contains(query)) {
+            return true;
+          }
+          if (profile.zip != null && profile.zip!.toLowerCase().contains(query)) {
+            return true;
+          }
+          if (profile.ssn != null && profile.ssn!.toLowerCase().contains(query)) {
+            return true;
+          }
+          if (profile.npi != null && profile.npi!.toLowerCase().contains(query)) {
+            return true;
+          }
+          if (profile.licensureState != null && profile.licensureState!.toLowerCase().contains(query)) {
+            return true;
+          }
+        }
+
+        // Search in phones
+        if (profile?.phones != null) {
+          for (var phone in profile!.phones!) {
+            final number = phone['number']?.toString().toLowerCase() ?? '';
+            if (number.contains(query)) {
+              return true;
+            }
+          }
+        }
+
+        // Search in work history
+        if (profile?.workHistory != null) {
+          for (var work in profile!.workHistory!) {
+            final company = work['company']?.toString().toLowerCase() ?? '';
+            final position = work['position']?.toString().toLowerCase() ?? '';
+            final description = work['description']?.toString().toLowerCase() ?? '';
+            if (company.contains(query) || position.contains(query) || description.contains(query)) {
+              return true;
+            }
+          }
+        }
+
+        // Search in education
+        if (profile?.education != null) {
+          for (var edu in profile!.education!) {
+            final institution = edu['institutionName']?.toString().toLowerCase() ?? '';
+            final degree = edu['degree']?.toString().toLowerCase() ?? '';
+            if (institution.contains(query) || degree.contains(query)) {
+              return true;
+            }
+          }
+        }
+
+        // Search in certifications
+        if (profile?.certifications != null) {
+          for (var cert in profile!.certifications!) {
+            final name = cert['name']?.toString().toLowerCase() ?? '';
+            if (name.contains(query)) {
+              return true;
+            }
+          }
         }
 
         return false;

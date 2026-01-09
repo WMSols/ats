@@ -1,8 +1,8 @@
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
-import 'package:ats/core/widgets/jobs/app_content_section.dart';
-import 'package:ats/core/widgets/jobs/app_document_list_item.dart';
+import 'package:ats/core/widgets/jobs/sections/app_content_section.dart';
+import 'package:ats/core/widgets/jobs/lists/app_document_list_item.dart';
 import 'package:ats/domain/entities/document_type_entity.dart';
 import 'package:flutter/material.dart';
 

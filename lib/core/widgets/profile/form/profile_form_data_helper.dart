@@ -1,4 +1,4 @@
-import 'package:ats/core/widgets/profile/sections/sections.dart';
+import 'package:ats/core/widgets/profile/profile.dart';
 import 'package:ats/core/widgets/profile/form/profile_form_state.dart';
 import 'package:ats/presentation/candidate/controllers/profile_controller.dart';
 

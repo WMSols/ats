@@ -6,7 +6,7 @@ import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/utils/app_validators/app_validators.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
-import 'package:ats/core/widgets/profile/sections/sections.dart';
+import 'package:ats/core/widgets/profile/profile.dart';
 import 'package:ats/core/widgets/profile/form/admin_profile_form_state.dart';
 import 'package:ats/core/widgets/profile/form/admin_profile_form_data_helper.dart';
 
