@@ -75,6 +75,11 @@ class AppSnackbar {
   static void info(String message) {
     show(message: message);
   }
+
+  /// Shows a warning snackbar
+  static void warning(String message) {
+    show(message: message);
+  }
 }
 
 class _AppSnackbarContent extends StatelessWidget {

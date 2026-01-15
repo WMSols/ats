@@ -1,20 +1,26 @@
 import 'dart:async';
 import 'package:get/get.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ats/domain/repositories/admin_repository.dart';
 import 'package:ats/domain/repositories/application_repository.dart';
 import 'package:ats/domain/repositories/document_repository.dart';
 import 'package:ats/domain/repositories/candidate_profile_repository.dart';
 import 'package:ats/domain/repositories/job_repository.dart';
 import 'package:ats/domain/repositories/email_repository.dart';
+import 'package:ats/data/repositories/document_repository_impl.dart';
+import 'package:ats/data/models/document_type_model.dart';
 import 'package:ats/domain/entities/user_entity.dart';
 import 'package:ats/domain/entities/application_entity.dart';
 import 'package:ats/domain/entities/candidate_document_entity.dart';
 import 'package:ats/domain/entities/candidate_profile_entity.dart';
 import 'package:ats/domain/entities/job_entity.dart';
 import 'package:ats/domain/entities/admin_profile_entity.dart';
+import 'package:ats/domain/entities/document_type_entity.dart';
 import 'package:ats/domain/usecases/application/update_application_status_usecase.dart';
 import 'package:ats/domain/usecases/document/update_document_status_usecase.dart';
 import 'package:ats/domain/usecases/email/send_document_denial_email_usecase.dart';
+import 'package:ats/domain/usecases/email/send_document_request_email_usecase.dart';
+import 'package:ats/domain/usecases/email/send_document_request_revocation_email_usecase.dart';
 import 'package:ats/domain/usecases/admin/delete_candidate_usecase.dart';
 import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/core/utils/app_file_validator/app_file_validator.dart';
@@ -48,6 +54,7 @@ class AdminCandidatesController extends GetxController {
   final selectedCandidateProfile = Rxn<CandidateProfileEntity>();
   final candidateApplications = <ApplicationEntity>[].obs;
   final candidateDocuments = <CandidateDocumentEntity>[].obs;
+  final candidateRequestedDocumentTypes = <DocumentTypeEntity>[].obs;
   final applicationJobs = <String, JobEntity?>{}.obs;
   final availableAgents = <AdminProfileEntity>[].obs;
   final candidateProfileStreams =
@@ -61,6 +68,9 @@ class AdminCandidatesController extends GetxController {
   late final UpdateApplicationStatusUseCase updateApplicationStatusUseCase;
   late final UpdateDocumentStatusUseCase updateDocumentStatusUseCase;
   late final SendDocumentDenialEmailUseCase sendDocumentDenialEmailUseCase;
+  late final SendDocumentRequestEmailUseCase sendDocumentRequestEmailUseCase;
+  late final SendDocumentRequestRevocationEmailUseCase
+      sendDocumentRequestRevocationEmailUseCase;
   late final DeleteCandidateUseCase deleteCandidateUseCase;
 
   // Stream subscriptions
@@ -81,6 +91,13 @@ class AdminCandidatesController extends GetxController {
       Get.find<DocumentRepository>(),
     );
     sendDocumentDenialEmailUseCase = SendDocumentDenialEmailUseCase(
+      Get.find<EmailRepository>(),
+    );
+    sendDocumentRequestEmailUseCase = SendDocumentRequestEmailUseCase(
+      Get.find<EmailRepository>(),
+    );
+    sendDocumentRequestRevocationEmailUseCase =
+        SendDocumentRequestRevocationEmailUseCase(
       Get.find<EmailRepository>(),
     );
     deleteCandidateUseCase = DeleteCandidateUseCase(adminRepository);
@@ -175,6 +192,7 @@ class AdminCandidatesController extends GetxController {
     loadCandidateProfileStream(candidate.userId);
     loadCandidateApplications(candidate.userId);
     loadCandidateDocuments(candidate.userId);
+    loadCandidateRequestedDocumentTypes(candidate.userId);
   }
 
   void loadCandidateProfileStream(String userId) {
@@ -227,11 +245,50 @@ class AdminCandidatesController extends GetxController {
         .listen(
           (docs) {
             candidateDocuments.value = docs;
+            // Reload requested document types to update completion status
+            loadCandidateRequestedDocumentTypes(candidateId);
           },
           onError: (error) {
             // Silently handle permission errors
           },
         );
+  }
+
+  /// Load candidate-specific requested document types
+  void loadCandidateRequestedDocumentTypes(String candidateId) async {
+    try {
+      final repositoryImpl = documentRepository as DocumentRepositoryImpl;
+      final docTypesData =
+          await repositoryImpl.getCandidateSpecificDocumentTypes(candidateId);
+      final docTypes = docTypesData.map((data) {
+        return DocumentTypeModel(
+          docTypeId: data['docTypeId'] ?? '',
+          name: data['name'] ?? '',
+          description: data['description'] ?? '',
+          isRequired: data['isRequired'] ?? false,
+          isCandidateSpecific: data['isCandidateSpecific'] ?? true,
+          requestedForCandidateId: data['requestedForCandidateId'] as String?,
+          requestedAt: (data['requestedAt'] as Timestamp?)?.toDate(),
+        ).toEntity();
+      }).toList();
+      candidateRequestedDocumentTypes.value = docTypes;
+    } catch (e) {
+      candidateRequestedDocumentTypes.value = [];
+    }
+  }
+
+  /// Check if a requested document has been uploaded by the candidate
+  bool isRequestedDocumentUploaded(String docTypeId) {
+    return candidateDocuments.any((doc) => doc.docTypeId == docTypeId);
+  }
+
+  /// Get the uploaded document for a requested document type
+  CandidateDocumentEntity? getUploadedRequestedDocument(String docTypeId) {
+    try {
+      return candidateDocuments.firstWhere((doc) => doc.docTypeId == docTypeId);
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<void> updateDocumentStatus({
@@ -311,6 +368,190 @@ class AdminCandidatesController extends GetxController {
       (_) {
         // Email sent successfully - proceed with status update
         _updateDocumentStatusAfterEmail(candidateDocId, status);
+      },
+    );
+  }
+
+  /// Requests a document for the selected candidate
+  /// Creates a candidate-specific document type and sends email notification
+  /// If email fails, document type is not created
+  Future<void> requestDocumentForCandidate({
+    required String name,
+    required String description,
+  }) async {
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    final candidate = selectedCandidate.value;
+    final profile = selectedCandidateProfile.value;
+
+    if (candidate == null) {
+      errorMessage.value = 'Candidate not selected';
+      isLoading.value = false;
+      AppSnackbar.error('Candidate not selected');
+      return;
+    }
+
+    final candidateId = candidate.userId;
+    final candidateEmail = candidate.email;
+    final candidateName = profile != null
+        ? '${profile.firstName} ${profile.lastName}'.trim()
+        : candidateEmail;
+
+    // Check if the same document type already exists for this candidate
+    final repositoryImpl = documentRepository as DocumentRepositoryImpl;
+    try {
+      final existingDocTypes =
+          await repositoryImpl.getCandidateSpecificDocumentTypes(candidateId);
+      final duplicateExists = existingDocTypes.any((doc) =>
+          doc['name']?.toString().toLowerCase() == name.toLowerCase());
+
+      if (duplicateExists) {
+        // Show warning but allow proceeding
+        AppSnackbar.info(
+            'A document with the same name already exists for this candidate. Creating anyway...');
+      }
+    } catch (e) {
+      // Continue if check fails
+    }
+
+    // Step 1: Send email first (as per requirement: don't create if email fails)
+    final emailResult = await sendDocumentRequestEmailUseCase(
+      candidateEmail: candidateEmail,
+      candidateName: candidateName,
+      documentName: name,
+      documentDescription: description,
+    );
+
+    emailResult.fold(
+      (failure) {
+        // Email failed - don't create document type
+        errorMessage.value = failure.message;
+        isLoading.value = false;
+        AppSnackbar.error('Failed to send email: ${failure.message}');
+      },
+      (_) {
+        // Email sent successfully - proceed with document type creation
+        _createDocumentTypeAfterEmail(candidateId, name, description);
+      },
+    );
+  }
+
+  /// Creates document type after email is sent successfully
+  void _createDocumentTypeAfterEmail(
+    String candidateId,
+    String name,
+    String description,
+  ) async {
+    final repositoryImpl = documentRepository as DocumentRepositoryImpl;
+    final result = await repositoryImpl.createCandidateSpecificDocumentType(
+      name: name,
+      description: description,
+      candidateId: candidateId,
+    );
+
+    result.fold(
+      (failure) {
+        errorMessage.value = failure.message;
+        isLoading.value = false;
+        AppSnackbar.error('Failed to create document type: ${failure.message}');
+      },
+      (docType) {
+        isLoading.value = false;
+        AppSnackbar.success(AppTexts.documentRequested);
+        // Reload requested document types
+        loadCandidateRequestedDocumentTypes(candidateId);
+        // Navigate back to candidate details screen (Documents tab)
+        Get.offNamedUntil(
+          AppConstants.routeAdminCandidateDetails,
+          (route) =>
+              route.settings.name == AppConstants.routeAdminCandidateDetails,
+        );
+      },
+    );
+  }
+
+  /// Revokes a requested document for the selected candidate
+  /// Deletes the document type and sends email notification
+  Future<void> revokeDocumentRequest(String docTypeId) async {
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    final candidate = selectedCandidate.value;
+    final profile = selectedCandidateProfile.value;
+
+    if (candidate == null) {
+      errorMessage.value = 'Candidate not selected';
+      isLoading.value = false;
+      AppSnackbar.error('Candidate not selected');
+      return;
+    }
+
+    // Get document type from requested documents list
+    final docType = candidateRequestedDocumentTypes.firstWhere(
+      (dt) => dt.docTypeId == docTypeId,
+      orElse: () => candidateRequestedDocumentTypes.first,
+    );
+
+    if (docType.docTypeId != docTypeId) {
+      errorMessage.value = 'Document type not found';
+      isLoading.value = false;
+      AppSnackbar.error('Document type not found');
+      return;
+    }
+
+    final candidateEmail = candidate.email;
+    final candidateName = profile != null
+        ? '${profile.firstName} ${profile.lastName}'.trim()
+        : candidateEmail;
+
+    // Step 1: Delete document type
+    final deleteResult = await documentRepository.deleteDocumentType(docTypeId);
+
+    deleteResult.fold(
+      (failure) {
+        errorMessage.value = failure.message;
+        isLoading.value = false;
+        AppSnackbar.error('Failed to delete document type: ${failure.message}');
+      },
+      (_) {
+        // Step 2: Send email notification
+        _sendRevocationEmailAfterDelete(
+          candidateEmail: candidateEmail,
+          candidateName: candidateName,
+          documentName: docType.name,
+        );
+      },
+    );
+  }
+
+  /// Sends revocation email after document type is deleted
+  void _sendRevocationEmailAfterDelete({
+    required String candidateEmail,
+    required String candidateName,
+    required String documentName,
+  }) async {
+    final emailResult = await sendDocumentRequestRevocationEmailUseCase(
+      candidateEmail: candidateEmail,
+      candidateName: candidateName,
+      documentName: documentName,
+    );
+
+    emailResult.fold(
+      (failure) {
+        // Email failed but document is already deleted
+        isLoading.value = false;
+        AppSnackbar.warning(
+            'Document request revoked, but failed to send email: ${failure.message}');
+      },
+      (_) {
+        isLoading.value = false;
+        AppSnackbar.success(AppTexts.documentRequestRevoked);
+        // Reload requested document types
+        final currentCandidate = selectedCandidate.value;
+        if (currentCandidate != null) {
+          loadCandidateRequestedDocumentTypes(currentCandidate.userId);
+        }
       },
     );
   }

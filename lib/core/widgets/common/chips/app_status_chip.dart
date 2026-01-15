@@ -128,6 +128,11 @@ class AppStatusChip extends StatelessWidget {
     } else if (lowerStatus == AppConstants.applicationStatusPending ||
         lowerStatus == AppConstants.documentStatusPending) {
       return AppColors.warning;
+    } else if (lowerStatus == AppConstants.documentStatusRequested) {
+      return AppColors.request;
+    } else if (lowerStatus == 'expiry' || lowerStatus == 'expired' ||
+        lowerStatus == 'expiring') {
+      return AppColors.expiry;
     } else {
       return AppColors.primary;
     }
@@ -135,6 +140,13 @@ class AppStatusChip extends StatelessWidget {
 
   IconData? _getStatusIcon(String status) {
     final lowerStatus = status.toLowerCase();
+    // Requested and expiry statuses should not show icons
+    if (lowerStatus == AppConstants.documentStatusRequested ||
+        lowerStatus == 'expiry' ||
+        lowerStatus == 'expired' ||
+        lowerStatus == 'expiring') {
+      return null;
+    }
     if (lowerStatus == AppConstants.jobStatusOpen ||
         lowerStatus == AppConstants.applicationStatusApproved ||
         lowerStatus == AppConstants.documentStatusApproved) {

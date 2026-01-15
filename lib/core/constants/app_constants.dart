@@ -29,6 +29,7 @@ class AppConstants {
   static const String documentStatusPending = 'pending';
   static const String documentStatusApproved = 'approved';
   static const String documentStatusDenied = 'denied';
+  static const String documentStatusRequested = 'requested';
 
   // Application Status
   static const String applicationStatusPending = 'pending';
@@ -67,6 +68,8 @@ class AppConstants {
   static const String routeAdminDocumentTypes = '/admin/document-types';
   static const String routeAdminCreateDocumentType =
       '/admin/document-types/create';
+  static const String routeAdminRequestDocument =
+      '/admin/candidates/request-document';
   static const String routeAdminManageAdmins = '/admin/manage-admins';
   static const String routeAdminCreateNewUser = '/admin/manage-admins/create';
 }

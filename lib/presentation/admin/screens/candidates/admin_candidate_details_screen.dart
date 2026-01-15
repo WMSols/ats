@@ -154,45 +154,104 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
                           ),
                       ],
                     ),
-                    AppCandidateDocumentsList(
-                      documents: controller.candidateDocuments,
-                      onStatusUpdate: (candidateDocId, status) {
-                        // For approve, use regular status update
-                        controller.updateDocumentStatus(
-                          candidateDocId: candidateDocId,
-                          status: status,
-                        );
-                      },
-                      onDeny: (candidateDocId, status, denialReason) {
-                        // For deny, use email sending flow
-                        controller.denyDocumentWithEmail(
-                          candidateDocId: candidateDocId,
-                          status: status,
-                          denialReason: denialReason,
-                        );
-                      },
-                      onView: (storageUrl) {
-                        // Find the document name for display
-                        String? documentName;
-                        try {
-                          final document = controller.candidateDocuments
-                              .firstWhere(
-                                (doc) => doc.storageUrl == storageUrl,
+                    // Documents Tab with FAB
+                    Stack(
+                      children: [
+                        SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              // Requested Documents Section
+                              Obx(() => AppRequestedDocumentsList(
+                                    requestedDocuments:
+                                        controller.candidateRequestedDocumentTypes,
+                                    candidateDocuments:
+                                        controller.candidateDocuments,
+                                    onRevoke: (docTypeId) {
+                                      controller.revokeDocumentRequest(docTypeId);
+                                    },
+                                    onView: (storageUrl) {
+                                      // Find the document name for display
+                                      String? documentName;
+                                      try {
+                                        final document = controller
+                                            .candidateDocuments
+                                            .firstWhere(
+                                              (doc) =>
+                                                  doc.storageUrl == storageUrl,
+                                            );
+                                        documentName =
+                                            document.title ??
+                                            AppFileValidator.extractOriginalFileName(
+                                              document.documentName,
+                                            );
+                                      } catch (e) {
+                                        // Document not found, use default name
+                                        documentName = null;
+                                      }
+                                      AppDocumentViewer.show(
+                                        documentUrl: storageUrl,
+                                        documentName: documentName,
+                                      );
+                                    },
+                                  )),
+                              // Regular Documents List
+                              AppCandidateDocumentsList(
+                                documents: controller.candidateDocuments,
+                                onStatusUpdate: (candidateDocId, status) {
+                                  // For approve, use regular status update
+                                  controller.updateDocumentStatus(
+                                    candidateDocId: candidateDocId,
+                                    status: status,
+                                  );
+                                },
+                                onDeny: (candidateDocId, status, denialReason) {
+                                  // For deny, use email sending flow
+                                  controller.denyDocumentWithEmail(
+                                    candidateDocId: candidateDocId,
+                                    status: status,
+                                    denialReason: denialReason,
+                                  );
+                                },
+                                onView: (storageUrl) {
+                                  // Find the document name for display
+                                  String? documentName;
+                                  try {
+                                    final document = controller.candidateDocuments
+                                        .firstWhere(
+                                          (doc) => doc.storageUrl == storageUrl,
+                                        );
+                                    documentName =
+                                        document.title ??
+                                        AppFileValidator.extractOriginalFileName(
+                                          document.documentName,
+                                        );
+                                  } catch (e) {
+                                    // Document not found, use default name
+                                    documentName = null;
+                                  }
+                                  AppDocumentViewer.show(
+                                    documentUrl: storageUrl,
+                                    documentName: documentName,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 16,
+                          right: 16,
+                          child: AppFloatingActionButton(
+                            icon: Iconsax.document_upload,
+                            tooltip: AppTexts.requestDocument,
+                            onPressed: () {
+                              Get.toNamed(
+                                AppConstants.routeAdminRequestDocument,
                               );
-                          documentName =
-                              document.title ??
-                              AppFileValidator.extractOriginalFileName(
-                                document.documentName,
-                              );
-                        } catch (e) {
-                          // Document not found, use default name
-                          documentName = null;
-                        }
-                        AppDocumentViewer.show(
-                          documentUrl: storageUrl,
-                          documentName: documentName,
-                        );
-                      },
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                     AppCandidateApplicationsList(
                       applications: controller.candidateApplications,

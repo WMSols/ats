@@ -7,6 +7,9 @@ class DocumentTypeModel extends DocumentTypeEntity {
     required super.name,
     required super.description,
     required super.isRequired,
+    super.isCandidateSpecific,
+    super.requestedForCandidateId,
+    super.requestedAt,
   });
 
   factory DocumentTypeModel.fromFirestore(DocumentSnapshot doc) {
@@ -16,11 +19,22 @@ class DocumentTypeModel extends DocumentTypeEntity {
       name: data['name'] ?? '',
       description: data['description'] ?? '',
       isRequired: data['isRequired'] ?? false,
+      isCandidateSpecific: data['isCandidateSpecific'] ?? false,
+      requestedForCandidateId: data['requestedForCandidateId'] as String?,
+      requestedAt: (data['requestedAt'] as Timestamp?)?.toDate(),
     );
   }
 
   Map<String, dynamic> toFirestore() {
-    return {'name': name, 'description': description, 'isRequired': isRequired};
+    return {
+      'name': name,
+      'description': description,
+      'isRequired': isRequired,
+      'isCandidateSpecific': isCandidateSpecific,
+      if (requestedForCandidateId != null)
+        'requestedForCandidateId': requestedForCandidateId,
+      if (requestedAt != null) 'requestedAt': Timestamp.fromDate(requestedAt!),
+    };
   }
 
   DocumentTypeEntity toEntity() {
@@ -29,6 +43,9 @@ class DocumentTypeModel extends DocumentTypeEntity {
       name: name,
       description: description,
       isRequired: isRequired,
+      isCandidateSpecific: isCandidateSpecific,
+      requestedForCandidateId: requestedForCandidateId,
+      requestedAt: requestedAt,
     );
   }
 }

@@ -9,5 +9,6 @@ export 'profile/app_candidate_profile_data_row.dart';
 export 'profile/app_candidate_profile_formatters.dart';
 export 'lists/app_candidate_applications_list.dart';
 export 'lists/app_candidate_documents_list.dart';
+export 'lists/app_requested_documents_list.dart';
 export 'components/app_candidate_agent_dropdown.dart';
 export 'dialogs/app_document_denial_dialog.dart';

@@ -160,61 +160,67 @@ class MyDocumentsScreen extends StatelessWidget {
                                     ),
                                     isFullWidth: false,
                                   ),
-                            contentBelowSubtitle: currentHasDoc
-                                ? Wrap(
-                                    spacing:
-                                        AppResponsive.screenWidth(context) *
-                                        0.01,
-                                    runSpacing:
-                                        AppResponsive.screenHeight(context) *
-                                        0.005,
-                                    children: [
-                                      AppStatusChip(status: documentStatus),
-                                      // Show view button when document has been uploaded
-                                      if (hasStorageUrl)
-                                        AppActionButton(
-                                          text: AppTexts.view,
-                                          onPressed: () {
-                                            AppDocumentViewer.show(
-                                              documentUrl:
-                                                  currentDocument!.storageUrl,
-                                              documentName: docType.name,
-                                            );
-                                          },
-                                          backgroundColor:
-                                              AppColors.information,
-                                          foregroundColor: AppColors.white,
-                                        ),
-                                      // Show delete button when pending
-                                      if (isPending)
-                                        AppActionButton(
-                                          text: AppTexts.delete,
-                                          onPressed: () =>
-                                              _showDeleteConfirmation(
-                                                context,
-                                                controller,
-                                                currentDocument!.candidateDocId,
-                                                currentDocument.storageUrl,
-                                                docType.name,
-                                              ),
-                                          backgroundColor: AppColors.error,
-                                          foregroundColor: AppColors.white,
-                                        ),
-                                      // Show reupload button when denied
-                                      if (isDenied)
-                                        AppActionButton(
-                                          text: AppTexts.reupload,
-                                          onPressed: () =>
-                                              controller.uploadDocument(
-                                                docType.docTypeId,
-                                                docType.name,
-                                              ),
-                                          backgroundColor: AppColors.warning,
-                                          foregroundColor: AppColors.black,
-                                        ),
-                                    ],
-                                  )
-                                : null,
+                            contentBelowSubtitle: Wrap(
+                                spacing:
+                                    AppResponsive.screenWidth(context) *
+                                    0.01,
+                                runSpacing:
+                                    AppResponsive.screenHeight(context) *
+                                    0.005,
+                                children: [
+                                  // Show "Requested" badge if document is candidate-specific
+                                  if (docType.isCandidateSpecific)
+                                    AppStatusChip(
+                                      status: AppConstants.documentStatusRequested,
+                                      showIcon: false,
+                                    ),
+                                  if (currentHasDoc) ...[
+                                    AppStatusChip(status: documentStatus),
+                                    // Show view button when document has been uploaded
+                                    if (hasStorageUrl)
+                                      AppActionButton(
+                                        text: AppTexts.view,
+                                        onPressed: () {
+                                          AppDocumentViewer.show(
+                                            documentUrl:
+                                                currentDocument!.storageUrl,
+                                            documentName: docType.name,
+                                          );
+                                        },
+                                        backgroundColor:
+                                            AppColors.information,
+                                        foregroundColor: AppColors.white,
+                                      ),
+                                    // Show delete button when pending
+                                    if (isPending)
+                                      AppActionButton(
+                                        text: AppTexts.delete,
+                                        onPressed: () =>
+                                            _showDeleteConfirmation(
+                                              context,
+                                              controller,
+                                              currentDocument!.candidateDocId,
+                                              currentDocument.storageUrl,
+                                              docType.name,
+                                            ),
+                                        backgroundColor: AppColors.error,
+                                        foregroundColor: AppColors.white,
+                                      ),
+                                    // Show reupload button when denied
+                                    if (isDenied)
+                                      AppActionButton(
+                                        text: AppTexts.reupload,
+                                        onPressed: () =>
+                                            controller.uploadDocument(
+                                              docType.docTypeId,
+                                              docType.name,
+                                            ),
+                                        backgroundColor: AppColors.warning,
+                                        foregroundColor: AppColors.black,
+                                      ),
+                                  ],
+                                ],
+                              ),
                             onTap: null,
                           ),
                         ],

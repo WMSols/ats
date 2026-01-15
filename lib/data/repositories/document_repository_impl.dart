@@ -29,14 +29,25 @@ class DocumentRepositoryImpl implements DocumentRepository {
   Future<Either<Failure, List<DocumentTypeEntity>>> getDocumentTypes() async {
     try {
       final docsData = await firestoreDataSource.getDocumentTypes();
-      final docs = docsData.map((data) {
-        return DocumentTypeModel(
-          docTypeId: data['docTypeId'] ?? '',
-          name: data['name'] ?? '',
-          description: data['description'] ?? '',
-          isRequired: data['isRequired'] ?? false,
-        ).toEntity();
-      }).toList();
+      final docs = docsData
+          .where((data) {
+            // Filter out candidate-specific documents for admin view
+            final isCandidateSpecific = data['isCandidateSpecific'] ?? false;
+            return !isCandidateSpecific;
+          })
+          .map((data) {
+            return DocumentTypeModel(
+              docTypeId: data['docTypeId'] ?? '',
+              name: data['name'] ?? '',
+              description: data['description'] ?? '',
+              isRequired: data['isRequired'] ?? false,
+              isCandidateSpecific: data['isCandidateSpecific'] ?? false,
+              requestedForCandidateId:
+                  data['requestedForCandidateId'] as String?,
+              requestedAt: (data['requestedAt'] as Timestamp?)?.toDate(),
+            ).toEntity();
+          })
+          .toList();
       return Right(docs);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -48,15 +59,60 @@ class DocumentRepositoryImpl implements DocumentRepository {
   @override
   Stream<List<DocumentTypeEntity>> streamDocumentTypes() {
     return firestoreDataSource.streamDocumentTypes().map((docsData) {
+      return docsData
+          .where((data) {
+            // Filter out candidate-specific documents for admin view
+            final isCandidateSpecific = data['isCandidateSpecific'] ?? false;
+            return !isCandidateSpecific;
+          })
+          .map((data) {
+            return DocumentTypeModel(
+              docTypeId: data['docTypeId'] ?? '',
+              name: data['name'] ?? '',
+              description: data['description'] ?? '',
+              isRequired: data['isRequired'] ?? false,
+              isCandidateSpecific: data['isCandidateSpecific'] ?? false,
+              requestedForCandidateId:
+                  data['requestedForCandidateId'] as String?,
+              requestedAt: (data['requestedAt'] as Timestamp?)?.toDate(),
+            ).toEntity();
+          })
+          .toList();
+    });
+  }
+
+  /// Stream document types for a specific candidate (includes candidate-specific ones)
+  Stream<List<DocumentTypeEntity>> streamDocumentTypesForCandidate(
+    String candidateId,
+  ) {
+    return firestoreDataSource
+        .streamDocumentTypesForCandidate(candidateId)
+        .map((docsData) {
       return docsData.map((data) {
         return DocumentTypeModel(
           docTypeId: data['docTypeId'] ?? '',
           name: data['name'] ?? '',
           description: data['description'] ?? '',
           isRequired: data['isRequired'] ?? false,
+          isCandidateSpecific: data['isCandidateSpecific'] ?? false,
+          requestedForCandidateId: data['requestedForCandidateId'] as String?,
+          requestedAt: (data['requestedAt'] as Timestamp?)?.toDate(),
         ).toEntity();
       }).toList();
     });
+  }
+
+  /// Get candidate-specific document types for a candidate
+  Future<List<Map<String, dynamic>>> getCandidateSpecificDocumentTypes(
+    String candidateId,
+  ) async {
+    try {
+      return await firestoreDataSource.getCandidateSpecificDocumentTypes(
+        candidateId,
+      );
+    } catch (e) {
+      return [];
+    }
   }
 
   @override
@@ -78,6 +134,40 @@ class DocumentRepositoryImpl implements DocumentRepository {
         name: name,
         description: description,
         isRequired: isRequired,
+      );
+
+      return Right(docType.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('An unexpected error occurred: $e'));
+    }
+  }
+
+  /// Create a candidate-specific document type
+  Future<Either<Failure, DocumentTypeEntity>> createCandidateSpecificDocumentType({
+    required String name,
+    required String description,
+    required String candidateId,
+  }) async {
+    try {
+      final docTypeId = await firestoreDataSource.createDocumentType(
+        name: name,
+        description: description,
+        isRequired: false, // Requested documents are optional
+        isCandidateSpecific: true,
+        requestedForCandidateId: candidateId,
+        requestedAt: DateTime.now(),
+      );
+
+      final docType = DocumentTypeModel(
+        docTypeId: docTypeId,
+        name: name,
+        description: description,
+        isRequired: false,
+        isCandidateSpecific: true,
+        requestedForCandidateId: candidateId,
+        requestedAt: DateTime.now(),
       );
 
       return Right(docType.toEntity());

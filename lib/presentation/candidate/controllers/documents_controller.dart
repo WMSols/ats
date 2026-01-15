@@ -65,9 +65,15 @@ class DocumentsController extends GetxController {
   }
 
   void loadDocumentTypes() {
+    final currentUser = authRepository.getCurrentUser();
+    if (currentUser == null) return;
+
     _documentTypesSubscription
         ?.cancel(); // Cancel previous subscription if exists
-    _documentTypesSubscription = documentRepository.streamDocumentTypes().listen(
+    final repositoryImpl = documentRepository as DocumentRepositoryImpl;
+    _documentTypesSubscription = repositoryImpl
+        .streamDocumentTypesForCandidate(currentUser.userId)
+        .listen(
       (types) {
         documentTypes.value = types;
         filterDocuments();
