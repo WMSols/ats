@@ -309,65 +309,6 @@ class AppCandidateProfileSections {
       }
     }
 
-    // Also add a duplicate section (as in original code)
-    rows.add(
-      AppCandidateProfileDataRow.buildDataRow(
-        context,
-        AppTexts.backgroundHistory,
-        '',
-        isSectionHeader: true,
-      ),
-    );
-
-    // Liability Action
-    if (profile.liabilityAction != null &&
-        profile.liabilityAction!.isNotEmpty) {
-      rows.add(
-        AppCandidateProfileDataRow.buildDataRow(
-          context,
-          AppTexts.liabilityAction,
-          profile.liabilityAction == 'Yes' ? AppTexts.yes : AppTexts.no,
-        ),
-      );
-    }
-
-    // License Action
-    if (profile.licenseAction != null && profile.licenseAction!.isNotEmpty) {
-      rows.add(
-        AppCandidateProfileDataRow.buildDataRow(
-          context,
-          AppTexts.licenseAction,
-          profile.licenseAction == 'Yes' ? AppTexts.yes : AppTexts.no,
-        ),
-      );
-    }
-
-    // Previously Traveled
-    if (profile.previouslyTraveled != null &&
-        profile.previouslyTraveled!.isNotEmpty) {
-      rows.add(
-        AppCandidateProfileDataRow.buildDataRow(
-          context,
-          AppTexts.previouslyTraveled,
-          profile.previouslyTraveled == 'Yes' ? AppTexts.yes : AppTexts.no,
-        ),
-      );
-    }
-
-    // Terminated From Assignment
-    if (profile.terminatedFromAssignment != null &&
-        profile.terminatedFromAssignment!.isNotEmpty) {
-      rows.add(
-        AppCandidateProfileDataRow.buildDataRow(
-          context,
-          AppTexts.terminatedFromAssignment,
-          profile.terminatedFromAssignment == 'Yes'
-              ? AppTexts.yes
-              : AppTexts.no,
-        ),
-      );
-    }
-
     return rows;
   }
 

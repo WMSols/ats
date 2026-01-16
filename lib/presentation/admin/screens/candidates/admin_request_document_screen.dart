@@ -19,13 +19,15 @@ class _AdminRequestDocumentScreenState
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController titleController;
   late final TextEditingController descriptionController;
+  final _canSubmit = false.obs;
 
-  bool get _canSubmit {
+  bool get canSubmit {
     return titleController.text.trim().isNotEmpty &&
         descriptionController.text.trim().isNotEmpty;
   }
 
   void _onTextChanged() {
+    _canSubmit.value = canSubmit;
     setState(() {});
   }
 
@@ -36,6 +38,7 @@ class _AdminRequestDocumentScreenState
     descriptionController = TextEditingController();
     titleController.addListener(_onTextChanged);
     descriptionController.addListener(_onTextChanged);
+    _canSubmit.value = canSubmit;
   }
 
   @override
@@ -66,21 +69,24 @@ class _AdminRequestDocumentScreenState
               ),
               AppSpacing.vertical(context, 0.03),
               Obx(
-                () => AppButton(
-                  text: AppTexts.create,
-                  icon: Iconsax.add,
-                  onPressed: _canSubmit && !controller.isLoading.value
-                      ? () {
-                          if (_formKey.currentState!.validate()) {
-                            controller.requestDocumentForCandidate(
-                              name: titleController.text.trim(),
-                              description: descriptionController.text.trim(),
-                            );
+                () {
+                  final isLoading = controller.isLoading.value;
+                  return AppButton(
+                    text: AppTexts.create,
+                    icon: Iconsax.add,
+                    onPressed: _canSubmit.value && !isLoading
+                        ? () {
+                            if (_formKey.currentState!.validate()) {
+                              controller.requestDocumentForCandidate(
+                                name: titleController.text.trim(),
+                                description: descriptionController.text.trim(),
+                              );
+                            }
                           }
-                        }
-                      : null,
-                  isLoading: controller.isLoading.value,
-                ),
+                        : null,
+                    isLoading: isLoading,
+                  );
+                },
               ),
             ],
           ),

@@ -34,6 +34,7 @@ class AppDocumentSelector extends StatelessWidget {
         final isSelected = selectedDocumentIds.contains(docType.docTypeId);
 
         return CheckboxListTile(
+          key: ValueKey('${docType.docTypeId}_$isSelected'),
           title: Text(docType.name, style: AppTextStyles.bodyText(context)),
           subtitle: docType.description.isNotEmpty
               ? Text(

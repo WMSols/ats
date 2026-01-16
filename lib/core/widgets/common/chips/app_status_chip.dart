@@ -164,6 +164,10 @@ class AppStatusChip extends StatelessWidget {
   }
 
   Color _getTextColor(Color backgroundColor) {
+    // Expiry chips always use black text
+    if (backgroundColor == AppColors.expiry) {
+      return AppColors.black;
+    }
     // Calculate luminance to determine if text should be white or black
     final luminance = backgroundColor.computeLuminance();
     return luminance > 0.5 ? AppColors.black : AppColors.white;

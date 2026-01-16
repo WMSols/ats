@@ -21,6 +21,7 @@ class _AdminJobCreateScreenState extends State<AdminJobCreateScreen> {
   late final TextEditingController descriptionController;
   late final TextEditingController requirementsController;
   final Set<String> selectedDocumentIds = {};
+  int _selectionVersion = 0; // Version counter to force rebuilds
 
   @override
   void initState() {
@@ -65,23 +66,7 @@ class _AdminJobCreateScreenState extends State<AdminJobCreateScreen> {
                 ).copyWith(fontWeight: FontWeight.w500),
               ),
               AppSpacing.vertical(context, 0.01),
-              Obx(() {
-                final documents = documentsController.filteredDocumentTypes
-                    .toList();
-                return AppDocumentSelector(
-                  documents: documents,
-                  selectedDocumentIds: selectedDocumentIds,
-                  onSelectionChanged: (docId, isSelected) {
-                    setState(() {
-                      if (isSelected) {
-                        selectedDocumentIds.add(docId);
-                      } else {
-                        selectedDocumentIds.remove(docId);
-                      }
-                    });
-                  },
-                );
-              }),
+              _buildDocumentSelector(context, documentsController),
               AppSpacing.vertical(context, 0.03),
               Obx(
                 () => AppButton(
@@ -105,5 +90,39 @@ class _AdminJobCreateScreenState extends State<AdminJobCreateScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildDocumentSelector(
+    BuildContext context,
+    AdminDocumentsController documentsController,
+  ) {
+    return Obx(() {
+      final documents = documentsController.filteredDocumentTypes.toList();
+      // Use version counter in key to force rebuild when selection changes
+      return StatefulBuilder(
+        key: ValueKey('doc_selector_v$_selectionVersion'),
+        builder: (context, setStateBuilder) {
+          return AppDocumentSelector(
+            documents: documents,
+            selectedDocumentIds: selectedDocumentIds,
+            onSelectionChanged: (docId, isSelected) {
+              // Update the Set
+              if (isSelected) {
+                selectedDocumentIds.add(docId);
+              } else {
+                selectedDocumentIds.remove(docId);
+              }
+              // Trigger rebuild using both builders for real-time update
+              setStateBuilder(() {});
+              if (mounted) {
+                setState(() {
+                  _selectionVersion++; // Increment version on user selection
+                });
+              }
+            },
+          );
+        },
+      );
+    });
   }
 }

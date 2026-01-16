@@ -14,6 +14,7 @@ import 'package:ats/presentation/candidate/screens/jobs/job_details_screen.dart'
 import 'package:ats/presentation/candidate/screens/applications/my_applications_screen.dart';
 import 'package:ats/presentation/candidate/screens/documents/my_documents_screen.dart';
 import 'package:ats/presentation/candidate/screens/documents/my_document_create_screen.dart';
+import 'package:ats/presentation/candidate/screens/documents/my_document_upload_screen.dart';
 
 class CandidateRoutes {
   static const String initial = AppConstants.routeLogin;
@@ -111,6 +112,24 @@ class CandidateRoutes {
     GetPage(
       name: AppConstants.routeCandidateCreateDocument,
       page: () => const MyDocumentCreateScreen(),
+      binding: CandidateBindings(),
+      middlewares: [ProfileCompletionMiddleware()],
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppConstants.routeCandidateUploadDocument,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>?;
+        if (args == null || args['docTypeId'] == null || args['docTypeName'] == null) {
+          // Fallback - should not happen, but handle gracefully
+          return const MyDocumentsScreen();
+        }
+        return MyDocumentUploadScreen(
+          docTypeId: args['docTypeId'] as String,
+          docTypeName: args['docTypeName'] as String,
+        );
+      },
       binding: CandidateBindings(),
       middlewares: [ProfileCompletionMiddleware()],
       transition: Transition.rightToLeft,

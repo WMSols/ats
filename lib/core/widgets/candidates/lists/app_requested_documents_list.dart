@@ -5,7 +5,6 @@ import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/utils/app_colors/app_colors.dart';
 import 'package:ats/core/utils/app_responsive/app_responsive.dart';
-import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/domain/entities/document_type_entity.dart';
 import 'package:ats/domain/entities/candidate_document_entity.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
@@ -15,6 +14,9 @@ class AppRequestedDocumentsList extends StatelessWidget {
   final List<CandidateDocumentEntity> candidateDocuments;
   final Function(String docTypeId) onRevoke;
   final Function(String storageUrl)? onView;
+  final Function(String candidateDocId, String status)? onStatusUpdate;
+  final Function(String candidateDocId, String status, String? denialReason)?
+  onDeny;
 
   const AppRequestedDocumentsList({
     super.key,
@@ -22,6 +24,8 @@ class AppRequestedDocumentsList extends StatelessWidget {
     required this.candidateDocuments,
     required this.onRevoke,
     this.onView,
+    this.onStatusUpdate,
+    this.onDeny,
   });
 
   /// Check if a requested document has been uploaded
@@ -47,24 +51,10 @@ class AppRequestedDocumentsList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: AppSpacing.padding(context),
-          child: Text(
-            AppTexts.requestedDocuments,
-            style: AppTextStyles.heading(context).copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppColors.secondary,
-            ),
-          ),
-        ),
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.only(
-            left: AppSpacing.symmetric(context, h: 0.02).horizontal,
-            right: AppSpacing.symmetric(context, h: 0.02).horizontal,
-            bottom: AppSpacing.symmetric(context, v: 0.02).vertical,
-          ),
+          padding: AppSpacing.padding(context).copyWith(bottom: 0),
           itemCount: requestedDocuments.length,
           itemBuilder: (context, index) {
             final docType = requestedDocuments[index];
@@ -72,18 +62,19 @@ class AppRequestedDocumentsList extends StatelessWidget {
             final uploadedDoc = getUploadedDocument(docType.docTypeId);
             final documentStatus = uploadedDoc?.status ?? '';
             final hasStorageUrl = uploadedDoc?.storageUrl.isNotEmpty ?? false;
+            final isPending =
+                documentStatus == AppConstants.documentStatusPending;
+            final isApproved =
+                documentStatus == AppConstants.documentStatusApproved;
+            final isRejected =
+                documentStatus == AppConstants.documentStatusDenied;
 
             return AppListCard(
               key: ValueKey('requested_doc_${docType.docTypeId}'),
               title: docType.name,
               subtitle: docType.description,
               icon: Iconsax.document_text,
-              trailing: AppActionButton(
-                text: AppTexts.revoke,
-                onPressed: () => onRevoke(docType.docTypeId),
-                backgroundColor: AppColors.error,
-                foregroundColor: AppColors.white,
-              ),
+              trailing: null,
               contentBelowSubtitle: Wrap(
                 spacing: AppResponsive.screenWidth(context) * 0.01,
                 runSpacing: AppResponsive.screenHeight(context) * 0.005,
@@ -102,35 +93,117 @@ class AppRequestedDocumentsList extends StatelessWidget {
                     // Show document status if uploaded
                     if (documentStatus.isNotEmpty)
                       AppStatusChip(status: documentStatus),
-                    // Show view button if document has storage URL
-                    if (hasStorageUrl && onView != null)
+                    // Show view/approve/deny buttons when document is pending
+                    if (isPending &&
+                        onView != null &&
+                        onStatusUpdate != null &&
+                        onDeny != null) ...[
                       AppActionButton(
                         text: AppTexts.view,
                         onPressed: () => onView!(uploadedDoc!.storageUrl),
                         backgroundColor: AppColors.information,
                         foregroundColor: AppColors.white,
                       ),
-                  ] else
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppResponsive.screenWidth(context) * 0.01,
-                        vertical: AppResponsive.screenHeight(context) * 0.005,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(
-                          AppResponsive.radius(context, factor: 5),
+                      AppActionButton(
+                        text: AppTexts.approve,
+                        onPressed: () => onStatusUpdate!(
+                          uploadedDoc!.candidateDocId,
+                          AppConstants.documentStatusApproved,
                         ),
+                        backgroundColor: AppColors.success,
+                        foregroundColor: AppColors.white,
                       ),
-                      child: Text(
-                        'NOT UPLOADED',
-                        style: AppTextStyles.bodyText(context).copyWith(
-                          color: AppColors.warning,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.5,
+                      AppActionButton(
+                        text: AppTexts.deny,
+                        onPressed: () {
+                          AppDocumentDenialDialog.show(
+                            documentName: docType.name,
+                            onConfirm: (reason) {
+                              onDeny!(
+                                uploadedDoc!.candidateDocId,
+                                AppConstants.documentStatusDenied,
+                                reason,
+                              );
+                            },
+                            onCancel: () {},
+                          );
+                        },
+                        backgroundColor: AppColors.error,
+                        foregroundColor: AppColors.white,
+                      ),
+                    ],
+                    // Show view button, status chip, and deny button when document is approved
+                    if (isApproved && onView != null && onDeny != null) ...[
+                      AppActionButton(
+                        text: AppTexts.view,
+                        onPressed: () => onView!(uploadedDoc!.storageUrl),
+                        backgroundColor: AppColors.information,
+                        foregroundColor: AppColors.white,
+                      ),
+                      AppActionButton(
+                        text: AppTexts.deny,
+                        onPressed: () {
+                          AppDocumentDenialDialog.show(
+                            documentName: docType.name,
+                            onConfirm: (reason) {
+                              onDeny!(
+                                uploadedDoc!.candidateDocId,
+                                AppConstants.documentStatusDenied,
+                                reason,
+                              );
+                            },
+                            onCancel: () {},
+                          );
+                        },
+                        backgroundColor: AppColors.error,
+                        foregroundColor: AppColors.white,
+                      ),
+                    ],
+                    // Show view button, status chip, and approve button when document is denied
+                    if (isRejected &&
+                        onView != null &&
+                        onStatusUpdate != null) ...[
+                      AppActionButton(
+                        text: AppTexts.view,
+                        onPressed: () => onView!(uploadedDoc!.storageUrl),
+                        backgroundColor: AppColors.information,
+                        foregroundColor: AppColors.white,
+                      ),
+                      AppActionButton(
+                        text: AppTexts.approve,
+                        onPressed: () => onStatusUpdate!(
+                          uploadedDoc!.candidateDocId,
+                          AppConstants.documentStatusApproved,
                         ),
+                        backgroundColor: AppColors.success,
+                        foregroundColor: AppColors.white,
                       ),
+                    ],
+                    // Fallback: show view button if no status-specific buttons are available
+                    if (!isPending &&
+                        !isApproved &&
+                        !isRejected &&
+                        hasStorageUrl &&
+                        onView != null)
+                      AppActionButton(
+                        text: AppTexts.view,
+                        onPressed: () => onView!(uploadedDoc!.storageUrl),
+                        backgroundColor: AppColors.information,
+                        foregroundColor: AppColors.white,
+                      ),
+                  ] else ...[
+                    AppStatusChip(
+                      status: AppConstants.documentStatusPending,
+                      customText: 'NOT UPLOADED',
                     ),
+                    // Show revoke button only when document is not uploaded
+                    AppActionButton(
+                      text: AppTexts.revoke,
+                      onPressed: () => onRevoke(docType.docTypeId),
+                      backgroundColor: AppColors.error,
+                      foregroundColor: AppColors.white,
+                    ),
+                  ],
                 ],
               ),
               onTap: null,

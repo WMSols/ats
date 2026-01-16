@@ -26,6 +26,7 @@ import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/core/utils/app_file_validator/app_file_validator.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
+import 'package:ats/core/widgets/candidates/profile/app_candidate_profile_formatters.dart';
 import 'package:ats/presentation/admin/controllers/admin_auth_controller.dart';
 
 class AdminCandidatesController extends GetxController {
@@ -347,7 +348,7 @@ class AdminCandidatesController extends GetxController {
         AppFileValidator.extractOriginalFileName(document.documentName);
     final candidateEmail = candidate.email;
     final candidateName = profile != null
-        ? '${profile.firstName} ${profile.lastName}'.trim()
+        ? AppCandidateProfileFormatters.getFullName(profile)
         : candidateEmail;
 
     // Step 1: Send email first (as per requirement: block if email fails)
@@ -395,7 +396,7 @@ class AdminCandidatesController extends GetxController {
     final candidateId = candidate.userId;
     final candidateEmail = candidate.email;
     final candidateName = profile != null
-        ? '${profile.firstName} ${profile.lastName}'.trim()
+        ? AppCandidateProfileFormatters.getFullName(profile)
         : candidateEmail;
 
     // Check if the same document type already exists for this candidate
@@ -502,7 +503,7 @@ class AdminCandidatesController extends GetxController {
 
     final candidateEmail = candidate.email;
     final candidateName = profile != null
-        ? '${profile.firstName} ${profile.lastName}'.trim()
+        ? AppCandidateProfileFormatters.getFullName(profile)
         : candidateEmail;
 
     // Step 1: Delete document type
@@ -617,7 +618,7 @@ class AdminCandidatesController extends GetxController {
   String getCandidateName(String userId) {
     final profile = candidateProfiles[userId];
     if (profile == null) return 'N/A';
-    return '${profile.firstName} ${profile.lastName}'.trim();
+    return AppCandidateProfileFormatters.getFullName(profile);
   }
 
   String getCandidateCompany(String userId) {

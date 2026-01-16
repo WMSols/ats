@@ -618,9 +618,9 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
   }) async {
     try {
       final data = {
-        'name': name,
-        'description': description,
-        'isRequired': isRequired,
+            'name': name,
+            'description': description,
+            'isRequired': isRequired,
         'isCandidateSpecific': isCandidateSpecific,
       };
       if (requestedForCandidateId != null) {

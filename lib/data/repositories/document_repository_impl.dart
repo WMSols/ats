@@ -303,6 +303,8 @@ class DocumentRepositoryImpl implements DocumentRepository {
     required String documentName,
     required PlatformFile platformFile,
     void Function(double progress)? onProgress,
+    DateTime? expiryDate,
+    bool hasNoExpiry = false,
   }) async {
     try {
       // Validate file
@@ -391,6 +393,8 @@ class DocumentRepositoryImpl implements DocumentRepository {
         docTypeId: docTypeId,
         documentName: sanitizedFileName,
         storageUrl: downloadUrl,
+        expiryDate: expiryDate,
+        hasNoExpiry: hasNoExpiry,
       );
 
       final doc = CandidateDocumentModel(
@@ -401,6 +405,8 @@ class DocumentRepositoryImpl implements DocumentRepository {
         storageUrl: downloadUrl,
         status: AppConstants.documentStatusPending,
         uploadedAt: DateTime.now(),
+        expiryDate: expiryDate,
+        hasNoExpiry: hasNoExpiry,
       );
 
       return Right(doc.toEntity());

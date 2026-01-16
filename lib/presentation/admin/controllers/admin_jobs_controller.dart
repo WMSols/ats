@@ -117,7 +117,9 @@ class AdminJobsController extends GetxController {
   }
 
   void selectJob(JobEntity job) {
-    selectedJob.value = job;
+    // Find the latest version of the job from the jobs list to ensure we have the most up-to-date data
+    final latestJob = jobs.firstWhereOrNull((j) => j.jobId == job.jobId);
+    selectedJob.value = latestJob ?? job;
   }
 
   Future<void> createJob({
@@ -193,8 +195,18 @@ class AdminJobsController extends GetxController {
         isLoading.value = false;
         AppSnackbar.error(failure.message);
       },
-      (job) {
+      (updatedJob) {
         isLoading.value = false;
+        // Update the selectedJob with the latest data
+        if (selectedJob.value?.jobId == updatedJob.jobId) {
+          selectedJob.value = updatedJob;
+        }
+        // Update the job in the jobs list immediately
+        final index = jobs.indexWhere((j) => j.jobId == updatedJob.jobId);
+        if (index != -1) {
+          jobs[index] = updatedJob;
+          _applyFilters();
+        }
         AppSnackbar.success('Job updated successfully');
         Get.offNamedUntil(
           AppConstants.routeAdminJobs,
@@ -216,8 +228,18 @@ class AdminJobsController extends GetxController {
         isLoading.value = false;
         AppSnackbar.error(failure.message);
       },
-      (job) {
+      (updatedJob) {
         isLoading.value = false;
+        // Update the selectedJob with the latest data
+        if (selectedJob.value?.jobId == updatedJob.jobId) {
+          selectedJob.value = updatedJob;
+        }
+        // Update the job in the jobs list immediately
+        final index = jobs.indexWhere((j) => j.jobId == updatedJob.jobId);
+        if (index != -1) {
+          jobs[index] = updatedJob;
+          _applyFilters();
+        }
         AppSnackbar.success('Job status updated successfully');
       },
     );

@@ -10,6 +10,7 @@ import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/domain/repositories/candidate_auth_repository.dart';
 import 'package:ats/domain/repositories/admin_auth_repository.dart';
 import 'package:ats/domain/entities/user_entity.dart';
+import 'package:ats/core/widgets/candidates/profile/app_candidate_profile_formatters.dart';
 import 'package:ats/presentation/admin/controllers/admin_auth_controller.dart';
 import 'package:ats/presentation/candidate/controllers/profile_controller.dart';
 
@@ -63,10 +64,9 @@ class AppUserProfileSection extends StatelessWidget {
             // Access observable directly - GetX will track this
             final candidateProfile = profileController.profile.value;
             if (candidateProfile != null) {
-              final firstName = candidateProfile.firstName.trim();
-              final lastName = candidateProfile.lastName.trim();
-              if (firstName.isNotEmpty || lastName.isNotEmpty) {
-                userName = '$firstName $lastName'.trim();
+              final fullName = AppCandidateProfileFormatters.getFullName(candidateProfile);
+              if (fullName.isNotEmpty && fullName != 'N/A') {
+                userName = fullName;
                 userRole = AppTexts.candidate;
                 
                 return _buildProfileWidget(context, isMobile, userName, userRole);

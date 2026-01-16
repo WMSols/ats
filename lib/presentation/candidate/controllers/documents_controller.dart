@@ -171,7 +171,12 @@ class DocumentsController extends GetxController {
     }
   }
 
-  Future<void> uploadDocument(String docTypeId, String docTypeName) async {
+  Future<void> uploadDocument(
+    String docTypeId,
+    String docTypeName, {
+    DateTime? expiryDate,
+    bool hasNoExpiry = false,
+  }) async {
     errorMessage.value = '';
 
     try {
@@ -226,6 +231,8 @@ class DocumentsController extends GetxController {
         onProgress: (progress) {
           uploadProgress.value = progress;
         },
+        expiryDate: expiryDate,
+        hasNoExpiry: hasNoExpiry,
       );
 
       uploadResult.fold(
@@ -247,6 +254,10 @@ class DocumentsController extends GetxController {
             uploadProgress.value = 0.0;
           });
           AppSnackbar.success('Document uploaded successfully');
+          // Navigate back if we're on upload screen
+          if (Get.currentRoute.contains('upload')) {
+            Get.back();
+          }
         },
       );
     } catch (e) {
@@ -254,8 +265,96 @@ class DocumentsController extends GetxController {
       isLoading.value = false;
       isUploading.value = false;
       uploadProgress.value = 0.0;
+      uploadingDocTypeId.value = '';
       AppSnackbar.error('Failed to upload file: $e');
     }
+  }
+
+  /// Upload document using already selected file (for upload screen)
+  Future<void> uploadDocumentWithSelectedFile({
+    required String docTypeId,
+    required String docTypeName,
+    DateTime? expiryDate,
+    bool hasNoExpiry = false,
+  }) async {
+    errorMessage.value = '';
+
+    // Validate file is selected
+    if (selectedFile.value == null) {
+      errorMessage.value = 'Please select a document file';
+      AppSnackbar.error('Please select a document file');
+      return;
+    }
+
+    final file = selectedFile.value!;
+
+    // Validate file again (in case it was changed)
+    final validationError = AppFileValidator.validateFile(file);
+    if (validationError != null) {
+      errorMessage.value = validationError;
+      AppSnackbar.error(validationError);
+      return;
+    }
+
+    final currentUser = authRepository.getCurrentUser();
+    if (currentUser == null) {
+      errorMessage.value = 'User not authenticated';
+      AppSnackbar.error('User not authenticated');
+      return;
+    }
+
+    // Sanitize document name
+    final sanitizedDocTypeName = AppFileValidator.sanitizeFileName(
+      docTypeName,
+    );
+    final sanitizedFileName = AppFileValidator.sanitizeFileName(file.name);
+    final documentName =
+        '${currentUser.userId}_${sanitizedDocTypeName}_$sanitizedFileName';
+
+    // Reset progress and track which document is being uploaded
+    uploadProgress.value = 0.0;
+    isUploading.value = true;
+    isLoading.value = true;
+    uploadingDocTypeId.value = docTypeId;
+
+    // Use the repository implementation directly to access helper method
+    final repositoryImpl = documentRepository as DocumentRepositoryImpl;
+
+    final uploadResult = await repositoryImpl.uploadDocumentWithFile(
+      candidateId: currentUser.userId,
+      docTypeId: docTypeId,
+      documentName: documentName,
+      platformFile: file,
+      onProgress: (progress) {
+        uploadProgress.value = progress;
+      },
+      expiryDate: expiryDate,
+      hasNoExpiry: hasNoExpiry,
+    );
+
+    uploadResult.fold(
+      (failure) {
+        errorMessage.value = failure.message;
+        isLoading.value = false;
+        isUploading.value = false;
+        uploadProgress.value = 0.0;
+        uploadingDocTypeId.value = '';
+        AppSnackbar.error(failure.message);
+      },
+      (document) {
+        isLoading.value = false;
+        isUploading.value = false;
+        uploadProgress.value = 1.0;
+        clearSelectedFile();
+        AppSnackbar.success('Document uploaded successfully');
+        // Reset progress after a short delay
+        Future.delayed(const Duration(seconds: 2), () {
+          uploadProgress.value = 0.0;
+        });
+        // Navigate back to documents screen after successful upload
+        Get.back();
+      },
+    );
   }
 
   Future<void> pickFileForUserDocument() async {
