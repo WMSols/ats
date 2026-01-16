@@ -1,70 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:ats/presentation/admin/controllers/admin_documents_controller.dart';
+import 'package:ats/presentation/admin/controllers/admin_candidates_controller.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
 
-class AdminCreateDocumentTypeScreen extends StatefulWidget {
-  const AdminCreateDocumentTypeScreen({super.key});
+class AdminRequestDocumentScreen extends StatefulWidget {
+  const AdminRequestDocumentScreen({super.key});
 
   @override
-  State<AdminCreateDocumentTypeScreen> createState() =>
-      _AdminCreateDocumentTypeScreenState();
+  State<AdminRequestDocumentScreen> createState() =>
+      _AdminRequestDocumentScreenState();
 }
 
-class _AdminCreateDocumentTypeScreenState
-    extends State<AdminCreateDocumentTypeScreen> {
+class _AdminRequestDocumentScreenState
+    extends State<AdminRequestDocumentScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController titleController;
   late final TextEditingController descriptionController;
   final _canSubmit = false.obs;
 
-  // Validation errors
-  final titleError = Rxn<String>();
-  final descriptionError = Rxn<String>();
-
   bool get canSubmit {
     return titleController.text.trim().isNotEmpty &&
-        descriptionController.text.trim().isNotEmpty &&
-        titleError.value == null &&
-        descriptionError.value == null;
+        descriptionController.text.trim().isNotEmpty;
   }
 
-  // Validation methods
-  void validateTitle(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      titleError.value = AppTexts.documentTitleRequired;
-    } else if (value.trim().length < 3) {
-      titleError.value = AppTexts.documentTitleMinLength;
-    } else {
-      titleError.value = null;
-    }
+  void _onTextChanged() {
     _canSubmit.value = canSubmit;
-  }
-
-  void validateDescription(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      descriptionError.value = AppTexts.descriptionRequired;
-    } else if (value.trim().length < 10) {
-      descriptionError.value = AppTexts.descriptionMinLength;
-    } else {
-      descriptionError.value = null;
-    }
-    _canSubmit.value = canSubmit;
-  }
-
-  bool _validateForm() {
-    // Validate all fields
-    validateTitle(titleController.text);
-    validateDescription(descriptionController.text);
-
-    if (titleError.value != null || descriptionError.value != null) {
-      return false;
-    }
-
-    return true;
+    setState(() {});
   }
 
   @override
@@ -72,11 +36,15 @@ class _AdminCreateDocumentTypeScreenState
     super.initState();
     titleController = TextEditingController();
     descriptionController = TextEditingController();
+    titleController.addListener(_onTextChanged);
+    descriptionController.addListener(_onTextChanged);
     _canSubmit.value = canSubmit;
   }
 
   @override
   void dispose() {
+    titleController.removeListener(_onTextChanged);
+    descriptionController.removeListener(_onTextChanged);
     titleController.dispose();
     descriptionController.dispose();
     super.dispose();
@@ -84,10 +52,10 @@ class _AdminCreateDocumentTypeScreenState
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<AdminDocumentsController>();
+    final controller = Get.find<AdminCandidatesController>();
 
     return AppAdminLayout(
-      title: AppTexts.createDocumentType,
+      title: AppTexts.requestDocument,
       child: SingleChildScrollView(
         padding: AppSpacing.padding(context),
         child: Form(
@@ -98,14 +66,6 @@ class _AdminCreateDocumentTypeScreenState
               AppDocumentFormFields(
                 titleController: titleController,
                 descriptionController: descriptionController,
-                onTitleChanged: (value) {
-                  validateTitle(value);
-                },
-                onDescriptionChanged: (value) {
-                  validateDescription(value);
-                },
-                titleError: titleError,
-                descriptionError: descriptionError,
               ),
               AppSpacing.vertical(context, 0.03),
               Obx(
@@ -116,11 +76,10 @@ class _AdminCreateDocumentTypeScreenState
                     icon: Iconsax.add,
                     onPressed: _canSubmit.value && !isLoading
                         ? () {
-                            if (_validateForm()) {
-                              controller.createDocumentType(
+                            if (_formKey.currentState!.validate()) {
+                              controller.requestDocumentForCandidate(
                                 name: titleController.text.trim(),
                                 description: descriptionController.text.trim(),
-                                isRequired: false,
                               );
                             }
                           }

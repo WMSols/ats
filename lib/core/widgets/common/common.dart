@@ -10,6 +10,7 @@ export 'forms/app_password_strength_indicator.dart';
 export 'buttons/app_button.dart';
 export 'buttons/app_text_button.dart';
 export 'buttons/app_action_button.dart';
+export 'buttons/app_floating_action_button.dart';
 export 'feedback/app_loading_indicator.dart';
 export 'feedback/app_error_message.dart';
 export 'feedback/app_info_message.dart';

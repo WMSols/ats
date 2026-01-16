@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
+import 'package:ats/core/widgets/documents/documents.dart';
 
 class AppDocumentFormFields extends StatelessWidget {
   final TextEditingController titleController;
@@ -99,50 +100,16 @@ class AppDocumentFormFields extends StatelessWidget {
                 : const SizedBox.shrink(),
           ),
         // Expiry Date Section (only shown if expiryController is provided)
+        // Use AppDocumentExpirySection for real-time checkbox updates
         if (expiryController != null && onNoExpiryChanged != null) ...[
           AppSpacing.vertical(context, 0.02),
-          // No Expiry Checkbox
-          Row(
-            children: [
-              Checkbox(
-                value: hasNoExpiry,
-                onChanged: (value) {
-                  onNoExpiryChanged!(value ?? false);
-                },
-              ),
-              Text('No Expiry'),
-            ],
+          AppDocumentExpirySection(
+            expiryController: expiryController!,
+            hasNoExpiry: hasNoExpiry,
+            onNoExpiryChanged: onNoExpiryChanged!,
+            onExpiryChanged: onExpiryChanged,
+            expiryError: expiryError,
           ),
-          // Expiry Date Picker
-          if (!hasNoExpiry) ...[
-            AppSpacing.vertical(context, 0.01),
-            AppDatePicker(
-              controller: expiryController!,
-              labelText: AppTexts.expiry,
-              showLabelAbove: true,
-              hintText: 'MM/YYYY',
-              monthYearOnly: true,
-              onChanged: (value) {
-                // Trigger expiry validation when date is selected
-                onExpiryChanged?.call();
-              },
-            ),
-          ],
-          // Expiry Error Message
-          if (expiryError != null)
-            Obx(
-              () => expiryError!.value != null
-                  ? Padding(
-                      padding: EdgeInsets.only(
-                        top: AppSpacing.vertical(context, 0.01).height!,
-                      ),
-                      child: AppErrorMessage(
-                        message: expiryError!.value!,
-                        icon: Iconsax.info_circle,
-                      ),
-                    )
-                  : const SizedBox.shrink(),
-            ),
         ],
       ],
     );

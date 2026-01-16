@@ -9,6 +9,7 @@ import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/core/utils/app_responsive/app_responsive.dart';
 import 'package:ats/core/utils/app_file_validator/app_file_validator.dart';
+import 'package:ats/domain/entities/document_type_entity.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
 
 class MyDocumentsScreen extends StatefulWidget {
@@ -22,15 +23,19 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
   late final TextEditingController _searchController;
   late final DocumentsController _controller;
   Widget? _cachedContent; // Cache the entire Column content
-  final _searchBarKey = GlobalKey(debugLabel: 'documents-search-bar'); // GlobalKey for search bar
+  final _searchBarKey = GlobalKey(
+    debugLabel: 'documents-search-bar',
+  ); // GlobalKey for search bar
 
   @override
   void initState() {
     super.initState();
     _controller = Get.find<DocumentsController>();
     // Create search controller and sync with controller's search query
-    _searchController = TextEditingController(text: _controller.searchQuery.value);
-    
+    _searchController = TextEditingController(
+      text: _controller.searchQuery.value,
+    );
+
     // Listen to search query changes from controller (e.g., when cleared)
     ever(_controller.searchQuery, (query) {
       if (_searchController.text != query) {
@@ -81,7 +86,8 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
         children: [
           // Search and Add Section - Use GlobalKey to preserve state
           AppSearchCreateBar(
-            key: _searchBarKey, // Use GlobalKey to preserve search field state
+            key: _searchBarKey,
+            // Use GlobalKey to preserve search field state
             searchController: _searchController,
             searchHint: AppTexts.searchDocuments,
             createButtonText: AppTexts.addNewDocument,
@@ -94,9 +100,18 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
           // Documents List
           Expanded(
             child: Obx(() {
-              final adminDocs = _controller.filteredDocumentTypes.toList();
+              final allAdminDocs = _controller.filteredDocumentTypes.toList();
               final userDocs = _controller.filteredUserDocuments.toList();
-              final hasAnyDocs = adminDocs.isNotEmpty || userDocs.isNotEmpty;
+              
+              // Separate requested documents (candidate-specific) from non-requested
+              final requestedDocs = allAdminDocs
+                  .where((doc) => doc.isCandidateSpecific)
+                  .toList();
+              final nonRequestedDocs = allAdminDocs
+                  .where((doc) => !doc.isCandidateSpecific)
+                  .toList();
+              
+              final hasAnyDocs = allAdminDocs.isNotEmpty || userDocs.isNotEmpty;
 
               if (!hasAnyDocs) {
                 return AppEmptyState(
@@ -111,25 +126,39 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                 );
               }
 
+              final totalItemCount = requestedDocs.length + 
+                                    nonRequestedDocs.length + 
+                                    userDocs.length;
+
               return ListView.builder(
                 padding: AppSpacing.padding(context),
-                itemCount: adminDocs.length + userDocs.length,
+                itemCount: totalItemCount,
                 itemBuilder: (context, index) {
-                  // Admin-provided documents first
-                  if (index < adminDocs.length) {
-                    final docType = adminDocs[index];
-
+                  DocumentTypeEntity? docType;
+                  
+                  // Determine which section we're in
+                  if (index < requestedDocs.length) {
+                    // Requested documents section (at the top)
+                    docType = requestedDocs[index];
+                  } else if (index < requestedDocs.length + nonRequestedDocs.length) {
+                    // Non-requested documents section
+                    docType = nonRequestedDocs[index - requestedDocs.length];
+                  }
+                  
+                  // Handle admin documents (both requested and non-requested)
+                  if (docType != null) {
+                    final currentDocType = docType; // Create non-nullable reference
                     return Obx(() {
                       // Re-read reactive values inside Obx for this specific item
                       final isUploadingThisItem =
                           _controller.uploadingDocTypeId.value ==
-                          docType.docTypeId;
+                          currentDocType.docTypeId;
                       final currentProgress = _controller.uploadProgress.value;
                       final currentHasDoc = _controller.hasDocument(
-                        docType.docTypeId,
+                        currentDocType.docTypeId,
                       );
                       final currentDocument = _controller.getDocumentByType(
-                        docType.docTypeId,
+                        currentDocType.docTypeId,
                       );
                       final documentStatus = currentDocument?.status ?? '';
                       final isPending =
@@ -142,8 +171,8 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                       return Column(
                         children: [
                           AppListCard(
-                            title: docType.name,
-                            subtitle: docType.description,
+                            title: currentDocType.name,
+                            subtitle: currentDocType.description,
                             icon: Iconsax.document_text,
                             trailing: isUploadingThisItem
                                 ? SizedBox(
@@ -187,75 +216,93 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                                     backgroundColor: AppColors.primary,
                                     text: AppTexts.upload,
                                     icon: Iconsax.document_upload,
-                                    onPressed: () => _controller.uploadDocument(
-                                      docType.docTypeId,
-                                      docType.name,
-                                    ),
+                                    onPressed: () {
+                                      Get.toNamed(
+                                        AppConstants.routeCandidateUploadDocument,
+                                        arguments: {
+                                          'docTypeId': currentDocType.docTypeId,
+                                          'docTypeName': currentDocType.name,
+                                        },
+                                      );
+                                    },
                                     isFullWidth: false,
                                   ),
-                            contentBelowSubtitle: currentHasDoc
-                                ? Wrap(
-                                    spacing:
-                                        AppResponsive.screenWidth(context) *
-                                        0.01,
-                                    runSpacing:
-                                        AppResponsive.screenHeight(context) *
-                                        0.005,
-                                    children: [
-                                      AppStatusChip(status: documentStatus),
-                                      // Show view button when document has been uploaded
-                                      if (hasStorageUrl)
-                                        AppActionButton(
-                                          text: AppTexts.view,
-                                          onPressed: () {
-                                            AppDocumentViewer.show(
-                                              documentUrl:
-                                                  currentDocument!.storageUrl,
-                                              documentName: docType.name,
-                                            );
+                            contentBelowSubtitle: Wrap(
+                              spacing:
+                                  AppResponsive.screenWidth(context) * 0.01,
+                              runSpacing:
+                                  AppResponsive.screenHeight(context) * 0.005,
+                              children: [
+                                // Show "Requested" badge if document is candidate-specific
+                                if (currentDocType.isCandidateSpecific)
+                                  AppStatusChip(
+                                    status:
+                                        AppConstants.documentStatusRequested,
+                                    showIcon: false,
+                                  ),
+                                if (currentHasDoc) ...[
+                                  // Show "Uploaded" chip for requested documents
+                                  if (currentDocType.isCandidateSpecific)
+                                    AppStatusChip(
+                                      status: AppConstants.documentStatusApproved,
+                                      customText: 'Uploaded',
+                                    ),
+                                  AppStatusChip(status: documentStatus),
+                                  // Show view button when document has been uploaded
+                                  if (hasStorageUrl)
+                                    AppActionButton(
+                                      text: AppTexts.view,
+                                      onPressed: () {
+                                        AppDocumentViewer.show(
+                                          documentUrl:
+                                              currentDocument!.storageUrl,
+                                          documentName: currentDocType.name,
+                                        );
+                                      },
+                                      backgroundColor: AppColors.information,
+                                      foregroundColor: AppColors.white,
+                                    ),
+                                  // Show delete button when pending
+                                  if (isPending)
+                                    AppActionButton(
+                                      text: AppTexts.delete,
+                                      onPressed: () => _showDeleteConfirmation(
+                                        context,
+                                        _controller,
+                                        currentDocument!.candidateDocId,
+                                        currentDocument.storageUrl,
+                                        currentDocType.name,
+                                      ),
+                                      backgroundColor: AppColors.error,
+                                      foregroundColor: AppColors.white,
+                                    ),
+                                  // Show reupload button when denied
+                                  if (isDenied)
+                                    AppActionButton(
+                                      text: AppTexts.reupload,
+                                      onPressed: () {
+                                        Get.toNamed(
+                                          AppConstants.routeCandidateUploadDocument,
+                                          arguments: {
+                                            'docTypeId': currentDocType.docTypeId,
+                                            'docTypeName': currentDocType.name,
                                           },
-                                          backgroundColor:
-                                              AppColors.information,
-                                          foregroundColor: AppColors.white,
-                                        ),
-                                      // Show delete button when pending
-                                      if (isPending)
-                                        AppActionButton(
-                                          text: AppTexts.delete,
-                                          onPressed: () =>
-                                              _showDeleteConfirmation(
-                                                context,
-                                                _controller,
-                                                currentDocument!.candidateDocId,
-                                                currentDocument.storageUrl,
-                                                docType.name,
-                                              ),
-                                          backgroundColor: AppColors.error,
-                                          foregroundColor: AppColors.white,
-                                        ),
-                                      // Show reupload button when denied
-                                      if (isDenied)
-                                        AppActionButton(
-                                          text: AppTexts.reupload,
-                                          onPressed: () =>
-                                              _controller.uploadDocument(
-                                                docType.docTypeId,
-                                                docType.name,
-                                              ),
-                                          backgroundColor: AppColors.warning,
-                                          foregroundColor: AppColors.black,
-                                        ),
-                                    ],
-                                  )
-                                : null,
+                                        );
+                                      },
+                                      backgroundColor: AppColors.warning,
+                                      foregroundColor: AppColors.black,
+                                    ),
+                                ],
+                              ],
+                            ),
                             onTap: null,
                           ),
                         ],
                       );
                     });
                   } else {
-                    // User-added documents
-                    final userDocIndex = index - adminDocs.length;
+                    // User-added documents section
+                    final userDocIndex = index - requestedDocs.length - nonRequestedDocs.length;
 
                     return Obx(() {
                       // Re-read reactive values inside Obx for this specific item
@@ -294,29 +341,9 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                           children: [
                             // Expiry Status Chip
                             if (expiryStatus != null)
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal:
-                                      AppResponsive.screenWidth(context) * 0.01,
-                                  vertical:
-                                      AppResponsive.screenHeight(context) *
-                                      0.005,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.expiry,
-                                  borderRadius: BorderRadius.circular(
-                                    AppResponsive.radius(context, factor: 5),
-                                  ),
-                                ),
-                                child: Text(
-                                  expiryStatus.toUpperCase(),
-                                  style: AppTextStyles.bodyText(context)
-                                      .copyWith(
-                                        color: AppColors.black,
-                                        fontWeight: FontWeight.w500,
-                                        letterSpacing: 0.5,
-                                      ),
-                                ),
+                              AppStatusChip(
+                                status: expiryStatus.toLowerCase(),
+                                showIcon: false,
                               ),
                             AppStatusChip(status: userDoc.status),
                             // Show view button when document has been uploaded
@@ -379,7 +406,7 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
         ],
       ),
     );
-    
+
     return AppCandidateLayout(
       title: AppTexts.myDocuments,
       child: _cachedContent!,

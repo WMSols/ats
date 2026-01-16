@@ -7,7 +7,7 @@ class AppTexts {
   // Auth
   static const String login = "Login";
   static const String signUp = "Sign Up";
-  static const String candidateLogin = "Candidate Login1";
+  static const String candidateLogin = "Candidate Login";
   static const String candidateSignUp = "Candidate Sign Up";
   static const String adminLogin = "Admin Login";
   static const String adminSignUp = "Admin Sign Up";
@@ -141,8 +141,13 @@ class AppTexts {
   static const String documentName = "Document Name";
   static const String documentTypes = "Document Types";
   static const String createDocumentType = "Create Document Type";
+  static const String requestDocument = "Request Document";
+  static const String requestedDocuments = "Requested Documents";
+  static const String revoke = "Revoke";
   static const String documentTypeCreated =
       "Document type created successfully";
+  static const String documentRequested = "Document requested successfully";
+  static const String documentRequestRevoked = "Document request revoked successfully";
   static const String documentTypeUpdated =
       "Document type updated successfully";
   static const String documentTypeDeleted =

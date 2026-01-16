@@ -109,11 +109,22 @@ abstract class FirestoreDataSource {
     required String name,
     required String description,
     required bool isRequired,
+    bool isCandidateSpecific = false,
+    String? requestedForCandidateId,
+    DateTime? requestedAt,
   });
 
   Future<List<Map<String, dynamic>>> getDocumentTypes();
 
   Stream<List<Map<String, dynamic>>> streamDocumentTypes();
+
+  Stream<List<Map<String, dynamic>>> streamDocumentTypesForCandidate(
+    String candidateId,
+  );
+
+  Future<List<Map<String, dynamic>>> getCandidateSpecificDocumentTypes(
+    String candidateId,
+  );
 
   Future<void> updateDocumentType({
     required String docTypeId,
@@ -601,15 +612,26 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
     required String name,
     required String description,
     required bool isRequired,
+    bool isCandidateSpecific = false,
+    String? requestedForCandidateId,
+    DateTime? requestedAt,
   }) async {
     try {
-      final docRef = await firestore
-          .collection(AppConstants.documentTypesCollection)
-          .add({
+      final data = {
             'name': name,
             'description': description,
             'isRequired': isRequired,
-          });
+        'isCandidateSpecific': isCandidateSpecific,
+      };
+      if (requestedForCandidateId != null) {
+        data['requestedForCandidateId'] = requestedForCandidateId;
+      }
+      if (requestedAt != null) {
+        data['requestedAt'] = Timestamp.fromDate(requestedAt);
+      }
+      final docRef = await firestore
+          .collection(AppConstants.documentTypesCollection)
+          .add(data);
       return docRef.id;
     } catch (e) {
       throw ServerException('Failed to create document type: $e');
@@ -640,6 +662,49 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
               .map((doc) => {...doc.data(), 'docTypeId': doc.id})
               .toList(),
         );
+  }
+
+  /// Stream document types for a specific candidate (includes candidate-specific ones)
+  Stream<List<Map<String, dynamic>>> streamDocumentTypesForCandidate(
+    String candidateId,
+  ) {
+    return firestore
+        .collection(AppConstants.documentTypesCollection)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .where((doc) {
+                final data = doc.data();
+                final isCandidateSpecific =
+                    data['isCandidateSpecific'] ?? false;
+                final requestedForCandidateId =
+                    data['requestedForCandidateId'] as String?;
+                // Include global documents OR candidate-specific documents for this candidate
+                return !isCandidateSpecific ||
+                    requestedForCandidateId == candidateId;
+              })
+              .map((doc) => {...doc.data(), 'docTypeId': doc.id})
+              .toList(),
+        );
+  }
+
+  /// Get candidate-specific document types for a candidate
+  Future<List<Map<String, dynamic>>> getCandidateSpecificDocumentTypes(
+    String candidateId,
+  ) async {
+    try {
+      final querySnapshot = await firestore
+          .collection(AppConstants.documentTypesCollection)
+          .where('isCandidateSpecific', isEqualTo: true)
+          .where('requestedForCandidateId', isEqualTo: candidateId)
+          .get();
+      return querySnapshot.docs
+          .map((doc) => {...doc.data(), 'docTypeId': doc.id})
+          .toList();
+    } catch (e) {
+      throw ServerException(
+          'Failed to get candidate-specific document types: $e');
+    }
   }
 
   @override

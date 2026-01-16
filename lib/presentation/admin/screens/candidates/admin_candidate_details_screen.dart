@@ -8,6 +8,7 @@ import 'package:ats/presentation/admin/controllers/admin_candidates_controller.d
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_file_validator/app_file_validator.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
+import 'package:ats/core/widgets/candidates/profile/app_candidate_profile_formatters.dart';
 import 'package:ats/core/constants/app_constants.dart';
 
 class AdminCandidateDetailsScreen extends StatelessWidget {
@@ -137,8 +138,7 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
                                     icon: Iconsax.trash,
                                     onPressed: () {
                                       final profileName = profile != null
-                                          ? '${profile.firstName} ${profile.lastName}'
-                                                .trim()
+                                          ? AppCandidateProfileFormatters.getFullName(profile)
                                           : 'N/A';
                                       _showDeleteConfirmation(
                                         context,
@@ -154,45 +154,136 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
                           ),
                       ],
                     ),
-                    AppCandidateDocumentsList(
-                      documents: controller.candidateDocuments,
-                      onStatusUpdate: (candidateDocId, status) {
-                        // For approve, use regular status update
-                        controller.updateDocumentStatus(
-                          candidateDocId: candidateDocId,
-                          status: status,
-                        );
-                      },
-                      onDeny: (candidateDocId, status, denialReason) {
-                        // For deny, use email sending flow
-                        controller.denyDocumentWithEmail(
-                          candidateDocId: candidateDocId,
-                          status: status,
-                          denialReason: denialReason,
-                        );
-                      },
-                      onView: (storageUrl) {
-                        // Find the document name for display
-                        String? documentName;
-                        try {
-                          final document = controller.candidateDocuments
-                              .firstWhere(
-                                (doc) => doc.storageUrl == storageUrl,
+                    // Documents Tab with FAB
+                    Stack(
+                      children: [
+                        Obx(() {
+                          final requestedDocs =
+                              controller.candidateRequestedDocumentTypes.toList();
+                          final allCandidateDocs =
+                              controller.candidateDocuments.toList();
+                          
+                          // Filter out documents that are from requested document types
+                          // to avoid showing them twice (once in requested section, once in regular section)
+                          final requestedDocTypeIds = requestedDocs
+                              .map((docType) => docType.docTypeId)
+                              .toSet();
+                          final regularDocs = allCandidateDocs
+                              .where((doc) => !requestedDocTypeIds.contains(doc.docTypeId))
+                              .toList();
+
+                          return CustomScrollView(
+                            slivers: [
+                              // Requested Documents Section
+                              if (requestedDocs.isNotEmpty)
+                                SliverToBoxAdapter(
+                                  child: AppRequestedDocumentsList(
+                                    requestedDocuments: requestedDocs,
+                                    candidateDocuments: allCandidateDocs,
+                                    onRevoke: (docTypeId) {
+                                      controller.revokeDocumentRequest(docTypeId);
+                                    },
+                                    onView: (storageUrl) {
+                                      // Find the document name for display
+                                      String? documentName;
+                                      try {
+                                        final document = allCandidateDocs.firstWhere(
+                                          (doc) => doc.storageUrl == storageUrl,
+                                        );
+                                        documentName =
+                                            document.title ??
+                                            AppFileValidator.extractOriginalFileName(
+                                              document.documentName,
+                                            );
+                                      } catch (e) {
+                                        // Document not found, use default name
+                                        documentName = null;
+                                      }
+                                      AppDocumentViewer.show(
+                                        documentUrl: storageUrl,
+                                        documentName: documentName,
+                                      );
+                                    },
+                                    onStatusUpdate: (candidateDocId, status) {
+                                      controller.updateDocumentStatus(
+                                        candidateDocId: candidateDocId,
+                                        status: status,
+                                      );
+                                    },
+                                    onDeny: (candidateDocId, status, denialReason) {
+                                      controller.denyDocumentWithEmail(
+                                        candidateDocId: candidateDocId,
+                                        status: status,
+                                        denialReason: denialReason,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              // Regular Documents List (excluding requested documents)
+                              if (regularDocs.isEmpty && requestedDocs.isEmpty)
+                                SliverFillRemaining(
+                                  child: AppEmptyState(
+                                    message: AppTexts.noDocumentsFound,
+                                    icon: Iconsax.document_text,
+                                  ),
+                                )
+                              else if (regularDocs.isNotEmpty)
+                                SliverToBoxAdapter(
+                                  child: AppCandidateDocumentsList(
+                                    documents: regularDocs,
+                                    onStatusUpdate: (candidateDocId, status) {
+                                      controller.updateDocumentStatus(
+                                        candidateDocId: candidateDocId,
+                                        status: status,
+                                      );
+                                    },
+                                    onDeny: (candidateDocId, status, denialReason) {
+                                      controller.denyDocumentWithEmail(
+                                        candidateDocId: candidateDocId,
+                                        status: status,
+                                        denialReason: denialReason,
+                                      );
+                                    },
+                                    onView: (storageUrl) {
+                                      // Find the document name for display
+                                      String? documentName;
+                                      try {
+                                        final document = allCandidateDocs.firstWhere(
+                                          (doc) => doc.storageUrl == storageUrl,
+                                        );
+                                        documentName =
+                                            document.title ??
+                                            AppFileValidator.extractOriginalFileName(
+                                              document.documentName,
+                                            );
+                                      } catch (e) {
+                                        // Document not found, use default name
+                                        documentName = null;
+                                      }
+                                      AppDocumentViewer.show(
+                                        documentUrl: storageUrl,
+                                        documentName: documentName,
+                                      );
+                                    },
+                                  ),
+                                ),
+                            ],
+                          );
+                        }),
+                        Positioned(
+                          bottom: 16,
+                          right: 16,
+                          child: AppFloatingActionButton(
+                            icon: Iconsax.document_upload,
+                            tooltip: AppTexts.requestDocument,
+                            onPressed: () {
+                              Get.toNamed(
+                                AppConstants.routeAdminRequestDocument,
                               );
-                          documentName =
-                              document.title ??
-                              AppFileValidator.extractOriginalFileName(
-                                document.documentName,
-                              );
-                        } catch (e) {
-                          // Document not found, use default name
-                          documentName = null;
-                        }
-                        AppDocumentViewer.show(
-                          documentUrl: storageUrl,
-                          documentName: documentName,
-                        );
-                      },
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                     AppCandidateApplicationsList(
                       applications: controller.candidateApplications,
@@ -213,4 +304,5 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
       }),
     );
   }
+
 }

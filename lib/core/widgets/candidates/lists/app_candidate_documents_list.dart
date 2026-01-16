@@ -6,7 +6,6 @@ import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/utils/app_colors/app_colors.dart';
 import 'package:ats/core/utils/app_file_validator/app_file_validator.dart';
 import 'package:ats/core/utils/app_responsive/app_responsive.dart';
-import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/domain/entities/candidate_document_entity.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
 
@@ -35,7 +34,9 @@ class AppCandidateDocumentsList extends StatelessWidget {
     }
 
     return ListView.builder(
-      padding: AppSpacing.padding(context),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: AppSpacing.padding(context).copyWith(top: 0),
       itemCount: documents.length,
       itemBuilder: (context, index) {
         final doc = documents[index];
@@ -60,25 +61,10 @@ class AppCandidateDocumentsList extends StatelessWidget {
             children: [
               // Expiry Status Chip (always show if document has expiry info)
               if (expiryStatus != null)
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppResponsive.screenWidth(context) * 0.01,
-                    vertical: AppResponsive.screenHeight(context) * 0.005,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.expiry,
-                    borderRadius: BorderRadius.circular(
-                      AppResponsive.radius(context, factor: 5),
-                    ),
-                  ),
-                  child: Text(
-                    expiryStatus.toUpperCase(),
-                    style: AppTextStyles.bodyText(context).copyWith(
-                      color: AppColors.black,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+                AppStatusChip(
+                  status: 'expiry',
+                  customText: expiryStatus,
+                  showIcon: false,
                 ),
               // Show view/approve/deny buttons when document is pending
               if (isPending) ...[

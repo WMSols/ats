@@ -9,4 +9,19 @@ abstract class EmailRepository {
     required String documentName,
     String? denialReason,
   });
+
+  /// Sends a document request email to a candidate
+  Future<Either<Failure, void>> sendDocumentRequestEmail({
+    required String candidateEmail,
+    required String candidateName,
+    required String documentName,
+    required String documentDescription,
+  });
+
+  /// Sends a document request revocation email to a candidate
+  Future<Either<Failure, void>> sendDocumentRequestRevocationEmail({
+    required String candidateEmail,
+    required String candidateName,
+    required String documentName,
+  });
 }

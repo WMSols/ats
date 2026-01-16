@@ -29,6 +29,7 @@ class AppConstants {
   static const String documentStatusPending = 'pending';
   static const String documentStatusApproved = 'approved';
   static const String documentStatusDenied = 'denied';
+  static const String documentStatusRequested = 'requested';
 
   // Application Status
   static const String applicationStatusPending = 'pending';
@@ -52,9 +53,11 @@ class AppConstants {
   static const String routeCandidateJobs = '/candidate/jobs';
   static const String routeCandidateJobDetails = '/candidate/jobs/details';
   static const String routeCandidateApplications = '/candidate/applications';
-  static const String routeCandidateDocuments = '/candidate/documents';
-  static const String routeCandidateCreateDocument =
-      '/candidate/documents/create';
+    static const String routeCandidateDocuments = '/candidate/documents';
+    static const String routeCandidateCreateDocument =
+        '/candidate/documents/create';
+    static const String routeCandidateUploadDocument =
+        '/candidate/documents/upload';
   static const String routeAdminDashboard = '/admin/dashboard';
   static const String routeAdminJobs = '/admin/jobs';
   static const String routeAdminJobCreate = '/admin/jobs/create';
@@ -67,6 +70,8 @@ class AppConstants {
   static const String routeAdminDocumentTypes = '/admin/document-types';
   static const String routeAdminCreateDocumentType =
       '/admin/document-types/create';
+  static const String routeAdminRequestDocument =
+      '/admin/candidates/request-document';
   static const String routeAdminManageAdmins = '/admin/manage-admins';
   static const String routeAdminCreateNewUser = '/admin/manage-admins/create';
 }

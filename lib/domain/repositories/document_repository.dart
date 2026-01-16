@@ -61,4 +61,15 @@ abstract class DocumentRepository {
     required String candidateDocId,
     required String storageUrl,
   });
+
+  // Candidate-specific document types
+  Future<Either<Failure, DocumentTypeEntity>> createCandidateSpecificDocumentType({
+    required String name,
+    required String description,
+    required String candidateId,
+  });
+
+  Stream<List<DocumentTypeEntity>> streamDocumentTypesForCandidate(
+    String candidateId,
+  );
 }

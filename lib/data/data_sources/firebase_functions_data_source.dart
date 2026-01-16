@@ -39,6 +39,21 @@ abstract class FirebaseFunctionsDataSource {
     required String documentName,
     String? denialReason,
   });
+
+  /// Sends a document request email to a candidate
+  Future<void> sendDocumentRequestEmail({
+    required String candidateEmail,
+    required String candidateName,
+    required String documentName,
+    required String documentDescription,
+  });
+
+  /// Sends a document request revocation email to a candidate
+  Future<void> sendDocumentRequestRevocationEmail({
+    required String candidateEmail,
+    required String candidateName,
+    required String documentName,
+  });
 }
 
 class FirebaseFunctionsDataSourceImpl implements FirebaseFunctionsDataSource {
@@ -146,6 +161,52 @@ class FirebaseFunctionsDataSourceImpl implements FirebaseFunctionsDataSource {
         'candidateName': candidateName,
         'documentName': documentName,
         'denialReason': denialReason,
+      });
+    } on FirebaseFunctionsException catch (e) {
+      throw ServerException('Failed to send email: ${e.message}');
+    } catch (e) {
+      throw ServerException('An unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<void> sendDocumentRequestEmail({
+    required String candidateEmail,
+    required String candidateName,
+    required String documentName,
+    required String documentDescription,
+  }) async {
+    try {
+      final callable = firebaseFunctions.httpsCallable(
+        'sendDocumentRequestEmail',
+      );
+      await callable.call({
+        'candidateEmail': candidateEmail,
+        'candidateName': candidateName,
+        'documentName': documentName,
+        'documentDescription': documentDescription,
+      });
+    } on FirebaseFunctionsException catch (e) {
+      throw ServerException('Failed to send email: ${e.message}');
+    } catch (e) {
+      throw ServerException('An unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<void> sendDocumentRequestRevocationEmail({
+    required String candidateEmail,
+    required String candidateName,
+    required String documentName,
+  }) async {
+    try {
+      final callable = firebaseFunctions.httpsCallable(
+        'sendDocumentRequestRevocationEmail',
+      );
+      await callable.call({
+        'candidateEmail': candidateEmail,
+        'candidateName': candidateName,
+        'documentName': documentName,
       });
     } on FirebaseFunctionsException catch (e) {
       throw ServerException('Failed to send email: ${e.message}');
