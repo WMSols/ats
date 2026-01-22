@@ -420,19 +420,9 @@ exports.deleteUser = functions.https.onCall(async (data, context) => {
 /**
  * Sends a document denial email to a candidate
  * This function uses nodemailer with SMTP configuration from environment variables
- * 
- * Environment variables required (set via Firebase Console or gcloud):
- * - SMTP_HOST: SMTP server host (e.g., mail.wmsols.com)
- * - SMTP_PORT: SMTP server port (e.g., 465)
- * - SMTP_USER: SMTP username/email
- * - SMTP_PASSWORD: SMTP password
- * - EMAIL_FROM: From email address (e.g., test@wmsols.com)
- * - EMAIL_FROMNAME: From display name (e.g., ATS-Maximum)
  */
 exports.sendDocumentDenialEmail = onCall(
   {
-    // Set environment variables here or via Firebase Console
-    // For now, we'll read from process.env which can be set via Console
   },
   async (request) => {
   const {data, auth} = request;
@@ -508,6 +498,9 @@ exports.sendDocumentDenialEmail = onCall(
     // Build email subject
     const subject = `Document Denial Notification - ${documentName}`;
 
+    // Documents screen URL
+    const documentsUrl = 'https://candidate.maximumhs.com/candidate/documents';
+
     // Build email body (plain text)
     let emailBody = `Dear ${candidateName},\n\n`;
     emailBody += `We regret to inform you that your document "${documentName}" has been denied.\n\n`;
@@ -517,8 +510,23 @@ exports.sendDocumentDenialEmail = onCall(
     }
     
     emailBody += `Please review the document requirements and re-upload the document with the necessary corrections.\n\n`;
+    emailBody += `You can access your documents screen here: ${documentsUrl}\n\n`;
     emailBody += `If you have any questions or need further clarification, please don't hesitate to contact us.\n\n`;
     emailBody += `Best regards,\n${fromName}`;
+
+    // Build HTML email body
+    let htmlBody = `<p>Dear ${candidateName},</p>`;
+    htmlBody += `<p>We regret to inform you that your document "<strong>${documentName}</strong>" has been denied.</p>`;
+    
+    if (denialReason && denialReason.trim().length > 0) {
+      htmlBody += `<p><strong>Reason for denial:</strong><br>${denialReason.replace(/\n/g, '<br>')}</p>`;
+    }
+    
+    htmlBody += `<p>Please review the document requirements and re-upload the document with the necessary corrections.</p>`;
+    htmlBody += `<p><a href="${documentsUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; margin: 10px 0;">Go to My Documents</a></p>`;
+    htmlBody += `<p>Or copy and paste this link into your browser: <a href="${documentsUrl}">${documentsUrl}</a></p>`;
+    htmlBody += `<p>If you have any questions or need further clarification, please don't hesitate to contact us.</p>`;
+    htmlBody += `<p>Best regards,<br>${fromName}</p>`;
 
     // Send email
     const mailOptions = {
@@ -526,6 +534,7 @@ exports.sendDocumentDenialEmail = onCall(
       to: candidateEmail,
       subject: subject,
       text: emailBody,
+      html: htmlBody,
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -548,19 +557,9 @@ exports.sendDocumentDenialEmail = onCall(
 /**
  * Sends a document request email to a candidate
  * This function uses nodemailer with SMTP configuration from environment variables
- * 
- * Environment variables required (set via Firebase Console or gcloud):
- * - SMTP_HOST: SMTP server host (e.g., mail.wmsols.com)
- * - SMTP_PORT: SMTP server port (e.g., 465)
- * - SMTP_USER: SMTP username/email
- * - SMTP_PASSWORD: SMTP password
- * - EMAIL_FROM: From email address (e.g., test@wmsols.com)
- * - EMAIL_FROMNAME: From display name (e.g., ATS-Maximum)
  */
 exports.sendDocumentRequestEmail = onCall(
   {
-    // Set environment variables here or via Firebase Console
-    // For now, we'll read from process.env which can be set via Console
   },
   async (request) => {
   const {data, auth} = request;
@@ -635,15 +634,31 @@ exports.sendDocumentRequestEmail = onCall(
     // Build email subject
     const subject = `Document Request - ${documentName}`;
 
+    // Documents screen URL
+    const documentsUrl = 'https://candidate.maximumhs.com/candidate/documents';
+
     // Build email body (plain text)
     let emailBody = `Dear ${candidateName},\n\n`;
     emailBody += `We are requesting that you provide the following document:\n\n`;
     emailBody += `Document Name: ${documentName}\n`;
     emailBody += `Description: ${documentDescription}\n\n`;
     emailBody += `Please log in to your account and upload this document through the "My Documents" section.\n\n`;
+    emailBody += `You can access your documents screen here: ${documentsUrl}\n\n`;
     emailBody += `This document is specifically required from you. You will see it marked as "Requested" in your documents list.\n\n`;
     emailBody += `If you have any questions or need further clarification, please don't hesitate to contact us.\n\n`;
     emailBody += `Best regards,\n${fromName}`;
+
+    // Build HTML email body
+    let htmlBody = `<p>Dear ${candidateName},</p>`;
+    htmlBody += `<p>We are requesting that you provide the following document:</p>`;
+    htmlBody += `<p><strong>Document Name:</strong> ${documentName}<br>`;
+    htmlBody += `<strong>Description:</strong> ${documentDescription}</p>`;
+    htmlBody += `<p>Please log in to your account and upload this document through the "My Documents" section.</p>`;
+    htmlBody += `<p><a href="${documentsUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; margin: 10px 0;">Go to My Documents</a></p>`;
+    htmlBody += `<p>Or copy and paste this link into your browser: <a href="${documentsUrl}">${documentsUrl}</a></p>`;
+    htmlBody += `<p>This document is specifically required from you. You will see it marked as "Requested" in your documents list.</p>`;
+    htmlBody += `<p>If you have any questions or need further clarification, please don't hesitate to contact us.</p>`;
+    htmlBody += `<p>Best regards,<br>${fromName}</p>`;
 
     // Send email
     const mailOptions = {
@@ -651,6 +666,7 @@ exports.sendDocumentRequestEmail = onCall(
       to: candidateEmail,
       subject: subject,
       text: emailBody,
+      html: htmlBody,
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -676,7 +692,6 @@ exports.sendDocumentRequestEmail = onCall(
  */
 exports.sendDocumentRequestRevocationEmail = onCall(
   {
-    // Set environment variables here or via Firebase Console
   },
   async (request) => {
   const {data, auth} = request;
@@ -751,12 +766,25 @@ exports.sendDocumentRequestRevocationEmail = onCall(
     // Build email subject
     const subject = `Document Request Revoked - ${documentName}`;
 
+    // Documents screen URL
+    const documentsUrl = 'https://candidate.maximumhs.com/candidate/documents';
+
     // Build email body (plain text)
     let emailBody = `Dear ${candidateName},\n\n`;
     emailBody += `We are informing you that the document request for "${documentName}" has been revoked.\n\n`;
     emailBody += `You are no longer required to provide this document. If you have already uploaded it, you may choose to keep or remove it from your documents.\n\n`;
+    emailBody += `You can access your documents screen here: ${documentsUrl}\n\n`;
     emailBody += `If you have any questions, please don't hesitate to contact us.\n\n`;
     emailBody += `Best regards,\n${fromName}`;
+
+    // Build HTML email body
+    let htmlBody = `<p>Dear ${candidateName},</p>`;
+    htmlBody += `<p>We are informing you that the document request for "<strong>${documentName}</strong>" has been revoked.</p>`;
+    htmlBody += `<p>You are no longer required to provide this document. If you have already uploaded it, you may choose to keep or remove it from your documents.</p>`;
+    htmlBody += `<p><a href="${documentsUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; margin: 10px 0;">Go to My Documents</a></p>`;
+    htmlBody += `<p>Or copy and paste this link into your browser: <a href="${documentsUrl}">${documentsUrl}</a></p>`;
+    htmlBody += `<p>If you have any questions, please don't hesitate to contact us.</p>`;
+    htmlBody += `<p>Best regards,<br>${fromName}</p>`;
 
     // Send email
     const mailOptions = {
@@ -764,6 +792,7 @@ exports.sendDocumentRequestRevocationEmail = onCall(
       to: candidateEmail,
       subject: subject,
       text: emailBody,
+      html: htmlBody,
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -786,18 +815,9 @@ exports.sendDocumentRequestRevocationEmail = onCall(
 /**
  * Sends an email notification to a candidate when admin uploads a document on their behalf
  * This function uses nodemailer with SMTP configuration from environment variables
- * 
- * Environment variables required (set via Firebase Console or gcloud):
- * - SMTP_HOST: SMTP server host (e.g., mail.wmsols.com)
- * - SMTP_PORT: SMTP server port (e.g., 465)
- * - SMTP_USER: SMTP username/email
- * - SMTP_PASSWORD: SMTP password
- * - EMAIL_FROM: From email address (e.g., test@wmsols.com)
- * - EMAIL_FROMNAME: From display name (e.g., ATS-Maximum)
  */
 exports.sendAdminDocumentUploadEmail = onCall(
   {
-    // Set environment variables here or via Firebase Console
   },
   async (request) => {
   const {data, auth} = request;
@@ -872,13 +892,27 @@ exports.sendAdminDocumentUploadEmail = onCall(
     // Build email subject
     const subject = `Document Uploaded on Your Behalf - ${documentName}`;
 
+    // Documents screen URL
+    const documentsUrl = 'https://candidate.maximumhs.com/candidate/documents';
+
     // Build email body (plain text)
     let emailBody = `Dear ${candidateName},\n\n`;
     emailBody += `We are informing you that a document has been uploaded on your behalf:\n\n`;
     emailBody += `Document Name: ${documentName}\n\n`;
     emailBody += `This document has been uploaded by an administrator and is already approved. You can view it in your "My Documents" section.\n\n`;
+    emailBody += `You can access your documents screen here: ${documentsUrl}\n\n`;
     emailBody += `If you have any questions or concerns, please don't hesitate to contact us.\n\n`;
     emailBody += `Best regards,\n${fromName}`;
+
+    // Build HTML email body
+    let htmlBody = `<p>Dear ${candidateName},</p>`;
+    htmlBody += `<p>We are informing you that a document has been uploaded on your behalf:</p>`;
+    htmlBody += `<p><strong>Document Name:</strong> ${documentName}</p>`;
+    htmlBody += `<p>This document has been uploaded by an administrator and is already approved. You can view it in your "My Documents" section.</p>`;
+    htmlBody += `<p><a href="${documentsUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; margin: 10px 0;">Go to My Documents</a></p>`;
+    htmlBody += `<p>Or copy and paste this link into your browser: <a href="${documentsUrl}">${documentsUrl}</a></p>`;
+    htmlBody += `<p>If you have any questions or concerns, please don't hesitate to contact us.</p>`;
+    htmlBody += `<p>Best regards,<br>${fromName}</p>`;
 
     // Send email
     const mailOptions = {
@@ -886,6 +920,7 @@ exports.sendAdminDocumentUploadEmail = onCall(
       to: candidateEmail,
       subject: subject,
       text: emailBody,
+      html: htmlBody,
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -908,18 +943,9 @@ exports.sendAdminDocumentUploadEmail = onCall(
 /**
  * Sends a missing documents email to a candidate when they apply for a job
  * This function uses nodemailer with SMTP configuration from environment variables
- * 
- * Environment variables required (set via Firebase Console or gcloud):
- * - SMTP_HOST: SMTP server host (e.g., mail.wmsols.com)
- * - SMTP_PORT: SMTP server port (e.g., 465)
- * - SMTP_USER: SMTP username/email
- * - SMTP_PASSWORD: SMTP password
- * - EMAIL_FROM: From email address (e.g., test@wmsols.com)
- * - EMAIL_FROMNAME: From display name (e.g., ATS-Maximum)
  */
 exports.sendMissingDocumentsEmail = onCall(
   {
-    // Set environment variables here or via Firebase Console
   },
   async (request) => {
   const {data, auth} = request;
@@ -973,6 +999,9 @@ exports.sendMissingDocumentsEmail = onCall(
     // Build email subject
     const subject = `Missing Documents Required for Job Application - ${jobTitle}`;
 
+    // Documents screen URL
+    const documentsUrl = 'https://candidate.maximumhs.com/candidate/documents';
+
     // Build email body (plain text)
     let emailBody = `Dear ${candidateName},\n\n`;
     emailBody += `Thank you for applying to the position: ${jobTitle}\n\n`;
@@ -989,9 +1018,33 @@ exports.sendMissingDocumentsEmail = onCall(
     
     emailBody += `\nPlease log in to your account and upload these documents through the "My Documents" section. `;
     emailBody += `These documents are required to complete your application for this position.\n\n`;
+    emailBody += `You can access your documents screen here: ${documentsUrl}\n\n`;
     emailBody += `You can see which documents are missing by checking the "Missing" status in your My Documents screen.\n\n`;
     emailBody += `If you have any questions or need further clarification, please don't hesitate to contact us.\n\n`;
     emailBody += `Best regards,\n${fromName}`;
+
+    // Build HTML email body
+    let htmlBody = `<p>Dear ${candidateName},</p>`;
+    htmlBody += `<p>Thank you for applying to the position: <strong>${jobTitle}</strong></p>`;
+    htmlBody += `<p>We noticed that the following required documents are missing from your application:</p>`;
+    htmlBody += `<ul>`;
+    
+    // List missing documents
+    missingDocuments.forEach((doc) => {
+      htmlBody += `<li><strong>${doc.name}</strong>`;
+      if (doc.description) {
+        htmlBody += ` - ${doc.description}`;
+      }
+      htmlBody += `</li>`;
+    });
+    
+    htmlBody += `</ul>`;
+    htmlBody += `<p>Please log in to your account and upload these documents through the "My Documents" section. These documents are required to complete your application for this position.</p>`;
+    htmlBody += `<p><a href="${documentsUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; margin: 10px 0;">Go to My Documents</a></p>`;
+    htmlBody += `<p>Or copy and paste this link into your browser: <a href="${documentsUrl}">${documentsUrl}</a></p>`;
+    htmlBody += `<p>You can see which documents are missing by checking the "Missing" status in your My Documents screen.</p>`;
+    htmlBody += `<p>If you have any questions or need further clarification, please don't hesitate to contact us.</p>`;
+    htmlBody += `<p>Best regards,<br>${fromName}</p>`;
 
     // Send email
     const mailOptions = {
@@ -999,6 +1052,7 @@ exports.sendMissingDocumentsEmail = onCall(
       to: candidateEmail,
       subject: subject,
       text: emailBody,
+      html: htmlBody,
     };
 
     const info = await transporter.sendMail(mailOptions);

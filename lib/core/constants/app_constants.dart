@@ -79,4 +79,5 @@ class AppConstants {
 
   // External URLs
   static const String wmsolsWebsiteUrl = 'https://wmsols.com/';
+  static const String candidateWebAppUrl = 'https://candidate.maximumhs.com';
 }
