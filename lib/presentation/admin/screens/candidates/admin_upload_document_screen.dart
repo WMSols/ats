@@ -8,8 +8,8 @@ import 'package:ats/domain/entities/document_type_entity.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
-import 'package:ats/core/widgets/documents/documents.dart';
-import 'package:ats/core/widgets/common/forms/app_dropdown_field.dart' as dropdown;
+import 'package:ats/core/widgets/common/forms/app_dropdown_field.dart'
+    as dropdown;
 
 class AdminUploadDocumentScreen extends StatefulWidget {
   const AdminUploadDocumentScreen({super.key});
@@ -70,7 +70,6 @@ class _AdminUploadDocumentScreenState extends State<AdminUploadDocumentScreen> {
     _onFieldChanged();
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -79,7 +78,7 @@ class _AdminUploadDocumentScreenState extends State<AdminUploadDocumentScreen> {
     titleController.addListener(_onFieldChanged);
     expiryController.addListener(validateExpiry);
     _canSubmit.value = canSubmit;
-    
+
     // Observe file selection changes
     final candidatesController = Get.find<AdminCandidatesController>();
     ever(candidatesController.selectedFile, (_) => _onFieldChanged());
@@ -110,7 +109,8 @@ class _AdminUploadDocumentScreenState extends State<AdminUploadDocumentScreen> {
             children: [
               // Document Type Dropdown
               Obx(() {
-                final documentTypes = documentsController.documentTypes.toList();
+                final documentTypes = documentsController.documentTypes
+                    .toList();
                 DocumentTypeEntity? selectedDocType;
                 try {
                   selectedDocType = documentTypes.firstWhere(
@@ -123,10 +123,12 @@ class _AdminUploadDocumentScreenState extends State<AdminUploadDocumentScreen> {
                   labelText: 'Document Type',
                   value: selectedDocType,
                   items: documentTypes
-                      .map((dt) => DropdownMenuItem<DocumentTypeEntity>(
-                            value: dt,
-                            child: Text(dt.name),
-                          ))
+                      .map(
+                        (dt) => DropdownMenuItem<DocumentTypeEntity>(
+                          value: dt,
+                          child: Text(dt.name),
+                        ),
+                      )
                       .toList(),
                   onChanged: (value) {
                     selectedDocTypeId.value = value?.docTypeId;
@@ -178,62 +180,65 @@ class _AdminUploadDocumentScreenState extends State<AdminUploadDocumentScreen> {
               AppDocumentUploadWidget(controller: candidatesController),
               AppSpacing.vertical(context, 0.03),
               // Upload Button
-              Obx(
-                () {
-                  final isLoading = candidatesController.isLoading.value;
-                  return AppButton(
-                    text: AppTexts.upload,
-                    icon: Iconsax.document_upload,
-                    onPressed: _canSubmit.value && !isLoading
-                        ? () {
-                            if (_formKey.currentState!.validate()) {
-                              validateExpiry();
-                              if (expiryError.value != null) {
-                                AppSnackbar.error(expiryError.value!);
-                                return;
-                              }
-                              final selectedFile = candidatesController.selectedFile.value;
-                              if (selectedFile == null) {
-                                AppSnackbar.error('Please select a document file');
-                                return;
-                              }
-                              if (selectedDocTypeId.value == null) {
-                                AppSnackbar.error('Please select a document type');
-                                return;
-                              }
-
-                              // Parse expiry date if provided
-                              DateTime? expiryDate;
-                              if (!hasNoExpiry &&
-                                  expiryController.text.isNotEmpty) {
-                                try {
-                                  final format = DateFormat('MM/yyyy');
-                                  expiryDate = format.parse(
-                                    expiryController.text,
-                                  );
-                                } catch (e) {
-                                  AppSnackbar.error(
-                                    'Invalid expiry date format. Please use MM/YYYY',
-                                  );
-                                  return;
-                                }
-                              }
-
-                              candidatesController.uploadDocumentForCandidate(
-                                docTypeId: selectedDocTypeId.value!,
-                                title: titleController.text.trim(),
-                                documentName: selectedFile.name,
-                                platformFile: selectedFile,
-                                expiryDate: expiryDate,
-                                hasNoExpiry: hasNoExpiry,
-                              );
+              Obx(() {
+                final isLoading = candidatesController.isLoading.value;
+                return AppButton(
+                  text: AppTexts.upload,
+                  icon: Iconsax.document_upload,
+                  onPressed: _canSubmit.value && !isLoading
+                      ? () {
+                          if (_formKey.currentState!.validate()) {
+                            validateExpiry();
+                            if (expiryError.value != null) {
+                              AppSnackbar.error(expiryError.value!);
+                              return;
                             }
+                            final selectedFile =
+                                candidatesController.selectedFile.value;
+                            if (selectedFile == null) {
+                              AppSnackbar.error(
+                                'Please select a document file',
+                              );
+                              return;
+                            }
+                            if (selectedDocTypeId.value == null) {
+                              AppSnackbar.error(
+                                'Please select a document type',
+                              );
+                              return;
+                            }
+
+                            // Parse expiry date if provided
+                            DateTime? expiryDate;
+                            if (!hasNoExpiry &&
+                                expiryController.text.isNotEmpty) {
+                              try {
+                                final format = DateFormat('MM/yyyy');
+                                expiryDate = format.parse(
+                                  expiryController.text,
+                                );
+                              } catch (e) {
+                                AppSnackbar.error(
+                                  'Invalid expiry date format. Please use MM/YYYY',
+                                );
+                                return;
+                              }
+                            }
+
+                            candidatesController.uploadDocumentForCandidate(
+                              docTypeId: selectedDocTypeId.value!,
+                              title: titleController.text.trim(),
+                              documentName: selectedFile.name,
+                              platformFile: selectedFile,
+                              expiryDate: expiryDate,
+                              hasNoExpiry: hasNoExpiry,
+                            );
                           }
-                        : null,
-                    isLoading: isLoading,
-                  );
-                },
-              ),
+                        }
+                      : null,
+                  isLoading: isLoading,
+                );
+              }),
             ],
           ),
         ),

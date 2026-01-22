@@ -26,10 +26,7 @@ class AppFloatingActionButton extends StatelessWidget {
       tooltip: tooltip,
       backgroundColor: backgroundColor ?? AppColors.primary,
       foregroundColor: foregroundColor ?? AppColors.white,
-      child: Icon(
-        icon,
-        size: AppResponsive.iconSize(context),
-      ),
+      child: Icon(icon, size: AppResponsive.iconSize(context)),
     );
   }
 }

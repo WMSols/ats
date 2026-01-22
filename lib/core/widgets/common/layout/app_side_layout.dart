@@ -8,6 +8,7 @@ import 'package:ats/core/utils/app_images/app_images.dart';
 import 'package:ats/core/widgets/common/navigation/app_navigation_item.dart';
 import 'package:ats/core/widgets/common/navigation/app_navigation_item_model.dart';
 import 'package:ats/core/widgets/common/layout/app_user_profile_section.dart';
+import 'package:ats/core/widgets/common/layout/app_wmsols_footer.dart';
 
 class AppSideLayout extends StatefulWidget {
   final Widget child;
@@ -28,9 +29,9 @@ class AppSideLayout extends StatefulWidget {
     required this.onLogout,
     this.dashboardRoute,
   }) : assert(
-          navigationItems != null || navigationItemsBuilder != null,
-          'Either navigationItems or navigationItemsBuilder must be provided',
-        );
+         navigationItems != null || navigationItemsBuilder != null,
+         'Either navigationItems or navigationItemsBuilder must be provided',
+       );
 
   @override
   State<AppSideLayout> createState() => _AppSideLayoutState();
@@ -38,13 +39,13 @@ class AppSideLayout extends StatefulWidget {
 
 class _AppSideLayoutState extends State<AppSideLayout> {
   Widget? _cachedChild;
-  
+
   @override
   void initState() {
     super.initState();
     _cachedChild = widget.child; // Cache child on first build
   }
-  
+
   @override
   void didUpdateWidget(AppSideLayout oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -54,20 +55,24 @@ class _AppSideLayoutState extends State<AppSideLayout> {
     final newChildType = widget.child.runtimeType;
     final oldChildKey = _getWidgetKey(oldWidget.child);
     final newChildKey = _getWidgetKey(widget.child);
-    
+
     // Also check if other properties changed
     final titleChanged = oldWidget.title != widget.title;
     final actionsChanged = oldWidget.actions != widget.actions;
-    final navigationChanged = oldWidget.navigationItems != widget.navigationItems;
-    
-    if (oldChildType != newChildType || oldChildKey != newChildKey || 
-        titleChanged || actionsChanged || navigationChanged) {
+    final navigationChanged =
+        oldWidget.navigationItems != widget.navigationItems;
+
+    if (oldChildType != newChildType ||
+        oldChildKey != newChildKey ||
+        titleChanged ||
+        actionsChanged ||
+        navigationChanged) {
       if (oldChildType != newChildType || oldChildKey != newChildKey) {
         _cachedChild = widget.child;
       }
     }
   }
-  
+
   Key? _getWidgetKey(Widget widget) {
     if (widget is KeyedSubtree) {
       return widget.key;
@@ -109,12 +114,21 @@ class _AppSideLayoutState extends State<AppSideLayout> {
               : null,
           actions: widget.actions,
         ),
-        body: RepaintBoundary(
-          key: const ValueKey('app-side-layout-child-repaint'),
-          child: KeyedSubtree(
-            key: const ValueKey('app-side-layout-child'),
-            child: _cachedChild ?? widget.child, // Use cached child to prevent recreation
-          ),
+        body: Column(
+          children: [
+            Expanded(
+              child: RepaintBoundary(
+                key: const ValueKey('app-side-layout-child-repaint'),
+                child: KeyedSubtree(
+                  key: const ValueKey('app-side-layout-child'),
+                  child:
+                      _cachedChild ??
+                      widget.child, // Use cached child to prevent recreation
+                ),
+              ),
+            ),
+            const AppWMSolsFooter(),
+          ],
         ),
       );
     } else {
@@ -136,10 +150,15 @@ class _AppSideLayoutState extends State<AppSideLayout> {
                       key: const ValueKey('app-side-layout-child-repaint'),
                       child: KeyedSubtree(
                         key: const ValueKey('app-side-layout-child'),
-                        child: _cachedChild ?? widget.child, // Use cached child to prevent recreation
+                        child:
+                            _cachedChild ??
+                            widget
+                                .child, // Use cached child to prevent recreation
                       ),
                     ),
                   ),
+                  // Footer
+                  const AppWMSolsFooter(),
                 ],
               ),
             ),
@@ -170,9 +189,7 @@ class _AppSideLayoutState extends State<AppSideLayout> {
           ),
           Divider(color: AppColors.white),
           // Navigation Items - can be reactive if builder is provided
-          Expanded(
-            child: _buildNavigationList(context),
-          ),
+          Expanded(child: _buildNavigationList(context)),
         ],
       ),
     );
@@ -199,7 +216,10 @@ class _AppSideLayoutState extends State<AppSideLayout> {
           ),
           // Navigation Items - can be reactive if builder is provided
           Expanded(
-            child: _buildNavigationList(context, onItemTap: () => Navigator.of(context).pop()),
+            child: _buildNavigationList(
+              context,
+              onItemTap: () => Navigator.of(context).pop(),
+            ),
           ),
           // User Profile Section at Bottom
           Divider(
@@ -253,7 +273,9 @@ class _AppSideLayoutState extends State<AppSideLayout> {
     // This prevents navigation rebuilds from affecting the parent layout
     final items = widget.navigationItems!;
     return ListView(
-      key: const ValueKey('navigation-list'), // Stable key to prevent recreation
+      key: const ValueKey(
+        'navigation-list',
+      ), // Stable key to prevent recreation
       padding: EdgeInsets.zero,
       children: items
           .map(

@@ -13,7 +13,8 @@ class AdminCandidatesListScreen extends StatefulWidget {
   const AdminCandidatesListScreen({super.key});
 
   @override
-  State<AdminCandidatesListScreen> createState() => _AdminCandidatesListScreenState();
+  State<AdminCandidatesListScreen> createState() =>
+      _AdminCandidatesListScreenState();
 }
 
 class _AdminCandidatesListScreenState extends State<AdminCandidatesListScreen> {
@@ -26,8 +27,10 @@ class _AdminCandidatesListScreenState extends State<AdminCandidatesListScreen> {
   void initState() {
     super.initState();
     _controller = Get.find<AdminCandidatesController>();
-    _searchController = TextEditingController(text: _controller.searchQuery.value);
-    
+    _searchController = TextEditingController(
+      text: _controller.searchQuery.value,
+    );
+
     ever(_controller.searchQuery, (query) {
       if (_searchController.text != query) {
         _searchController.text = query;
@@ -88,7 +91,7 @@ class _AdminCandidatesListScreenState extends State<AdminCandidatesListScreen> {
             padding: AppSpacing.padding(context).copyWith(top: 0),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                  // Access reactive variables at the top level so GetX can track them
+                // Access reactive variables at the top level so GetX can track them
                 return Obx(() {
                   final selectedAgent = _controller.selectedAgentFilter.value;
                   final selectedStatus = _controller.selectedStatusFilter.value;
@@ -487,9 +490,6 @@ class _AdminCandidatesListScreenState extends State<AdminCandidatesListScreen> {
       ),
     );
 
-    return AppAdminLayout(
-      title: AppTexts.candidates,
-      child: _cachedContent!,
-    );
+    return AppAdminLayout(title: AppTexts.candidates, child: _cachedContent!);
   }
 }

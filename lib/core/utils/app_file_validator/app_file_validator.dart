@@ -6,11 +6,14 @@ class AppFileValidator {
   // Maximum file size: 20MB
   static const int maxFileSizeBytes = 20 * 1024 * 1024;
 
-  // Allowed file extensions - PDF only
-  static const List<String> allowedExtensions = ['pdf'];
+  // Allowed file extensions - PDF, JPG, JPEG
+  static const List<String> allowedExtensions = ['pdf', 'jpg', 'jpeg'];
 
-  // Allowed MIME types - PDF only
-  static const List<String> allowedMimeTypes = ['application/pdf'];
+  // Allowed MIME types - PDF and JPEG images
+  static const List<String> allowedMimeTypes = [
+    'application/pdf',
+    'image/jpeg',
+  ];
 
   /// Validates a file from file picker
   /// Returns null if valid, error message if invalid
@@ -38,14 +41,14 @@ class AppFileValidator {
     }
 
     if (!allowedExtensions.contains(extension.toLowerCase())) {
-      return 'Only PDF files are allowed. Please upload a PDF document.';
+      return 'Only PDF, JPG, and JPEG files are allowed. Please upload a valid document.';
     }
 
     // Check MIME type if available
     if (file.extension != null) {
       final mimeType = _getMimeTypeFromExtension(file.extension!);
       if (mimeType != null && !allowedMimeTypes.contains(mimeType)) {
-        return 'Only PDF files are allowed. Please upload a PDF document.';
+        return 'Only PDF, JPG, and JPEG files are allowed. Please upload a valid document.';
       }
     }
 
@@ -74,7 +77,7 @@ class AppFileValidator {
     }
 
     if (!allowedExtensions.contains(extension.toLowerCase())) {
-      return 'Only PDF files are allowed. Please upload a PDF document.';
+      return 'Only PDF, JPG, and JPEG files are allowed. Please upload a valid document.';
     }
 
     return null;
@@ -112,6 +115,9 @@ class AppFileValidator {
     switch (ext) {
       case 'pdf':
         return 'application/pdf';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
       default:
         return null;
     }

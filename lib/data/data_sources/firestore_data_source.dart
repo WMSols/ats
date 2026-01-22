@@ -83,6 +83,7 @@ abstract class FirestoreDataSource {
   Future<String> createApplication({
     required String candidateId,
     required String jobId,
+    required List<String> requiredDocumentIds,
   });
 
   Future<List<Map<String, dynamic>>> getApplications({
@@ -512,6 +513,7 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
   Future<String> createApplication({
     required String candidateId,
     required String jobId,
+    required List<String> requiredDocumentIds,
   }) async {
     try {
       final docRef = await firestore
@@ -521,6 +523,8 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
             'jobId': jobId,
             'status': AppConstants.applicationStatusPending,
             'appliedAt': FieldValue.serverTimestamp(),
+            'requiredDocumentIds': requiredDocumentIds,
+            'uploadedDocumentIds': [],
           });
       return docRef.id;
     } catch (e) {
@@ -619,9 +623,9 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
   }) async {
     try {
       final data = {
-            'name': name,
-            'description': description,
-            'isRequired': isRequired,
+        'name': name,
+        'description': description,
+        'isRequired': isRequired,
         'isCandidateSpecific': isCandidateSpecific,
       };
       if (requestedForCandidateId != null) {
@@ -666,6 +670,7 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
   }
 
   /// Stream document types for a specific candidate (includes candidate-specific ones)
+  @override
   Stream<List<Map<String, dynamic>>> streamDocumentTypesForCandidate(
     String candidateId,
   ) {
@@ -690,6 +695,7 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
   }
 
   /// Get candidate-specific document types for a candidate
+  @override
   Future<List<Map<String, dynamic>>> getCandidateSpecificDocumentTypes(
     String candidateId,
   ) async {
@@ -704,7 +710,8 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
           .toList();
     } catch (e) {
       throw ServerException(
-          'Failed to get candidate-specific document types: $e');
+        'Failed to get candidate-specific document types: $e',
+      );
     }
   }
 

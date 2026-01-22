@@ -68,26 +68,24 @@ class _AdminRequestDocumentScreenState
                 descriptionController: descriptionController,
               ),
               AppSpacing.vertical(context, 0.03),
-              Obx(
-                () {
-                  final isLoading = controller.isLoading.value;
-                  return AppButton(
-                    text: AppTexts.create,
-                    icon: Iconsax.add,
-                    onPressed: _canSubmit.value && !isLoading
-                        ? () {
-                            if (_formKey.currentState!.validate()) {
-                              controller.requestDocumentForCandidate(
-                                name: titleController.text.trim(),
-                                description: descriptionController.text.trim(),
-                              );
-                            }
+              Obx(() {
+                final isLoading = controller.isLoading.value;
+                return AppButton(
+                  text: AppTexts.create,
+                  icon: Iconsax.add,
+                  onPressed: _canSubmit.value && !isLoading
+                      ? () {
+                          if (_formKey.currentState!.validate()) {
+                            controller.requestDocumentForCandidate(
+                              name: titleController.text.trim(),
+                              description: descriptionController.text.trim(),
+                            );
                           }
-                        : null,
-                    isLoading: isLoading,
-                  );
-                },
-              ),
+                        }
+                      : null,
+                  isLoading: isLoading,
+                );
+              }),
             ],
           ),
         ),

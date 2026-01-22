@@ -12,10 +12,12 @@ class AdminCreateCandidateScreen extends StatefulWidget {
   const AdminCreateCandidateScreen({super.key});
 
   @override
-  State<AdminCreateCandidateScreen> createState() => _AdminCreateCandidateScreenState();
+  State<AdminCreateCandidateScreen> createState() =>
+      _AdminCreateCandidateScreenState();
 }
 
-class _AdminCreateCandidateScreenState extends State<AdminCreateCandidateScreen> {
+class _AdminCreateCandidateScreenState
+    extends State<AdminCreateCandidateScreen> {
   late final AdminCreateCandidateController _controller;
   Widget? _cachedForm;
   final _formKey = GlobalKey(debugLabel: 'admin-create-candidate-form');
@@ -91,9 +93,10 @@ class _AdminCreateCandidateScreenState extends State<AdminCreateCandidateScreen>
               _controller.validateZip(value);
               return null;
             },
-            hasError: false, // Individual error messages are already wrapped in Obx
+            hasError:
+                false, // Individual error messages are already wrapped in Obx
           ),
-            AppSpacing.vertical(context, 0.02),
+          AppSpacing.vertical(context, 0.02),
 
           AppSpacing.vertical(context, 0.02),
 
@@ -103,19 +106,19 @@ class _AdminCreateCandidateScreenState extends State<AdminCreateCandidateScreen>
             _controller.phonesListTrigger.value;
             return PhonesSection(
               phoneEntries: _controller.formState.phoneEntries
-                    .asMap()
-                    .entries
-                    .map((entry) {
-                final index = entry.key;
-                final phone = entry.value;
-                final error = _controller.phoneErrors[index];
-                return PhoneEntry(
-                  countryCodeController: phone.countryCodeController,
-                  numberController: phone.numberController,
-                  numberError: error ?? Rxn<String>(null),
-                );
-              })
-              .toList(),
+                  .asMap()
+                  .entries
+                  .map((entry) {
+                    final index = entry.key;
+                    final phone = entry.value;
+                    final error = _controller.phoneErrors[index];
+                    return PhoneEntry(
+                      countryCodeController: phone.countryCodeController,
+                      numberController: phone.numberController,
+                      numberError: error ?? Rxn<String>(null),
+                    );
+                  })
+                  .toList(),
               onCountryCodeChanged: (index, countryCode) {
                 // Update handled by controller
               },
@@ -358,9 +361,6 @@ class _AdminCreateCandidateScreenState extends State<AdminCreateCandidateScreen>
       ),
     );
 
-    return AppAdminLayout(
-      title: AppTexts.createCandidate,
-      child: _cachedForm!,
-    );
+    return AppAdminLayout(title: AppTexts.createCandidate, child: _cachedForm!);
   }
 }

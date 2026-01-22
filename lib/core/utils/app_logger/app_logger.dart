@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 /// Enhanced logger utility for real-time debugging
-/// 
+///
 /// Usage:
 /// ```dart
 /// AppLogger.info('User logged in', data: {'userId': '123'});
@@ -19,11 +19,7 @@ class AppLogger {
   static const String _debugEmoji = '🔵';
 
   /// Log info messages
-  static void info(
-    String message, {
-    String? tag,
-    Map<String, dynamic>? data,
-  }) {
+  static void info(String message, {String? tag, Map<String, dynamic>? data}) {
     if (!_enableLogging) return;
     _log(_infoEmoji, 'INFO', message, tag: tag, data: data);
   }
@@ -70,11 +66,7 @@ class AppLogger {
   }
 
   /// Log debug messages (most verbose)
-  static void debug(
-    String message, {
-    String? tag,
-    Map<String, dynamic>? data,
-  }) {
+  static void debug(String message, {String? tag, Map<String, dynamic>? data}) {
     if (!_enableLogging) return;
     _log(_debugEmoji, 'DEBUG', message, tag: tag, data: data);
   }
@@ -91,12 +83,12 @@ class AppLogger {
   }) {
     final timestamp = DateTime.now().toIso8601String();
     final tagPrefix = tag != null ? '[$tag]' : '';
-    
+
     // Build log message
     final buffer = StringBuffer();
     buffer.writeln('$emoji [$level] $tagPrefix $message');
     buffer.write('   ⏰ Time: $timestamp');
-    
+
     if (data != null && data.isNotEmpty) {
       buffer.writeln();
       buffer.write('   📦 Data:');
@@ -105,21 +97,21 @@ class AppLogger {
         buffer.write('      • $key: $value');
       });
     }
-    
+
     if (error != null) {
       buffer.writeln();
       buffer.write('   ⚠️ Error: $error');
     }
-    
+
     if (stackTrace != null) {
       buffer.writeln();
       buffer.write('   📍 StackTrace:');
       buffer.writeln(stackTrace.toString());
     }
-    
+
     // Output to console
     debugPrint(buffer.toString());
-    
+
     // Also output error details separately for better visibility
     if (error != null) {
       debugPrint('   └─ Error Details: $error');

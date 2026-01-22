@@ -19,7 +19,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
   AdminAuthController? _authController;
-  
+
   @override
   void initState() {
     super.initState();
@@ -28,12 +28,12 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     _passwordController = TextEditingController();
     _syncWithAuthController();
   }
-  
+
   void _syncWithAuthController() {
     try {
       final controller = Get.find<AdminAuthController>();
       _authController = controller;
-      
+
       // Sync local controllers with auth controller's values initially
       // After this, onChanged callbacks will keep them in sync
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -41,7 +41,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           if (_emailController.text != _authController!.emailValue.value) {
             _emailController.text = _authController!.emailValue.value;
           }
-          if (_passwordController.text != _authController!.passwordValue.value) {
+          if (_passwordController.text !=
+              _authController!.passwordValue.value) {
             _passwordController.text = _authController!.passwordValue.value;
           }
         }
@@ -51,7 +52,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
       _authController = null;
     }
   }
-  
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -68,9 +69,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
       // Controller not found, return empty
       return const SizedBox.shrink();
     }
-    
+
     final controller = _authController!;
-    
+
     return AppAuthLayout(
       title: AppTexts.adminLogin,
       isLoginSelected: true,

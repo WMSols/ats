@@ -51,10 +51,10 @@ class _AppTextFieldState extends State<AppTextField> {
     super.initState();
     _obscureText = widget.obscureText;
     _focusNode = FocusNode();
-    
+
     // Add focus listener
     _focusNode.addListener(_onFocusChange);
-    
+
     // Add controller listener if controller exists
     // Use try-catch to handle disposed controllers gracefully
     if (widget.controller != null) {
@@ -65,15 +65,15 @@ class _AppTextFieldState extends State<AppTextField> {
       }
     }
   }
-  
+
   void _onFocusChange() {
     // Focus change handler
   }
-  
+
   void _onControllerChange() {
     // Controller change handler
   }
-  
+
   /// Get a valid controller, returning null if the controller is disposed
   TextEditingController? _getValidController() {
     if (widget.controller == null) return null;
@@ -91,7 +91,7 @@ class _AppTextFieldState extends State<AppTextField> {
   @override
   void didUpdateWidget(AppTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Update controller listener if controller changed
     if (oldWidget.controller != widget.controller) {
       try {
@@ -105,13 +105,13 @@ class _AppTextFieldState extends State<AppTextField> {
         // New controller might be disposed, ignore
       }
     }
-    
+
     // Update obscure text if it changed
     if (widget.obscureText != oldWidget.obscureText) {
       _obscureText = widget.obscureText;
     }
   }
-  
+
   @override
   void dispose() {
     _focusNode.removeListener(_onFocusChange);
@@ -157,57 +157,58 @@ class _AppTextFieldState extends State<AppTextField> {
           _focusNode.unfocus();
         },
         onChanged: widget.onChanged,
-      decoration: InputDecoration(
-        hintText: widget.hintText,
-        filled: true,
-        fillColor: AppColors.white,
-        hintStyle: AppTextStyles.hintText(context),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(
-            AppResponsive.radius(context, factor: 1.5),
+        decoration: InputDecoration(
+          hintText: widget.hintText,
+          filled: true,
+          fillColor: AppColors.white,
+          hintStyle: AppTextStyles.hintText(context),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(
+              AppResponsive.radius(context, factor: 1.5),
+            ),
+            borderSide: BorderSide(
+              color: AppColors.primary.withValues(alpha: 0.5),
+            ),
           ),
-          borderSide: BorderSide(
-            color: AppColors.primary.withValues(alpha: 0.5),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(
+              AppResponsive.radius(context, factor: 1.5),
+            ),
+            borderSide: BorderSide(
+              color: AppColors.primary.withValues(alpha: 0.5),
+            ),
           ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(
-            AppResponsive.radius(context, factor: 1.5),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(
+              AppResponsive.radius(context, factor: 1.5),
+            ),
+            borderSide: const BorderSide(color: AppColors.primary),
           ),
-          borderSide: BorderSide(
-            color: AppColors.primary.withValues(alpha: 0.5),
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(
-            AppResponsive.radius(context, factor: 1.5),
-          ),
-          borderSide: const BorderSide(color: AppColors.primary),
-        ),
-        prefixIcon: widget.prefixIcon != null
-            ? Icon(
-                widget.prefixIcon,
-                size: AppResponsive.iconSize(context),
-                color: AppColors.primary,
-              )
-            : null,
-        suffixIcon: widget.obscureText && widget.showPasswordToggle
-            ? IconButton(
-                icon: Icon(
-                  _obscureText ? Iconsax.eye : Iconsax.eye_slash,
+          prefixIcon: widget.prefixIcon != null
+              ? Icon(
+                  widget.prefixIcon,
                   size: AppResponsive.iconSize(context),
                   color: AppColors.primary,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _obscureText = !_obscureText;
-                  });
-                },
-              )
-            : null,
-        contentPadding: contentPadding,
+                )
+              : null,
+          suffixIcon: widget.obscureText && widget.showPasswordToggle
+              ? IconButton(
+                  icon: Icon(
+                    _obscureText ? Iconsax.eye : Iconsax.eye_slash,
+                    size: AppResponsive.iconSize(context),
+                    color: AppColors.primary,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureText = !_obscureText;
+                    });
+                  },
+                )
+              : null,
+          contentPadding: contentPadding,
+        ),
       ),
-    ));
+    );
 
     // If labelText is provided and showLabelAbove is true, show it above the text field
     Widget result;
@@ -237,7 +238,7 @@ class _AppTextFieldState extends State<AppTextField> {
     } else {
       result = textField;
     }
-    
+
     return result;
   }
 }

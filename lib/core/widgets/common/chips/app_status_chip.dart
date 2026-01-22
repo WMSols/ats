@@ -123,14 +123,16 @@ class AppStatusChip extends StatelessWidget {
       return AppColors.success;
     } else if (lowerStatus == AppConstants.jobStatusClosed ||
         lowerStatus == AppConstants.applicationStatusDenied ||
-        lowerStatus == AppConstants.documentStatusDenied) {
+        lowerStatus == AppConstants.documentStatusDenied ||
+        lowerStatus == 'missing') {
       return AppColors.error;
     } else if (lowerStatus == AppConstants.applicationStatusPending ||
         lowerStatus == AppConstants.documentStatusPending) {
       return AppColors.warning;
     } else if (lowerStatus == AppConstants.documentStatusRequested) {
       return AppColors.request;
-    } else if (lowerStatus == 'expiry' || lowerStatus == 'expired' ||
+    } else if (lowerStatus == 'expiry' ||
+        lowerStatus == 'expired' ||
         lowerStatus == 'expiring') {
       return AppColors.expiry;
     } else {
@@ -155,6 +157,8 @@ class AppStatusChip extends StatelessWidget {
         lowerStatus == AppConstants.applicationStatusDenied ||
         lowerStatus == AppConstants.documentStatusDenied) {
       return Iconsax.close_circle;
+    } else if (lowerStatus == 'missing') {
+      return Iconsax.warning_2;
     } else if (lowerStatus == AppConstants.applicationStatusPending ||
         lowerStatus == AppConstants.documentStatusPending) {
       return Iconsax.clock;

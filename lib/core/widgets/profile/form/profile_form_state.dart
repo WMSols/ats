@@ -80,20 +80,21 @@ class ProfileFormState {
     firstNameController.text = profile.firstName ?? '';
     middleNameController.text = profile.middleName ?? '';
     lastNameController.text = profile.lastName ?? '';
-    
+
     // Email is always from user account, don't override it
     // Only set if empty (shouldn't happen, but just in case)
     if (emailController.text.isEmpty) {
       final currentUser = controller.authRepository.getCurrentUser();
       emailController.text = currentUser?.email ?? '';
     }
-    
+
     // Password field should show masked placeholder (read-only for candidate)
     // Keep it as masked placeholder, not the email value
-    if (passwordController.text.isEmpty || passwordController.text == '••••••••') {
+    if (passwordController.text.isEmpty ||
+        passwordController.text == '••••••••') {
       passwordController.text = '••••••••';
     }
-    
+
     address1Controller.text = profile.address1 ?? '';
     address2Controller.text = profile.address2 ?? '';
     cityController.text = profile.city ?? '';

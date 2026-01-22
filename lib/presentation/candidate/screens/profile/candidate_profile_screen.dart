@@ -22,9 +22,11 @@ class _CandidateProfileScreenState extends State<CandidateProfileScreen> {
     _cachedScrollView ??= SingleChildScrollView(
       key: const ValueKey('profile-scroll-view'),
       padding: AppSpacing.padding(context),
-      child: CandidateProfileForm(key: _formKey), // Use GlobalKey to preserve state
+      child: CandidateProfileForm(
+        key: _formKey,
+      ), // Use GlobalKey to preserve state
     );
-    
+
     return AppCandidateLayout(
       key: const ValueKey('candidate-profile-screen-layout'),
       title: AppTexts.profile,

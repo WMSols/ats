@@ -148,7 +148,8 @@ class AppTexts {
   static const String documentTypeCreated =
       "Document type created successfully";
   static const String documentRequested = "Document requested successfully";
-  static const String documentRequestRevoked = "Document request revoked successfully";
+  static const String documentRequestRevoked =
+      "Document request revoked successfully";
   static const String documentTypeUpdated =
       "Document type updated successfully";
   static const String documentTypeDeleted =
@@ -367,4 +368,7 @@ class AppTexts {
       "Failed to change password. Please verify your current password and try again.";
   static const String currentPasswordIncorrect =
       "Current password is incorrect. Please try again.";
+
+  // Footer
+  static const String managedByWMSols = "Managed by WMSols";
 }

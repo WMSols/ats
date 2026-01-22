@@ -14,7 +14,8 @@ class AdminManageAdminsScreen extends StatefulWidget {
   const AdminManageAdminsScreen({super.key});
 
   @override
-  State<AdminManageAdminsScreen> createState() => _AdminManageAdminsScreenState();
+  State<AdminManageAdminsScreen> createState() =>
+      _AdminManageAdminsScreenState();
 }
 
 class _AdminManageAdminsScreenState extends State<AdminManageAdminsScreen> {
@@ -27,8 +28,10 @@ class _AdminManageAdminsScreenState extends State<AdminManageAdminsScreen> {
   void initState() {
     super.initState();
     _controller = Get.find<AdminManageAdminsController>();
-    _searchController = TextEditingController(text: _controller.searchQuery.value);
-    
+    _searchController = TextEditingController(
+      text: _controller.searchQuery.value,
+    );
+
     ever(_controller.searchQuery, (query) {
       if (_searchController.text != query) {
         _searchController.text = query;
@@ -124,7 +127,8 @@ class _AdminManageAdminsScreenState extends State<AdminManageAdminsScreen> {
                           AppActionButton(
                             text: AppTexts.deleteUser,
                             onPressed:
-                                (_controller.isDeletingUser[profile.profileId] ??
+                                (_controller.isDeletingUser[profile
+                                        .profileId] ??
                                     false)
                                 ? null
                                 : () => _showDeleteUserConfirmation(
@@ -148,10 +152,7 @@ class _AdminManageAdminsScreenState extends State<AdminManageAdminsScreen> {
       ),
     );
 
-    return AppAdminLayout(
-      title: AppTexts.manageAdmins,
-      child: _cachedContent!,
-    );
+    return AppAdminLayout(title: AppTexts.manageAdmins, child: _cachedContent!);
   }
 
   void _showChangeRoleConfirmation(

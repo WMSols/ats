@@ -160,7 +160,8 @@ class _AdminEditCandidateScreenState extends State<AdminEditCandidateScreen> {
                 onCityChanged: (_) => null,
                 onStateChanged: (_) => null,
                 onZipChanged: (_) => null,
-                hasError: false, // Individual error messages are already wrapped in Obx
+                hasError:
+                    false, // Individual error messages are already wrapped in Obx
               ),
               AppSpacing.vertical(context, 0.02),
 

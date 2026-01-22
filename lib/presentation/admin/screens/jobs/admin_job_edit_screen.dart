@@ -60,11 +60,12 @@ class _AdminJobEditScreenState extends State<AdminJobEditScreen> {
 
         // Sync local state with job data whenever job changes
         final currentDocIds = Set<String>.from(job.requiredDocumentIds);
-        final docsChanged = _lastSyncedJobId == job.jobId && 
+        final docsChanged =
+            _lastSyncedJobId == job.jobId &&
             (selectedDocumentIds.length != currentDocIds.length ||
-            !selectedDocumentIds.containsAll(currentDocIds) ||
-            !currentDocIds.containsAll(selectedDocumentIds));
-        
+                !selectedDocumentIds.containsAll(currentDocIds) ||
+                !currentDocIds.containsAll(selectedDocumentIds));
+
         if (_lastSyncedJobId != job.jobId) {
           // New job or job ID changed - sync everything immediately
           titleController.text = job.title;

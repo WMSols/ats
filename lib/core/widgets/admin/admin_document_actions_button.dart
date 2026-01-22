@@ -28,29 +28,16 @@ class AdminDocumentActionsButton extends StatelessWidget {
             ),
           ],
         ),
-        child: Icon(
-          Iconsax.more,
-          color: AppColors.white,
-        ),
+        child: Icon(Iconsax.more, color: AppColors.white),
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       itemBuilder: (context) => [
         PopupMenuItem<String>(
           value: 'request',
           child: Row(
             children: [
-              Icon(
-                Iconsax.document_text,
-                color: AppColors.primary,
-              ),
-              SizedBox(
-                width: AppSpacing.horizontal(
-                  context,
-                  0.02,
-                ).width,
-              ),
+              Icon(Iconsax.document_text, color: AppColors.primary),
+              SizedBox(width: AppSpacing.horizontal(context, 0.02).width),
               Text(AppTexts.requestDocument),
             ],
           ),
@@ -59,16 +46,8 @@ class AdminDocumentActionsButton extends StatelessWidget {
           value: 'upload',
           child: Row(
             children: [
-              Icon(
-                Iconsax.document_upload,
-                color: AppColors.primary,
-              ),
-              SizedBox(
-                width: AppSpacing.horizontal(
-                  context,
-                  0.02,
-                ).width,
-              ),
+              Icon(Iconsax.document_upload, color: AppColors.primary),
+              SizedBox(width: AppSpacing.horizontal(context, 0.02).width),
               Text(AppTexts.uploadDocument),
             ],
           ),
@@ -76,13 +55,9 @@ class AdminDocumentActionsButton extends StatelessWidget {
       ],
       onSelected: (value) {
         if (value == 'request') {
-          Get.toNamed(
-            AppConstants.routeAdminRequestDocument,
-          );
+          Get.toNamed(AppConstants.routeAdminRequestDocument);
         } else if (value == 'upload') {
-          Get.toNamed(
-            AppConstants.routeAdminUploadDocument,
-          );
+          Get.toNamed(AppConstants.routeAdminUploadDocument);
         }
       },
     );

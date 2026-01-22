@@ -20,7 +20,7 @@ class _CandidateLoginScreenState extends State<CandidateLoginScreen> {
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
   CandidateAuthController? _authController;
-  
+
   @override
   void initState() {
     super.initState();
@@ -29,12 +29,12 @@ class _CandidateLoginScreenState extends State<CandidateLoginScreen> {
     _passwordController = TextEditingController();
     _syncWithAuthController();
   }
-  
+
   void _syncWithAuthController() {
     try {
       final controller = Get.find<CandidateAuthController>();
       _authController = controller;
-      
+
       // Sync local controllers with auth controller's values initially
       // After this, onChanged callbacks will keep them in sync
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -42,7 +42,8 @@ class _CandidateLoginScreenState extends State<CandidateLoginScreen> {
           if (_emailController.text != _authController!.emailValue.value) {
             _emailController.text = _authController!.emailValue.value;
           }
-          if (_passwordController.text != _authController!.passwordValue.value) {
+          if (_passwordController.text !=
+              _authController!.passwordValue.value) {
             _passwordController.text = _authController!.passwordValue.value;
           }
         }
@@ -52,7 +53,7 @@ class _CandidateLoginScreenState extends State<CandidateLoginScreen> {
       _authController = null;
     }
   }
-  
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -69,9 +70,9 @@ class _CandidateLoginScreenState extends State<CandidateLoginScreen> {
       // Controller not found, return empty
       return const SizedBox.shrink();
     }
-    
+
     final controller = _authController!;
-    
+
     return AppAuthLayout(
       title: AppTexts.candidateLogin,
       isLoginSelected: true,

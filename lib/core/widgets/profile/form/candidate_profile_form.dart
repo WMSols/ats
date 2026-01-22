@@ -33,13 +33,14 @@ class _CandidateProfileFormState extends State<CandidateProfileForm> {
         // Only reload if profile actually changed (different profileId)
         // This prevents unnecessary rebuilds when the stream fires with the same data
         final profileId = profile.profileId;
-        final profileChanged = !_hasLoadedProfile || _lastLoadedProfileId != profileId;
-        
+        final profileChanged =
+            !_hasLoadedProfile || _lastLoadedProfileId != profileId;
+
         if (profileChanged) {
           formState.loadFromProfile(profile);
           _hasLoadedProfile = true;
           _lastLoadedProfileId = profileId;
-          
+
           // Call setState AFTER loading profile data to update UI
           // GlobalKey preserves form state, so text fields won't be disposed
           // Use post-frame callback to batch the update and avoid interrupting focus
@@ -137,7 +138,8 @@ class _CandidateProfileFormState extends State<CandidateProfileForm> {
           cityError: controller.cityError,
           stateError: controller.stateError,
           zipError: controller.zipError,
-          hasError: false, // Individual error messages are already wrapped in Obx
+          hasError:
+              false, // Individual error messages are already wrapped in Obx
         ),
         AppSpacing.vertical(context, 0.02),
 

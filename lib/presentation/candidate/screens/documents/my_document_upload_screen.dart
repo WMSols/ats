@@ -6,7 +6,6 @@ import 'package:ats/presentation/candidate/controllers/documents_controller.dart
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
-import 'package:ats/core/widgets/documents/documents.dart';
 
 class MyDocumentUploadScreen extends StatefulWidget {
   final String docTypeId;
@@ -19,8 +18,7 @@ class MyDocumentUploadScreen extends StatefulWidget {
   });
 
   @override
-  State<MyDocumentUploadScreen> createState() =>
-      _MyDocumentUploadScreenState();
+  State<MyDocumentUploadScreen> createState() => _MyDocumentUploadScreenState();
 }
 
 class _MyDocumentUploadScreenState extends State<MyDocumentUploadScreen> {
@@ -131,8 +129,7 @@ class _MyDocumentUploadScreenState extends State<MyDocumentUploadScreen> {
                 final hasExpiry =
                     hasNoExpiry || expiryController.text.trim().isNotEmpty;
                 final hasNoErrors = expiryError.value == null;
-                final canUpload =
-                    hasFile && hasExpiry && hasNoErrors;
+                final canUpload = hasFile && hasExpiry && hasNoErrors;
 
                 return AppButton(
                   text: AppTexts.upload,

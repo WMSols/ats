@@ -53,11 +53,11 @@ class AppConstants {
   static const String routeCandidateJobs = '/candidate/jobs';
   static const String routeCandidateJobDetails = '/candidate/jobs/details';
   static const String routeCandidateApplications = '/candidate/applications';
-    static const String routeCandidateDocuments = '/candidate/documents';
-    static const String routeCandidateCreateDocument =
-        '/candidate/documents/create';
-    static const String routeCandidateUploadDocument =
-        '/candidate/documents/upload';
+  static const String routeCandidateDocuments = '/candidate/documents';
+  static const String routeCandidateCreateDocument =
+      '/candidate/documents/create';
+  static const String routeCandidateUploadDocument =
+      '/candidate/documents/upload';
   static const String routeAdminDashboard = '/admin/dashboard';
   static const String routeAdminJobs = '/admin/jobs';
   static const String routeAdminJobCreate = '/admin/jobs/create';
@@ -76,4 +76,8 @@ class AppConstants {
       '/admin/candidates/upload-document';
   static const String routeAdminManageAdmins = '/admin/manage-admins';
   static const String routeAdminCreateNewUser = '/admin/manage-admins/create';
+
+  // External URLs
+  static const String wmsolsWebsiteUrl = 'https://wmsols.com/';
+  static const String candidateWebAppUrl = 'https://candidate.maximumhs.com';
 }
