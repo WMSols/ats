@@ -18,8 +18,7 @@ class MyDocumentUploadScreen extends StatefulWidget {
   });
 
   @override
-  State<MyDocumentUploadScreen> createState() =>
-      _MyDocumentUploadScreenState();
+  State<MyDocumentUploadScreen> createState() => _MyDocumentUploadScreenState();
 }
 
 class _MyDocumentUploadScreenState extends State<MyDocumentUploadScreen> {
@@ -130,8 +129,7 @@ class _MyDocumentUploadScreenState extends State<MyDocumentUploadScreen> {
                 final hasExpiry =
                     hasNoExpiry || expiryController.text.trim().isNotEmpty;
                 final hasNoErrors = expiryError.value == null;
-                final canUpload =
-                    hasFile && hasExpiry && hasNoErrors;
+                final canUpload = hasFile && hasExpiry && hasNoErrors;
 
                 return AppButton(
                   text: AppTexts.upload,

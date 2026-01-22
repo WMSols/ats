@@ -121,7 +121,9 @@ class CandidateRoutes {
       name: AppConstants.routeCandidateUploadDocument,
       page: () {
         final args = Get.arguments as Map<String, dynamic>?;
-        if (args == null || args['docTypeId'] == null || args['docTypeName'] == null) {
+        if (args == null ||
+            args['docTypeId'] == null ||
+            args['docTypeName'] == null) {
           // Fallback - should not happen, but handle gracefully
           return const MyDocumentsScreen();
         }

@@ -12,21 +12,26 @@ class AdminDocumentTypesScreen extends StatefulWidget {
   const AdminDocumentTypesScreen({super.key});
 
   @override
-  State<AdminDocumentTypesScreen> createState() => _AdminDocumentTypesScreenState();
+  State<AdminDocumentTypesScreen> createState() =>
+      _AdminDocumentTypesScreenState();
 }
 
 class _AdminDocumentTypesScreenState extends State<AdminDocumentTypesScreen> {
   late final TextEditingController _searchController;
   late final AdminDocumentsController _controller;
   Widget? _cachedContent;
-  final _searchBarKey = GlobalKey(debugLabel: 'admin-document-types-search-bar');
+  final _searchBarKey = GlobalKey(
+    debugLabel: 'admin-document-types-search-bar',
+  );
 
   @override
   void initState() {
     super.initState();
     _controller = Get.find<AdminDocumentsController>();
-    _searchController = TextEditingController(text: _controller.searchQuery.value);
-    
+    _searchController = TextEditingController(
+      text: _controller.searchQuery.value,
+    );
+
     ever(_controller.searchQuery, (query) {
       if (_searchController.text != query) {
         _searchController.text = query;

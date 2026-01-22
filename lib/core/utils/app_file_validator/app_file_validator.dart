@@ -10,7 +10,10 @@ class AppFileValidator {
   static const List<String> allowedExtensions = ['pdf', 'jpg', 'jpeg'];
 
   // Allowed MIME types - PDF and JPEG images
-  static const List<String> allowedMimeTypes = ['application/pdf', 'image/jpeg'];
+  static const List<String> allowedMimeTypes = [
+    'application/pdf',
+    'image/jpeg',
+  ];
 
   /// Validates a file from file picker
   /// Returns null if valid, error message if invalid

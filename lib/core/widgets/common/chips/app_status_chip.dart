@@ -131,7 +131,8 @@ class AppStatusChip extends StatelessWidget {
       return AppColors.warning;
     } else if (lowerStatus == AppConstants.documentStatusRequested) {
       return AppColors.request;
-    } else if (lowerStatus == 'expiry' || lowerStatus == 'expired' ||
+    } else if (lowerStatus == 'expiry' ||
+        lowerStatus == 'expired' ||
         lowerStatus == 'expiring') {
       return AppColors.expiry;
     } else {

@@ -102,7 +102,7 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
             child: Obx(() {
               final allAdminDocs = _controller.filteredDocumentTypes.toList();
               final userDocs = _controller.filteredUserDocuments.toList();
-              
+
               // Separate requested documents (candidate-specific) from non-requested
               final requestedDocs = allAdminDocs
                   .where((doc) => doc.isCandidateSpecific)
@@ -110,7 +110,7 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
               final nonRequestedDocs = allAdminDocs
                   .where((doc) => !doc.isCandidateSpecific)
                   .toList();
-              
+
               final hasAnyDocs = allAdminDocs.isNotEmpty || userDocs.isNotEmpty;
 
               if (!hasAnyDocs) {
@@ -126,28 +126,31 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                 );
               }
 
-              final totalItemCount = requestedDocs.length + 
-                                    nonRequestedDocs.length + 
-                                    userDocs.length;
+              final totalItemCount =
+                  requestedDocs.length +
+                  nonRequestedDocs.length +
+                  userDocs.length;
 
               return ListView.builder(
                 padding: AppSpacing.padding(context),
                 itemCount: totalItemCount,
                 itemBuilder: (context, index) {
                   DocumentTypeEntity? docType;
-                  
+
                   // Determine which section we're in
                   if (index < requestedDocs.length) {
                     // Requested documents section (at the top)
                     docType = requestedDocs[index];
-                  } else if (index < requestedDocs.length + nonRequestedDocs.length) {
+                  } else if (index <
+                      requestedDocs.length + nonRequestedDocs.length) {
                     // Non-requested documents section
                     docType = nonRequestedDocs[index - requestedDocs.length];
                   }
-                  
+
                   // Handle admin documents (both requested and non-requested)
                   if (docType != null) {
-                    final currentDocType = docType; // Create non-nullable reference
+                    final currentDocType =
+                        docType; // Create non-nullable reference
                     return Obx(() {
                       // Re-read reactive values inside Obx for this specific item
                       final isUploadingThisItem =
@@ -167,14 +170,15 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                           documentStatus == AppConstants.documentStatusDenied;
                       final hasStorageUrl =
                           currentDocument?.storageUrl.isNotEmpty ?? false;
-                      final isMissing = !currentHasDoc &&
+                      final isMissing =
+                          !currentHasDoc &&
                           _controller.isDocumentMissingForAnyApplication(
                             currentDocType.docTypeId,
                           );
-                      final jobTitlesRequiringDoc =
-                          _controller.getJobTitlesRequiringDocument(
-                        currentDocType.docTypeId,
-                      );
+                      final jobTitlesRequiringDoc = _controller
+                          .getJobTitlesRequiringDocument(
+                            currentDocType.docTypeId,
+                          );
 
                       return Column(
                         children: [
@@ -226,7 +230,8 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                                     icon: Iconsax.document_upload,
                                     onPressed: () {
                                       Get.toNamed(
-                                        AppConstants.routeCandidateUploadDocument,
+                                        AppConstants
+                                            .routeCandidateUploadDocument,
                                         arguments: {
                                           'docTypeId': currentDocType.docTypeId,
                                           'docTypeName': currentDocType.name,
@@ -257,9 +262,11 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                                     child: InkWell(
                                       onTap: () {
                                         Get.toNamed(
-                                          AppConstants.routeCandidateUploadDocument,
+                                          AppConstants
+                                              .routeCandidateUploadDocument,
                                           arguments: {
-                                            'docTypeId': currentDocType.docTypeId,
+                                            'docTypeId':
+                                                currentDocType.docTypeId,
                                             'docTypeName': currentDocType.name,
                                           },
                                         );
@@ -269,10 +276,13 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                                         customText: 'Missing',
                                         onTap: () {
                                           Get.toNamed(
-                                            AppConstants.routeCandidateUploadDocument,
+                                            AppConstants
+                                                .routeCandidateUploadDocument,
                                             arguments: {
-                                              'docTypeId': currentDocType.docTypeId,
-                                              'docTypeName': currentDocType.name,
+                                              'docTypeId':
+                                                  currentDocType.docTypeId,
+                                              'docTypeName':
+                                                  currentDocType.name,
                                             },
                                           );
                                         },
@@ -283,7 +293,8 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                                   // Show "Uploaded" chip for requested documents
                                   if (currentDocType.isCandidateSpecific)
                                     AppStatusChip(
-                                      status: AppConstants.documentStatusApproved,
+                                      status:
+                                          AppConstants.documentStatusApproved,
                                       customText: 'Uploaded',
                                     ),
                                   AppStatusChip(status: documentStatus),
@@ -321,9 +332,11 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                                       text: AppTexts.reupload,
                                       onPressed: () {
                                         Get.toNamed(
-                                          AppConstants.routeCandidateUploadDocument,
+                                          AppConstants
+                                              .routeCandidateUploadDocument,
                                           arguments: {
-                                            'docTypeId': currentDocType.docTypeId,
+                                            'docTypeId':
+                                                currentDocType.docTypeId,
                                             'docTypeName': currentDocType.name,
                                           },
                                         );
@@ -341,7 +354,8 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                     });
                   } else {
                     // User-added documents section
-                    final userDocIndex = index - requestedDocs.length - nonRequestedDocs.length;
+                    final userDocIndex =
+                        index - requestedDocs.length - nonRequestedDocs.length;
 
                     return Obx(() {
                       // Re-read reactive values inside Obx for this specific item

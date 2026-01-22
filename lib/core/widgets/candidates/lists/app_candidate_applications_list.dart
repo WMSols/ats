@@ -58,8 +58,9 @@ class AppCandidateApplicationsList extends StatelessWidget {
                     // Check if all required documents are uploaded
                     final totalRequired = app.requiredDocumentIds.length;
                     final uploadedCount = app.uploadedDocumentIds.length;
-                    final allDocsUploaded = totalRequired == 0 || uploadedCount >= totalRequired;
-                    
+                    final allDocsUploaded =
+                        totalRequired == 0 || uploadedCount >= totalRequired;
+
                     return Wrap(
                       spacing: AppResponsive.screenWidth(context) * 0.01,
                       runSpacing: AppResponsive.screenHeight(context) * 0.005,

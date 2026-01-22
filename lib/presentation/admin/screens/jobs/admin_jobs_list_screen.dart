@@ -25,8 +25,10 @@ class _AdminJobsListScreenState extends State<AdminJobsListScreen> {
   void initState() {
     super.initState();
     _controller = Get.find<AdminJobsController>();
-    _searchController = TextEditingController(text: _controller.searchQuery.value);
-    
+    _searchController = TextEditingController(
+      text: _controller.searchQuery.value,
+    );
+
     ever(_controller.searchQuery, (query) {
       if (_searchController.text != query) {
         _searchController.text = query;
@@ -130,10 +132,7 @@ class _AdminJobsListScreenState extends State<AdminJobsListScreen> {
       ),
     );
 
-    return AppAdminLayout(
-      title: AppTexts.jobs,
-      child: _cachedContent!,
-    );
+    return AppAdminLayout(title: AppTexts.jobs, child: _cachedContent!);
   }
 
   void _showDeleteConfirmation(

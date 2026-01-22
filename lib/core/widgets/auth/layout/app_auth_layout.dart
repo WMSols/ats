@@ -63,7 +63,8 @@ class AppAuthLayout extends StatelessWidget {
                           onFirstTap: onLoginTap,
                           onSecondTap: onSignUpTap,
                         ),
-                      if (showNavigationChip) AppSpacing.vertical(context, 0.02),
+                      if (showNavigationChip)
+                        AppSpacing.vertical(context, 0.02),
                       AppAuthTitle(title: title),
                       AppSpacing.vertical(context, 0.04),
                       AppAuthFormContent(

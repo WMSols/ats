@@ -64,7 +64,8 @@ abstract class DocumentRepository {
   });
 
   // Candidate-specific document types
-  Future<Either<Failure, DocumentTypeEntity>> createCandidateSpecificDocumentType({
+  Future<Either<Failure, DocumentTypeEntity>>
+  createCandidateSpecificDocumentType({
     required String name,
     required String description,
     required String candidateId,

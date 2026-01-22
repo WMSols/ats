@@ -93,15 +93,15 @@ class DocumentsController extends GetxController {
     _documentTypesSubscription = repositoryImpl
         .streamDocumentTypesForCandidate(currentUser.userId)
         .listen(
-      (types) {
-        documentTypes.value = types;
-        filterDocuments();
-      },
-      onError: (error) {
-        // Silently handle permission errors (user might have signed out)
-        // Don't show errors for permission-denied as it's expected after sign-out
-      },
-    );
+          (types) {
+            documentTypes.value = types;
+            filterDocuments();
+          },
+          onError: (error) {
+            // Silently handle permission errors (user might have signed out)
+            // Don't show errors for permission-denied as it's expected after sign-out
+          },
+        );
   }
 
   void loadCandidateDocuments() {
@@ -240,9 +240,7 @@ class DocumentsController extends GetxController {
     final jobTitles = <String>[];
     for (final jobId in jobIds) {
       try {
-        final job = _jobsController!.jobs.firstWhere(
-          (j) => j.jobId == jobId,
-        );
+        final job = _jobsController!.jobs.firstWhere((j) => j.jobId == jobId);
         jobTitles.add(job.title);
       } catch (e) {
         // Job not found, skip
@@ -349,7 +347,7 @@ class DocumentsController extends GetxController {
             uploadingDocTypeId.value = '';
             uploadProgress.value = 0.0;
           });
-          
+
           // Update applications to mark this document as uploaded
           if (docTypeId.isNotEmpty) {
             final currentUser = authRepository.getCurrentUser();
@@ -361,7 +359,7 @@ class DocumentsController extends GetxController {
               );
             }
           }
-          
+
           AppSnackbar.success('Document uploaded successfully');
           // Navigate back if we're on upload screen
           if (Get.currentRoute.contains('upload')) {
@@ -413,9 +411,7 @@ class DocumentsController extends GetxController {
     }
 
     // Sanitize document name
-    final sanitizedDocTypeName = AppFileValidator.sanitizeFileName(
-      docTypeName,
-    );
+    final sanitizedDocTypeName = AppFileValidator.sanitizeFileName(docTypeName);
     final sanitizedFileName = AppFileValidator.sanitizeFileName(file.name);
     final documentName =
         '${currentUser.userId}_${sanitizedDocTypeName}_$sanitizedFileName';
@@ -455,7 +451,7 @@ class DocumentsController extends GetxController {
         isUploading.value = false;
         uploadProgress.value = 1.0;
         clearSelectedFile();
-        
+
         // Update applications to mark this document as uploaded
         if (docTypeId.isNotEmpty) {
           final currentUser = authRepository.getCurrentUser();
@@ -467,7 +463,7 @@ class DocumentsController extends GetxController {
             );
           }
         }
-        
+
         AppSnackbar.success('Document uploaded successfully');
         // Reset progress after a short delay
         Future.delayed(const Duration(seconds: 2), () {
@@ -531,7 +527,7 @@ class DocumentsController extends GetxController {
       } catch (e) {
         // Document not found in local list, will skip application update
       }
-      
+
       final result = await documentRepository.deleteDocument(
         candidateDocId: candidateDocId,
         storageUrl: storageUrl,
@@ -545,7 +541,7 @@ class DocumentsController extends GetxController {
         },
         (_) async {
           isLoading.value = false;
-          
+
           // Update applications to mark this document as deleted
           if (docTypeId.isNotEmpty) {
             final currentUser = authRepository.getCurrentUser();
@@ -557,7 +553,7 @@ class DocumentsController extends GetxController {
               );
             }
           }
-          
+
           AppSnackbar.success('Document deleted successfully');
         },
       );

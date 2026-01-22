@@ -30,7 +30,7 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
   AppSideLayout? _cachedLayout; // Cache the layout widget itself
   List<AppNavigationItemModel>? _navigationItems; // Static navigation items
   bool _isUpdatingNavigation = false; // Prevent rapid navigation updates
-  
+
   @override
   void initState() {
     super.initState();
@@ -38,7 +38,7 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
     _cachedChild = widget.child; // Cache child on first build
     _setupProfileCompletionCheck();
     _setupNavigationItems();
-    
+
     // Listen to profile changes to update navigation when profile loads
     // But only update once, not reactively during input
     // Use a debounce to prevent rapid updates
@@ -56,23 +56,23 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
       }
     });
   }
-  
+
   void _setupNavigationItems() {
     // Build navigation items once on init
     _updateNavigationItems();
   }
-  
+
   bool? _lastProfileCompletedStatus;
-  
+
   void _updateNavigationItems() {
     if (_profileController == null) return;
     final isProfileCompleted = _profileController!.isProfileCompleted();
-    
+
     // Only update if completion status actually changed
     if (_lastProfileCompletedStatus == isProfileCompleted) {
       return; // Don't rebuild if nothing changed
     }
-    
+
     _lastProfileCompletedStatus = isProfileCompleted;
     _navigationItems = _buildNavigationItems(isProfileCompleted);
     // Clear cached layout so it rebuilds with new navigation
@@ -82,7 +82,7 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
       setState(() {});
     }
   }
-  
+
   @override
   void didUpdateWidget(AppCandidateLayout oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -92,12 +92,15 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
     final newChildType = widget.child.runtimeType;
     final oldChildKey = _getWidgetKey(oldWidget.child);
     final newChildKey = _getWidgetKey(widget.child);
-    
+
     // Also check if title, actions, or other properties changed
     final titleChanged = oldWidget.title != widget.title;
     final actionsChanged = oldWidget.actions != widget.actions;
-    
-    if (oldChildType != newChildType || oldChildKey != newChildKey || titleChanged || actionsChanged) {
+
+    if (oldChildType != newChildType ||
+        oldChildKey != newChildKey ||
+        titleChanged ||
+        actionsChanged) {
       if (oldChildType != newChildType || oldChildKey != newChildKey) {
         _cachedChild = widget.child;
       }
@@ -105,7 +108,7 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
       _cachedLayout = null;
     }
   }
-  
+
   Key? _getWidgetKey(Widget widget) {
     if (widget is KeyedSubtree) {
       return widget.key;
@@ -113,7 +116,7 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
     // Try to extract key from widget
     return widget.key;
   }
-  
+
   List<AppNavigationItemModel> _buildNavigationItems(bool isProfileCompleted) {
     return [
       AppNavigationItemModel(
@@ -206,11 +209,11 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
         permanent: false,
       );
     }
-    
+
     // Use cached child to prevent unnecessary rebuilds
     // The child is only updated in didUpdateWidget when it actually changes
     final childToUse = _cachedChild ?? widget.child;
-    
+
     // CRITICAL: If layout is cached and widget is unchanged, return the EXACT SAME instance
     // to prevent Flutter from disposing the child widget tree
     if (_cachedLayout != null) {
@@ -219,8 +222,11 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
     _cachedLayout = _buildLayout(authController, childToUse);
     return _cachedLayout!;
   }
-  
-  AppSideLayout _buildLayout(CandidateAuthController authController, Widget child) {
+
+  AppSideLayout _buildLayout(
+    CandidateAuthController authController,
+    Widget child,
+  ) {
     // Wrap child in RepaintBoundary to prevent unnecessary repaints
     // and use a stable key to preserve widget identity
     final stableChild = RepaintBoundary(
@@ -230,7 +236,7 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
         child: child, // Use cached child to prevent recreation
       ),
     );
-    
+
     // Use static navigationItems instead of reactive navigationItemsBuilder
     // This eliminates Obx rebuilds that were causing the form to be disposed
     return AppSideLayout(
@@ -239,7 +245,9 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
       actions: widget.actions,
       dashboardRoute: AppConstants.routeCandidateDashboard,
       onLogout: () => authController.signOut(),
-      navigationItems: _navigationItems ?? _buildNavigationItems(false), // Static navigation items
+      navigationItems:
+          _navigationItems ??
+          _buildNavigationItems(false), // Static navigation items
       child: stableChild, // Use stable child wrapped in RepaintBoundary
     );
   }

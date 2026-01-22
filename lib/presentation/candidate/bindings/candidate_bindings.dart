@@ -91,7 +91,10 @@ class CandidateBindings extends Bindings {
         emailRepo,
       ),
     );
-    Get.lazyPut(() => DocumentsController(documentRepo, candidateAuthRepo, applicationRepo));
+    Get.lazyPut(
+      () =>
+          DocumentsController(documentRepo, candidateAuthRepo, applicationRepo),
+    );
     Get.lazyPut(
       () => ApplicationsController(applicationRepo, candidateAuthRepo),
     );

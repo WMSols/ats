@@ -86,21 +86,21 @@ class DocumentRepositoryImpl implements DocumentRepository {
   Stream<List<DocumentTypeEntity>> streamDocumentTypesForCandidate(
     String candidateId,
   ) {
-    return firestoreDataSource
-        .streamDocumentTypesForCandidate(candidateId)
-        .map((docsData) {
-      return docsData.map((data) {
-        return DocumentTypeModel(
-          docTypeId: data['docTypeId'] ?? '',
-          name: data['name'] ?? '',
-          description: data['description'] ?? '',
-          isRequired: data['isRequired'] ?? false,
-          isCandidateSpecific: data['isCandidateSpecific'] ?? false,
-          requestedForCandidateId: data['requestedForCandidateId'] as String?,
-          requestedAt: (data['requestedAt'] as Timestamp?)?.toDate(),
-        ).toEntity();
-      }).toList();
-    });
+    return firestoreDataSource.streamDocumentTypesForCandidate(candidateId).map(
+      (docsData) {
+        return docsData.map((data) {
+          return DocumentTypeModel(
+            docTypeId: data['docTypeId'] ?? '',
+            name: data['name'] ?? '',
+            description: data['description'] ?? '',
+            isRequired: data['isRequired'] ?? false,
+            isCandidateSpecific: data['isCandidateSpecific'] ?? false,
+            requestedForCandidateId: data['requestedForCandidateId'] as String?,
+            requestedAt: (data['requestedAt'] as Timestamp?)?.toDate(),
+          ).toEntity();
+        }).toList();
+      },
+    );
   }
 
   /// Get candidate-specific document types for a candidate
@@ -147,7 +147,8 @@ class DocumentRepositoryImpl implements DocumentRepository {
 
   /// Create a candidate-specific document type
   @override
-  Future<Either<Failure, DocumentTypeEntity>> createCandidateSpecificDocumentType({
+  Future<Either<Failure, DocumentTypeEntity>>
+  createCandidateSpecificDocumentType({
     required String name,
     required String description,
     required String candidateId,
@@ -816,7 +817,8 @@ class DocumentRepositoryImpl implements DocumentRepository {
         title: title,
         expiryDate: expiryDate,
         hasNoExpiry: hasNoExpiry,
-        status: AppConstants.documentStatusApproved, // Admin uploads are approved by default
+        status: AppConstants
+            .documentStatusApproved, // Admin uploads are approved by default
       );
 
       final doc = CandidateDocumentModel(

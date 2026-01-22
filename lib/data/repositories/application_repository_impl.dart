@@ -64,8 +64,12 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
           status: data['status'] ?? AppConstants.applicationStatusPending,
           appliedAt:
               (data['appliedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-          requiredDocumentIds: List<String>.from(data['requiredDocumentIds'] ?? []),
-          uploadedDocumentIds: List<String>.from(data['uploadedDocumentIds'] ?? []),
+          requiredDocumentIds: List<String>.from(
+            data['requiredDocumentIds'] ?? [],
+          ),
+          uploadedDocumentIds: List<String>.from(
+            data['uploadedDocumentIds'] ?? [],
+          ),
         ).toEntity();
       }).toList();
       return Right(apps);
@@ -97,8 +101,12 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
               status: data['status'] ?? AppConstants.applicationStatusPending,
               appliedAt:
                   (data['appliedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-              requiredDocumentIds: List<String>.from(data['requiredDocumentIds'] ?? []),
-              uploadedDocumentIds: List<String>.from(data['uploadedDocumentIds'] ?? []),
+              requiredDocumentIds: List<String>.from(
+                data['requiredDocumentIds'] ?? [],
+              ),
+              uploadedDocumentIds: List<String>.from(
+                data['uploadedDocumentIds'] ?? [],
+              ),
             ).toEntity();
           }).toList();
         });
@@ -162,13 +170,17 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
 
       // Update each application that requires this document
       for (final appData in appsData) {
-        final requiredDocIds = List<String>.from(appData['requiredDocumentIds'] ?? []);
-        
+        final requiredDocIds = List<String>.from(
+          appData['requiredDocumentIds'] ?? [],
+        );
+
         // Only update if this document is required by the application
         if (requiredDocIds.contains(docTypeId)) {
-          final uploadedDocIds = List<String>.from(appData['uploadedDocumentIds'] ?? []);
+          final uploadedDocIds = List<String>.from(
+            appData['uploadedDocumentIds'] ?? [],
+          );
           final applicationId = appData['applicationId'] as String;
-          
+
           if (isUploaded) {
             // Add docTypeId if not already present
             if (!uploadedDocIds.contains(docTypeId)) {

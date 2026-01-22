@@ -148,7 +148,8 @@ class AppTexts {
   static const String documentTypeCreated =
       "Document type created successfully";
   static const String documentRequested = "Document requested successfully";
-  static const String documentRequestRevoked = "Document request revoked successfully";
+  static const String documentRequestRevoked =
+      "Document request revoked successfully";
   static const String documentTypeUpdated =
       "Document type updated successfully";
   static const String documentTypeDeleted =

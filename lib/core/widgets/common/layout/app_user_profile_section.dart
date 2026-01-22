@@ -26,13 +26,13 @@ class AppUserProfileSection extends StatelessWidget {
     // Check if we have reactive controllers available
     final hasAdminController = Get.isRegistered<AdminAuthController>();
     final hasProfileController = Get.isRegistered<ProfileController>();
-    
+
     // Only use Obx if we have controllers with observables to track
     if (hasAdminController || hasProfileController) {
       return Obx(() {
         String userName = AppTexts.admin;
         String userRole = AppTexts.admin;
-        
+
         // Try admin/recruiter first - access observable directly
         if (hasAdminController) {
           try {
@@ -42,14 +42,16 @@ class AppUserProfileSection extends StatelessWidget {
             if (adminProfile != null && adminProfile.name.isNotEmpty) {
               userName = adminProfile.name;
               // Map access level to display role
-              if (adminProfile.accessLevel == AppConstants.accessLevelSuperAdmin) {
+              if (adminProfile.accessLevel ==
+                  AppConstants.accessLevelSuperAdmin) {
                 userRole = AppTexts.admin;
-              } else if (adminProfile.accessLevel == AppConstants.accessLevelRecruiter) {
+              } else if (adminProfile.accessLevel ==
+                  AppConstants.accessLevelRecruiter) {
                 userRole = AppTexts.recruiter;
               } else {
                 userRole = AppTexts.admin;
               }
-              
+
               return _buildProfileWidget(context, isMobile, userName, userRole);
             }
           } catch (e) {
@@ -64,12 +66,19 @@ class AppUserProfileSection extends StatelessWidget {
             // Access observable directly - GetX will track this
             final candidateProfile = profileController.profile.value;
             if (candidateProfile != null) {
-              final fullName = AppCandidateProfileFormatters.getFullName(candidateProfile);
+              final fullName = AppCandidateProfileFormatters.getFullName(
+                candidateProfile,
+              );
               if (fullName.isNotEmpty && fullName != 'N/A') {
                 userName = fullName;
                 userRole = AppTexts.candidate;
-                
-                return _buildProfileWidget(context, isMobile, userName, userRole);
+
+                return _buildProfileWidget(
+                  context,
+                  isMobile,
+                  userName,
+                  userRole,
+                );
               }
             }
           } catch (e) {
@@ -80,7 +89,7 @@ class AppUserProfileSection extends StatelessWidget {
         // Fallback: try to get from auth repository (non-reactive)
         userName = _getFallbackUserName();
         userRole = _getFallbackUserRole();
-        
+
         return _buildProfileWidget(context, isMobile, userName, userRole);
       });
     } else {
@@ -90,7 +99,7 @@ class AppUserProfileSection extends StatelessWidget {
       return _buildProfileWidget(context, isMobile, userName, userRole);
     }
   }
-  
+
   String _getFallbackUserName() {
     // Try to get from auth repository (non-reactive)
     try {
@@ -111,7 +120,7 @@ class AppUserProfileSection extends StatelessWidget {
     }
     return AppTexts.admin;
   }
-  
+
   String _getFallbackUserRole() {
     // Try to get from auth repository (non-reactive)
     try {
@@ -119,7 +128,8 @@ class AppUserProfileSection extends StatelessWidget {
       if (Get.isRegistered<CandidateAuthRepository>()) {
         final authRepo = Get.find<CandidateAuthRepository>();
         currentUser = authRepo.getCurrentUser();
-        if (currentUser != null && currentUser.role == AppConstants.roleCandidate) {
+        if (currentUser != null &&
+            currentUser.role == AppConstants.roleCandidate) {
           return AppTexts.candidate;
         }
       } else if (Get.isRegistered<AdminAuthRepository>()) {
@@ -131,8 +141,13 @@ class AppUserProfileSection extends StatelessWidget {
     }
     return AppTexts.admin;
   }
-  
-  Widget _buildProfileWidget(BuildContext context, bool isMobile, String userName, String userRole) {
+
+  Widget _buildProfileWidget(
+    BuildContext context,
+    bool isMobile,
+    String userName,
+    String userRole,
+  ) {
     if (isMobile) {
       // Mobile: Profile section at bottom of drawer
       return Container(

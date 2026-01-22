@@ -108,27 +108,25 @@ class _AdminCreateDocumentTypeScreenState
                 descriptionError: descriptionError,
               ),
               AppSpacing.vertical(context, 0.03),
-              Obx(
-                () {
-                  final isLoading = controller.isLoading.value;
-                  return AppButton(
-                    text: AppTexts.create,
-                    icon: Iconsax.add,
-                    onPressed: _canSubmit.value && !isLoading
-                        ? () {
-                            if (_validateForm()) {
-                              controller.createDocumentType(
-                                name: titleController.text.trim(),
-                                description: descriptionController.text.trim(),
-                                isRequired: false,
-                              );
-                            }
+              Obx(() {
+                final isLoading = controller.isLoading.value;
+                return AppButton(
+                  text: AppTexts.create,
+                  icon: Iconsax.add,
+                  onPressed: _canSubmit.value && !isLoading
+                      ? () {
+                          if (_validateForm()) {
+                            controller.createDocumentType(
+                              name: titleController.text.trim(),
+                              description: descriptionController.text.trim(),
+                              isRequired: false,
+                            );
                           }
-                        : null,
-                    isLoading: isLoading,
-                  );
-                },
-              ),
+                        }
+                      : null,
+                  isLoading: isLoading,
+                );
+              }),
             ],
           ),
         ),

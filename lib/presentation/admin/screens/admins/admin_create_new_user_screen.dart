@@ -13,7 +13,8 @@ class AdminCreateNewUserScreen extends StatefulWidget {
   const AdminCreateNewUserScreen({super.key});
 
   @override
-  State<AdminCreateNewUserScreen> createState() => _AdminCreateNewUserScreenState();
+  State<AdminCreateNewUserScreen> createState() =>
+      _AdminCreateNewUserScreenState();
 }
 
 class _AdminCreateNewUserScreenState extends State<AdminCreateNewUserScreen> {
@@ -186,9 +187,6 @@ class _AdminCreateNewUserScreenState extends State<AdminCreateNewUserScreen> {
       ),
     );
 
-    return AppAdminLayout(
-      title: AppTexts.createNewUser,
-      child: _cachedForm!,
-    );
+    return AppAdminLayout(title: AppTexts.createNewUser, child: _cachedForm!);
   }
 }

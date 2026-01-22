@@ -37,12 +37,13 @@ class MyApplicationsScreen extends StatelessWidget {
                   );
                   final isDenied =
                       app.status == AppConstants.applicationStatusDenied;
-                  
+
                   // Calculate document completion progress
                   final totalRequired = app.requiredDocumentIds.length;
                   final uploadedCount = app.uploadedDocumentIds.length;
                   final hasRequiredDocs = totalRequired > 0;
-                  final allDocsUploaded = totalRequired > 0 && uploadedCount >= totalRequired;
+                  final allDocsUploaded =
+                      totalRequired > 0 && uploadedCount >= totalRequired;
 
                   return AppListCard(
                     title: job?.title ?? AppTexts.unknownJob,
@@ -58,8 +59,10 @@ class MyApplicationsScreen extends StatelessWidget {
                         if (hasRequiredDocs)
                           Container(
                             padding: EdgeInsets.symmetric(
-                              horizontal: AppResponsive.screenWidth(context) * 0.015,
-                              vertical: AppResponsive.screenHeight(context) * 0.008,
+                              horizontal:
+                                  AppResponsive.screenWidth(context) * 0.015,
+                              vertical:
+                                  AppResponsive.screenHeight(context) * 0.008,
                             ),
                             decoration: BoxDecoration(
                               color: allDocsUploaded
@@ -81,16 +84,24 @@ class MyApplicationsScreen extends StatelessWidget {
                                       ? AppColors.success
                                       : AppColors.warning,
                                 ),
-                                SizedBox(width: AppResponsive.screenWidth(context) * 0.01),
+                                SizedBox(
+                                  width:
+                                      AppResponsive.screenWidth(context) * 0.01,
+                                ),
                                 Text(
                                   '$uploadedCount/$totalRequired documents',
-                                  style: AppTextStyles.bodyText(context).copyWith(
-                                    color: allDocsUploaded
-                                        ? AppColors.success
-                                        : AppColors.warning,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: AppTextStyles.bodyText(context).fontSize! * 0.9,
-                                  ),
+                                  style: AppTextStyles.bodyText(context)
+                                      .copyWith(
+                                        color: allDocsUploaded
+                                            ? AppColors.success
+                                            : AppColors.warning,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize:
+                                            AppTextStyles.bodyText(
+                                              context,
+                                            ).fontSize! *
+                                            0.9,
+                                      ),
                                 ),
                               ],
                             ),
