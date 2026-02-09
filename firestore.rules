@@ -124,6 +124,10 @@ service cloud.firestore {
                        request.resource.data.candidateId == getUserId() &&
                        request.resource.data.keys().hasAll(['candidateId', 'jobId', 'status', 'appliedAt']);
       
+      // Candidates can update their own applications (e.g. uploadedDocumentIds when uploading documents)
+      allow update: if isAuthenticated() && 
+                       resource.data.candidateId == getUserId();
+      
       // Candidates can delete their own applications
       allow delete: if isAuthenticated() && 
                        resource.data.candidateId == getUserId();

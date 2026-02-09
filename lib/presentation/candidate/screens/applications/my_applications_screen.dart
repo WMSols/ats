@@ -11,8 +11,24 @@ import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
 
-class MyApplicationsScreen extends StatelessWidget {
+class MyApplicationsScreen extends StatefulWidget {
   const MyApplicationsScreen({super.key});
+
+  @override
+  State<MyApplicationsScreen> createState() => _MyApplicationsScreenState();
+}
+
+class _MyApplicationsScreenState extends State<MyApplicationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Refresh applications when screen is displayed to ensure document upload
+    // count is up-to-date (ApplicationsController may not have been initialized
+    // when user uploaded from Documents screen first)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.find<ApplicationsController>().loadApplications();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

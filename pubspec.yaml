@@ -112,21 +112,21 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: Poppins
+    - family: Raleway
       fonts:
-        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Raleway-Regular.ttf
           weight: 400
-        - asset: assets/fonts/Poppins-Medium.ttf
+        - asset: assets/fonts/Raleway-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Poppins-Bold.ttf
+        - asset: assets/fonts/Raleway-Bold.ttf
           weight: 700
-    - family: Inter
+    - family: OpenSans
       fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/OpenSans-Regular.ttf
           weight: 400
-        - asset: assets/fonts/Inter-Medium.ttf
+        - asset: assets/fonts/OpenSans-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Inter-Bold.ttf
+        - asset: assets/fonts/OpenSans-Bold.ttf
           weight: 700
   # fonts:
   #   - family: Schyler

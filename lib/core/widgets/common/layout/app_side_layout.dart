@@ -183,7 +183,7 @@ class _AppSideLayoutState extends State<AppSideLayout> {
             padding: AppSpacing.all(context, factor: 1.5),
             child: Image.asset(
               AppImages.appLogo,
-              height: AppResponsive.screenHeight(context) * 0.06,
+              height: AppResponsive.screenHeight(context) * 0.1,
               fit: BoxFit.contain,
             ),
           ),
@@ -205,7 +205,7 @@ class _AppSideLayoutState extends State<AppSideLayout> {
             padding: AppSpacing.all(context, factor: 1.5),
             child: Image.asset(
               AppImages.appLogo,
-              height: AppResponsive.screenHeight(context) * 0.06,
+              height: AppResponsive.screenHeight(context) * 0.1,
               fit: BoxFit.contain,
             ),
           ),

@@ -31,10 +31,48 @@ class CandidateDashboardController extends GetxController {
   StreamSubscription? _jobsSubscription;
   StreamSubscription? _allDocumentsSubscription;
 
+  /// Tracks last synced userId to avoid re-syncing for same user, and to
+  /// run sync again when a different user logs in (backfill for applications
+  /// that had empty uploadedDocumentIds before Firestore rules fix)
+  static String? _lastSyncedUserId;
+
   @override
   void onInit() {
     super.onInit();
     loadStats();
+    _syncUploadedDocumentIdsForApplications();
+  }
+
+  /// Backfills uploadedDocumentIds on applications based on documents the
+  /// candidate has already uploaded. Fixes applications that had empty
+  /// uploadedDocumentIds before the Firestore rules were updated.
+  Future<void> _syncUploadedDocumentIdsForApplications() async {
+    final currentUser = authRepository.getCurrentUser();
+    if (currentUser == null) return;
+    if (_lastSyncedUserId == currentUser.userId) return;
+
+    _lastSyncedUserId = currentUser.userId;
+
+    final docsResult =
+        await documentRepository.getCandidateDocuments(currentUser.userId);
+    docsResult.fold(
+      (_) {},
+      (documents) {
+        // Get unique docTypeIds (exclude user-added docs which have empty docTypeId)
+        final uploadedDocTypeIds = documents
+            .where((doc) => doc.docTypeId.isNotEmpty)
+            .map((doc) => doc.docTypeId)
+            .toSet();
+
+        for (final docTypeId in uploadedDocTypeIds) {
+          applicationRepository.updateApplicationsForDocument(
+            candidateId: currentUser.userId,
+            docTypeId: docTypeId,
+            isUploaded: true,
+          );
+        }
+      },
+    );
   }
 
   @override
