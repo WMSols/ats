@@ -352,19 +352,24 @@ class DocumentsController extends GetxController {
           if (docTypeId.isNotEmpty) {
             final currentUser = authRepository.getCurrentUser();
             if (currentUser != null) {
-              await applicationRepository.updateApplicationsForDocument(
+              final updateResult =
+                  await applicationRepository.updateApplicationsForDocument(
                 candidateId: currentUser.userId,
                 docTypeId: docTypeId,
                 isUploaded: true,
+              );
+              updateResult.fold(
+                (failure) => AppSnackbar.error(
+                  'Document uploaded but failed to update application: ${failure.message}',
+                ),
+                (_) {},
               );
             }
           }
 
           AppSnackbar.success('Document uploaded successfully');
-          // Navigate back if we're on upload screen
-          if (Get.currentRoute.contains('upload')) {
-            Get.back();
-          }
+          // Navigate to MyDocumentsScreen after successful upload
+          Get.offNamed(AppConstants.routeCandidateDocuments);
         },
       );
     } catch (e) {
@@ -456,10 +461,17 @@ class DocumentsController extends GetxController {
         if (docTypeId.isNotEmpty) {
           final currentUser = authRepository.getCurrentUser();
           if (currentUser != null) {
-            await applicationRepository.updateApplicationsForDocument(
+            final updateResult =
+                await applicationRepository.updateApplicationsForDocument(
               candidateId: currentUser.userId,
               docTypeId: docTypeId,
               isUploaded: true,
+            );
+            updateResult.fold(
+              (failure) => AppSnackbar.error(
+                'Document uploaded but failed to update application: ${failure.message}',
+              ),
+              (_) {},
             );
           }
         }
@@ -469,8 +481,8 @@ class DocumentsController extends GetxController {
         Future.delayed(const Duration(seconds: 2), () {
           uploadProgress.value = 0.0;
         });
-        // Navigate back to documents screen after successful upload
-        Get.back();
+        // Navigate to MyDocumentsScreen after successful upload
+        Get.offNamed(AppConstants.routeCandidateDocuments);
       },
     );
   }
@@ -546,10 +558,17 @@ class DocumentsController extends GetxController {
           if (docTypeId.isNotEmpty) {
             final currentUser = authRepository.getCurrentUser();
             if (currentUser != null) {
-              await applicationRepository.updateApplicationsForDocument(
+              final updateResult =
+                  await applicationRepository.updateApplicationsForDocument(
                 candidateId: currentUser.userId,
                 docTypeId: docTypeId,
                 isUploaded: false,
+              );
+              updateResult.fold(
+                (failure) => AppSnackbar.error(
+                  'Document deleted but failed to update application: ${failure.message}',
+                ),
+                (_) {},
               );
             }
           }

@@ -9,10 +9,10 @@ class AppAuthLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logoSize = AppResponsive.isDesktop(context)
-        ? 200.0
+        ? 280.0
         : AppResponsive.isTablet(context)
-        ? 180.0
-        : 160.0;
+        ? 260.0
+        : 240.0;
 
     return Center(
       child: Image.asset(
