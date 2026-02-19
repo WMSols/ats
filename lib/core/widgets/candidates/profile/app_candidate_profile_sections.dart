@@ -6,6 +6,7 @@ import 'package:ats/domain/entities/candidate_profile_entity.dart';
 import 'package:ats/core/widgets/candidates/components/app_candidate_agent_dropdown.dart';
 import 'package:ats/core/widgets/candidates/profile/app_candidate_profile_formatters.dart';
 import 'package:ats/core/widgets/candidates/profile/app_candidate_profile_data_row.dart';
+import 'package:ats/core/widgets/candidates/profile/app_admin_resume_section.dart';
 
 class AppCandidateProfileSections {
   AppCandidateProfileSections._();
@@ -42,6 +43,7 @@ class AppCandidateProfileSections {
     rows.addAll(
       _buildStatisticsSection(context, documentsCount, applicationsCount),
     );
+    rows.addAll(AppAdminResumeSection.buildRows(context, profile));
     rows.addAll(
       _buildAgentAssignmentSection(
         context,

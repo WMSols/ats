@@ -53,26 +53,24 @@ class CandidateDashboardController extends GetxController {
 
     _lastSyncedUserId = currentUser.userId;
 
-    final docsResult =
-        await documentRepository.getCandidateDocuments(currentUser.userId);
-    docsResult.fold(
-      (_) {},
-      (documents) {
-        // Get unique docTypeIds (exclude user-added docs which have empty docTypeId)
-        final uploadedDocTypeIds = documents
-            .where((doc) => doc.docTypeId.isNotEmpty)
-            .map((doc) => doc.docTypeId)
-            .toSet();
-
-        for (final docTypeId in uploadedDocTypeIds) {
-          applicationRepository.updateApplicationsForDocument(
-            candidateId: currentUser.userId,
-            docTypeId: docTypeId,
-            isUploaded: true,
-          );
-        }
-      },
+    final docsResult = await documentRepository.getCandidateDocuments(
+      currentUser.userId,
     );
+    docsResult.fold((_) {}, (documents) {
+      // Get unique docTypeIds (exclude user-added docs which have empty docTypeId)
+      final uploadedDocTypeIds = documents
+          .where((doc) => doc.docTypeId.isNotEmpty)
+          .map((doc) => doc.docTypeId)
+          .toSet();
+
+      for (final docTypeId in uploadedDocTypeIds) {
+        applicationRepository.updateApplicationsForDocument(
+          candidateId: currentUser.userId,
+          docTypeId: docTypeId,
+          isUploaded: true,
+        );
+      }
+    });
   }
 
   @override

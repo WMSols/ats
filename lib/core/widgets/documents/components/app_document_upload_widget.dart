@@ -135,7 +135,7 @@ class AppDocumentUploadWidget extends StatelessWidget {
               AppButton(
                 text: isUploading
                     ? AppTexts.uploading
-                    :  AppTexts.selectDocument,
+                    : AppTexts.selectDocument,
                 icon: isUploading
                     ? Iconsax.refresh
                     : hasFile

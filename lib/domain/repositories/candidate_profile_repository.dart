@@ -54,6 +54,9 @@ abstract class CandidateProfileRepository {
     String? npi,
     List<Map<String, dynamic>>? education,
     List<Map<String, dynamic>>? certifications,
+    String? resumeUrl,
+    String? resumeFileName,
+    DateTime? resumeUploadedAt,
   });
 
   Future<Either<Failure, CandidateProfileEntity>> getProfile(String userId);

@@ -12,6 +12,7 @@ class AppConstants {
 
   // Storage Paths
   static const String documentsStoragePath = 'documents';
+  static const String resumesStoragePath = 'resumes';
 
   // User Roles
   static const String roleCandidate = 'candidate';

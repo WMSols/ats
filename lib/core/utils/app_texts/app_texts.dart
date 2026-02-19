@@ -35,6 +35,14 @@ class AppTexts {
 
   // Profile
   static const String saveProfile = "Save Profile";
+  static const String profileIncompleteMessage =
+      "Please complete all required fields including work history and resume.";
+  static const String resume = "Resume";
+  static const String uploadResume = "Upload Resume";
+  static const String viewCurrentResume = "View Current Resume";
+  static const String replaceResume = "Replace";
+  static const String deleteResume = "Delete Resume";
+  static const String resumeFormatsHint = "PDF, DOCX or JPEG, max 5MB";
   static const String profileSaved = "Profile saved successfully";
   static const String phone = "Phone";
   static const String address = "Address";
@@ -313,6 +321,9 @@ class AppTexts {
       "Document preview not available. Please download or open in browser.";
   static const String documentTypeNotSupported =
       "This document type is not supported for preview. Please download to view.";
+  static const String downloadPreview = "Download / Preview";
+  static const String openingInNewTab = "Opening in new tab...";
+  static const String notUploaded = "Not uploaded";
   static const String failedToLoadImage = "Failed to load image";
   static const String failedToLoadDocument = "Failed to load document";
 

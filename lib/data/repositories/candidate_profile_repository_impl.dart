@@ -4,6 +4,7 @@ import 'package:ats/domain/entities/candidate_profile_entity.dart';
 import 'package:ats/domain/repositories/candidate_profile_repository.dart';
 import 'package:ats/data/data_sources/firestore_data_source.dart';
 import 'package:ats/data/models/candidate_profile_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 
 class CandidateProfileRepositoryImpl implements CandidateProfileRepository {
@@ -79,6 +80,11 @@ class CandidateProfileRepositoryImpl implements CandidateProfileRepository {
       npi: data['npi'] as String?,
       education: _parseListOfMaps(data['education']),
       certifications: _parseListOfMaps(data['certifications']),
+      resumeUrl: data['resumeUrl'] as String?,
+      resumeFileName: data['resumeFileName'] as String?,
+      resumeUploadedAt: (data['resumeUploadedAt'] is Timestamp)
+          ? (data['resumeUploadedAt'] as Timestamp).toDate()
+          : data['resumeUploadedAt'] as DateTime?,
     );
   }
 
@@ -215,6 +221,9 @@ class CandidateProfileRepositoryImpl implements CandidateProfileRepository {
     String? npi,
     List<Map<String, dynamic>>? education,
     List<Map<String, dynamic>>? certifications,
+    String? resumeUrl,
+    String? resumeFileName,
+    DateTime? resumeUploadedAt,
   }) async {
     try {
       final updateData = <String, dynamic>{};
@@ -278,6 +287,22 @@ class CandidateProfileRepositoryImpl implements CandidateProfileRepository {
       if (npi != null) updateData['npi'] = npi.isEmpty ? null : npi;
       if (education != null) updateData['education'] = education;
       if (certifications != null) updateData['certifications'] = certifications;
+      if (resumeUrl != null) {
+        updateData['resumeUrl'] = resumeUrl.isEmpty
+            ? FieldValue.delete()
+            : resumeUrl;
+      }
+      if (resumeFileName != null) {
+        updateData['resumeFileName'] = resumeFileName.isEmpty
+            ? FieldValue.delete()
+            : resumeFileName;
+      }
+      if (resumeUploadedAt != null) {
+        updateData['resumeUploadedAt'] = resumeUploadedAt;
+      }
+      if (resumeUrl == '') {
+        updateData['resumeUploadedAt'] = FieldValue.delete();
+      }
 
       await firestoreDataSource.updateCandidateProfile(
         profileId: profileId,

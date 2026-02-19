@@ -7,6 +7,7 @@ export 'sections/licensure_section.dart';
 export 'sections/education_section.dart';
 export 'sections/certifications_section.dart';
 export 'sections/work_history_section_widget.dart';
+export 'sections/resume_section.dart';
 
 // Profile form widgets
 export 'form/candidate_profile_form.dart';

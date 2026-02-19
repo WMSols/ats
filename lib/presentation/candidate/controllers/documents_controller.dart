@@ -352,12 +352,12 @@ class DocumentsController extends GetxController {
           if (docTypeId.isNotEmpty) {
             final currentUser = authRepository.getCurrentUser();
             if (currentUser != null) {
-              final updateResult =
-                  await applicationRepository.updateApplicationsForDocument(
-                candidateId: currentUser.userId,
-                docTypeId: docTypeId,
-                isUploaded: true,
-              );
+              final updateResult = await applicationRepository
+                  .updateApplicationsForDocument(
+                    candidateId: currentUser.userId,
+                    docTypeId: docTypeId,
+                    isUploaded: true,
+                  );
               updateResult.fold(
                 (failure) => AppSnackbar.error(
                   'Document uploaded but failed to update application: ${failure.message}',
@@ -461,12 +461,12 @@ class DocumentsController extends GetxController {
         if (docTypeId.isNotEmpty) {
           final currentUser = authRepository.getCurrentUser();
           if (currentUser != null) {
-            final updateResult =
-                await applicationRepository.updateApplicationsForDocument(
-              candidateId: currentUser.userId,
-              docTypeId: docTypeId,
-              isUploaded: true,
-            );
+            final updateResult = await applicationRepository
+                .updateApplicationsForDocument(
+                  candidateId: currentUser.userId,
+                  docTypeId: docTypeId,
+                  isUploaded: true,
+                );
             updateResult.fold(
               (failure) => AppSnackbar.error(
                 'Document uploaded but failed to update application: ${failure.message}',
@@ -558,12 +558,12 @@ class DocumentsController extends GetxController {
           if (docTypeId.isNotEmpty) {
             final currentUser = authRepository.getCurrentUser();
             if (currentUser != null) {
-              final updateResult =
-                  await applicationRepository.updateApplicationsForDocument(
-                candidateId: currentUser.userId,
-                docTypeId: docTypeId,
-                isUploaded: false,
-              );
+              final updateResult = await applicationRepository
+                  .updateApplicationsForDocument(
+                    candidateId: currentUser.userId,
+                    docTypeId: docTypeId,
+                    isUploaded: false,
+                  );
               updateResult.fold(
                 (failure) => AppSnackbar.error(
                   'Document deleted but failed to update application: ${failure.message}',

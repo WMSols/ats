@@ -24,6 +24,7 @@ import 'package:ats/presentation/candidate/controllers/candidate_dashboard_contr
 import 'package:ats/presentation/candidate/controllers/profile_controller.dart';
 import 'package:ats/presentation/candidate/controllers/jobs_controller.dart';
 import 'package:ats/presentation/candidate/controllers/documents_controller.dart';
+import 'package:ats/presentation/candidate/controllers/resume_controller.dart';
 import 'package:ats/presentation/candidate/controllers/applications_controller.dart';
 
 class CandidateBindings extends Bindings {
@@ -94,6 +95,9 @@ class CandidateBindings extends Bindings {
     Get.lazyPut(
       () =>
           DocumentsController(documentRepo, candidateAuthRepo, applicationRepo),
+    );
+    Get.lazyPut(
+      () => ResumeController(profileRepo, candidateAuthRepo, storageDataSource),
     );
     Get.lazyPut(
       () => ApplicationsController(applicationRepo, candidateAuthRepo),

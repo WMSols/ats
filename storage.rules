@@ -41,6 +41,13 @@ service firebase.storage {
       allow delete: if isAuthenticated() && isAdmin();
     }
     
+    // Resume storage path: resumes/{candidateId}/{fileName}
+    // Only candidate can upload, replace, and delete. Admin/Recruiter can only view/download.
+    match /resumes/{candidateId}/{fileName} {
+      allow read: if isAuthenticated() && (isCandidate(candidateId) || isAdmin());
+      allow write, delete: if isAuthenticated() && isCandidate(candidateId);
+    }
+    
     // Deny all other paths
     match /{allPaths=**} {
       allow read, write: if false;

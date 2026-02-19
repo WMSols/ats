@@ -15,6 +15,20 @@ class AppFileValidator {
     'image/jpeg',
   ];
 
+  // Resume: max 5MB, PDF, DOCX, JPEG only
+  static const int maxResumeFileSizeBytes = 5 * 1024 * 1024;
+  static const List<String> allowedResumeExtensions = [
+    'pdf',
+    'docx',
+    'jpg',
+    'jpeg',
+  ];
+  static const List<String> allowedResumeMimeTypes = [
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'image/jpeg',
+  ];
+
   /// Validates a file from file picker
   /// Returns null if valid, error message if invalid
   static String? validateFile(PlatformFile file) {
@@ -52,6 +66,33 @@ class AppFileValidator {
       }
     }
 
+    return null;
+  }
+
+  /// Validates a resume file (PDF, DOCX, JPEG; max 5MB).
+  /// Returns null if valid, error message if invalid.
+  static String? validateResumeFile(PlatformFile file) {
+    if (file.bytes == null && file.path == null) {
+      return 'File is invalid or corrupted';
+    }
+    final fileSize = file.size;
+    if (fileSize == 0) return 'File is empty';
+    if (fileSize > maxResumeFileSizeBytes) {
+      return 'Resume must be 5MB or smaller';
+    }
+    final extension = _getFileExtension(file.name);
+    if (extension == null || extension.isEmpty) {
+      return 'File must have a valid extension';
+    }
+    if (!allowedResumeExtensions.contains(extension.toLowerCase())) {
+      return 'Resume must be PDF, DOCX, or JPEG';
+    }
+    if (file.extension != null) {
+      final mimeType = _getResumeMimeTypeFromExtension(file.extension!);
+      if (mimeType != null && !allowedResumeMimeTypes.contains(mimeType)) {
+        return 'Resume must be PDF, DOCX, or JPEG';
+      }
+    }
     return null;
   }
 
@@ -115,6 +156,27 @@ class AppFileValidator {
     switch (ext) {
       case 'pdf':
         return 'application/pdf';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      default:
+        return null;
+    }
+  }
+
+  /// Returns MIME type for resume-allowed extensions (for storage upload).
+  static String? getResumeMimeType(String extension) {
+    return _getResumeMimeTypeFromExtension(extension);
+  }
+
+  /// Gets MIME type for resume-allowed extensions (includes DOCX)
+  static String? _getResumeMimeTypeFromExtension(String extension) {
+    final ext = extension.toLowerCase();
+    switch (ext) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'docx':
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       case 'jpg':
       case 'jpeg':
         return 'image/jpeg';

@@ -41,6 +41,16 @@
     flt-glass-pane, flt-scene-host {
       touch-action: auto;
     }
+    /* Hide file input created by file_picker on web (fixes iOS Safari black dot) */
+    input[type="file"] {
+      position: absolute !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      clip: rect(0, 0, 0, 0) !important;
+      overflow: hidden !important;
+    }
   </style>
 </head>
 <body>
