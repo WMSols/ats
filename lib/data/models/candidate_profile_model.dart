@@ -28,6 +28,9 @@ class CandidateProfileModel extends CandidateProfileEntity {
     super.npi,
     super.education,
     super.certifications,
+    super.resumeUrl,
+    super.resumeFileName,
+    super.resumeUploadedAt,
   });
 
   factory CandidateProfileModel.fromFirestore(DocumentSnapshot doc) {
@@ -66,6 +69,9 @@ class CandidateProfileModel extends CandidateProfileEntity {
       certifications: data['certifications'] != null
           ? List<Map<String, dynamic>>.from(data['certifications'])
           : null,
+      resumeUrl: data['resumeUrl'] as String?,
+      resumeFileName: data['resumeFileName'] as String?,
+      resumeUploadedAt: (data['resumeUploadedAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -96,6 +102,9 @@ class CandidateProfileModel extends CandidateProfileEntity {
       if (npi != null) 'npi': npi,
       if (education != null) 'education': education,
       if (certifications != null) 'certifications': certifications,
+      if (resumeUrl != null) 'resumeUrl': resumeUrl,
+      if (resumeFileName != null) 'resumeFileName': resumeFileName,
+      if (resumeUploadedAt != null) 'resumeUploadedAt': resumeUploadedAt,
     };
   }
 
@@ -126,6 +135,9 @@ class CandidateProfileModel extends CandidateProfileEntity {
       npi: npi,
       education: education,
       certifications: certifications,
+      resumeUrl: resumeUrl,
+      resumeFileName: resumeFileName,
+      resumeUploadedAt: resumeUploadedAt,
     );
   }
 }

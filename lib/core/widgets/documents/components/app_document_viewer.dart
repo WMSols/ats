@@ -36,14 +36,30 @@ class AppDocumentViewer extends StatefulWidget {
   State<AppDocumentViewer> createState() => _AppDocumentViewerState();
 }
 
+/// File extensions that can be viewed in an iframe (PDF, images).
+const Set<String> _viewableInIframeExtensions = {
+  'pdf',
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'webp',
+};
+
 class _AppDocumentViewerState extends State<AppDocumentViewer> {
   String? _iframeViewId;
   bool _uiWebAvailable = false;
 
+  static bool _isViewableInIframe(String? documentName) {
+    if (documentName == null || documentName.isEmpty) return true;
+    final ext = documentName.split('.').last.toLowerCase();
+    return _viewableInIframeExtensions.contains(ext);
+  }
+
   @override
   void initState() {
     super.initState();
-    if (kIsWeb) {
+    if (kIsWeb && _isViewableInIframe(widget.documentName)) {
       _createIframe();
     }
   }
@@ -54,7 +70,6 @@ class _AppDocumentViewerState extends State<AppDocumentViewer> {
     _iframeViewId = 'pdf-viewer-${DateTime.now().millisecondsSinceEpoch}';
 
     try {
-      // Try to register with ui_web
       ui_web.platformViewRegistry.registerViewFactory(_iframeViewId!, (
         int viewId,
       ) {
@@ -68,7 +83,6 @@ class _AppDocumentViewerState extends State<AppDocumentViewer> {
       });
       _uiWebAvailable = true;
     } catch (e) {
-      // ui_web not available (WebAssembly)
       _uiWebAvailable = false;
       _iframeViewId = null;
     }
@@ -119,8 +133,8 @@ class _AppDocumentViewerState extends State<AppDocumentViewer> {
               ],
             ),
             AppSpacing.vertical(context, 0.02),
-            // PDF content
-            Expanded(child: _buildPdfViewer(context)),
+            // Document content (iframe for PDF/images; open/download for DOCX etc.)
+            Expanded(child: _buildContentView(context)),
             AppSpacing.vertical(context, 0.02),
             // Footer actions
             Wrap(
@@ -167,38 +181,17 @@ class _AppDocumentViewerState extends State<AppDocumentViewer> {
     );
   }
 
-  Widget _buildPdfViewer(BuildContext context) {
-    if (!kIsWeb) {
-      // For mobile, show option to open in browser
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Iconsax.document_text,
-              size: AppResponsive.iconSize(context) * 3,
-              color: AppColors.primary,
-            ),
-            AppSpacing.vertical(context, 0.02),
-            Text(
-              AppTexts.pdfViewerNotAvailable,
-              style: AppTextStyles.bodyText(
-                context,
-              ).copyWith(color: AppColors.white),
-              textAlign: TextAlign.center,
-            ),
-            AppSpacing.vertical(context, 0.02),
-            ElevatedButton.icon(
-              onPressed: () => _openInNewTab(widget.documentUrl),
-              icon: Icon(Iconsax.export),
-              label: Text(AppTexts.openInBrowser),
-            ),
-          ],
-        ),
-      );
+  Widget _buildContentView(BuildContext context) {
+    // DOCX and other non-iframe types: show open/download options
+    if (kIsWeb && !_isViewableInIframe(widget.documentName)) {
+      return _buildOpenDownloadPlaceholder(context);
     }
 
-    // For web: show PDF in iframe if ui_web is available
+    if (!kIsWeb) {
+      return _buildMobilePlaceholder(context);
+    }
+
+    // Web: show PDF/image in iframe if ui_web is available
     if (_uiWebAvailable && _iframeViewId != null) {
       return Container(
         decoration: BoxDecoration(
@@ -218,6 +211,114 @@ class _AppDocumentViewerState extends State<AppDocumentViewer> {
       _openInNewTab(widget.documentUrl);
     });
 
+    return _buildOpeningPlaceholder(context);
+  }
+
+  Widget _buildOpenDownloadPlaceholder(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppResponsive.radius(context)),
+        border: Border.all(color: AppColors.grey.withValues(alpha: 0.3)),
+      ),
+      child: Center(
+        child: Padding(
+          padding: AppSpacing.all(context, factor: 1.5),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Iconsax.document_text,
+                size: AppResponsive.iconSize(context) * 3,
+                color: AppColors.primary,
+              ),
+              AppSpacing.vertical(context, 0.02),
+              Text(
+                AppTexts.documentTypeNotSupported,
+                style: AppTextStyles.bodyText(
+                  context,
+                ).copyWith(color: AppColors.black, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
+              ),
+              AppSpacing.vertical(context, 0.03),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  TextButton.icon(
+                    onPressed: () => _openInNewTab(widget.documentUrl),
+                    icon: Icon(
+                      Iconsax.export,
+                      size: AppResponsive.iconSize(context),
+                      color: AppColors.primary,
+                    ),
+                    label: Text(
+                      AppTexts.openInNewTab,
+                      style: AppTextStyles.bodyText(
+                        context,
+                      ).copyWith(color: AppColors.primary),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => _downloadDocument(
+                      widget.documentUrl,
+                      widget.documentName,
+                    ),
+                    icon: Icon(
+                      Iconsax.document_download,
+                      size: AppResponsive.iconSize(context),
+                      color: AppColors.primary,
+                    ),
+                    label: Text(
+                      AppTexts.download,
+                      style: AppTextStyles.bodyText(
+                        context,
+                      ).copyWith(color: AppColors.primary),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobilePlaceholder(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Iconsax.document_text,
+            size: AppResponsive.iconSize(context) * 3,
+            color: AppColors.primary,
+          ),
+          AppSpacing.vertical(context, 0.02),
+          Text(
+            AppTexts.pdfViewerNotAvailable,
+            style: AppTextStyles.bodyText(
+              context,
+            ).copyWith(color: AppColors.white),
+            textAlign: TextAlign.center,
+          ),
+          AppSpacing.vertical(context, 0.02),
+          ElevatedButton.icon(
+            onPressed: () => _openInNewTab(widget.documentUrl),
+            icon: Icon(Iconsax.export, size: AppResponsive.iconSize(context)),
+            label: Text(
+              AppTexts.openInBrowser,
+              style: AppTextStyles.bodyText(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOpeningPlaceholder(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -228,11 +329,17 @@ class _AppDocumentViewerState extends State<AppDocumentViewer> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Iconsax.document_text, size: 48, color: AppColors.primary),
-            const SizedBox(height: 16),
+            Icon(
+              Iconsax.document_text,
+              size: AppResponsive.iconSize(context) * 2,
+              color: AppColors.primary,
+            ),
+            AppSpacing.vertical(context, 0.02),
             Text(
-              'Opening PDF in new tab...',
-              style: TextStyle(color: AppColors.black, fontSize: 16),
+              AppTexts.openingInNewTab,
+              style: AppTextStyles.bodyText(
+                context,
+              ).copyWith(color: AppColors.black),
               textAlign: TextAlign.center,
             ),
           ],

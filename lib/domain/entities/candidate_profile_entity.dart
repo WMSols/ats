@@ -27,6 +27,15 @@ class CandidateProfileEntity {
   final List<Map<String, dynamic>>? education;
   final List<Map<String, dynamic>>? certifications;
 
+  /// Resume file URL (download URL from storage). Null if no resume uploaded.
+  final String? resumeUrl;
+
+  /// Display name of the resume file.
+  final String? resumeFileName;
+
+  /// When the resume was uploaded.
+  final DateTime? resumeUploadedAt;
+
   CandidateProfileEntity({
     required this.profileId,
     required this.userId,
@@ -53,5 +62,8 @@ class CandidateProfileEntity {
     this.npi,
     this.education,
     this.certifications,
+    this.resumeUrl,
+    this.resumeFileName,
+    this.resumeUploadedAt,
   });
 }

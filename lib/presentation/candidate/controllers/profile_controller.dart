@@ -9,6 +9,7 @@ import 'package:ats/domain/repositories/candidate_profile_repository.dart';
 import 'package:ats/domain/entities/candidate_profile_entity.dart';
 import 'package:ats/domain/usecases/candidate_profile/create_profile_usecase.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
+import 'package:ats/presentation/candidate/controllers/resume_controller.dart';
 
 class ProfileController extends GetxController {
   final CandidateProfileRepository profileRepository;
@@ -467,6 +468,22 @@ class ProfileController extends GetxController {
       }
     }
 
+    // Resume is required (saved on profile or pending upload)
+    String? effectiveResumeUrl = currentProfile.resumeUrl;
+    try {
+      final resumeController = Get.find<ResumeController>();
+      if (resumeController.pendingResumeDelete.value) {
+        return false;
+      }
+      effectiveResumeUrl = resumeController.pendingResumeUrl.value ??
+          currentProfile.resumeUrl;
+    } catch (_) {
+      // ResumeController not available, use profile only
+    }
+    if (effectiveResumeUrl == null || effectiveResumeUrl.trim().isEmpty) {
+      return false;
+    }
+
     return true;
   }
 
@@ -585,23 +602,31 @@ class ProfileController extends GetxController {
         errorMessage.value = failure.message;
         isLoading.value = false;
       },
-      (profileData) {
-        // Update profile value - this will trigger stream update
+      (profileData) async {
         profile.value = profileData;
         isLoading.value = false;
+
+        // Apply pending resume (upload or delete) when user tapped Save Profile
+        try {
+          final resumeController = Get.find<ResumeController>();
+          await resumeController.applyPendingToProfile(
+            profileData.profileId,
+            currentResumeUrlToDelete: existingProfile?.resumeUrl,
+          );
+          // applyPendingToProfile already updates profile.value when it applies resume
+        } catch (_) {
+          // ResumeController not available
+        }
 
         // Verify profile is complete before navigating
         if (isProfileCompleted()) {
           AppSnackbar.success('Profile saved successfully');
-          // Use a small delay to ensure the profile stream has updated
           Future.delayed(const Duration(milliseconds: 300), () {
             Get.offNamed(AppConstants.routeCandidateDashboard);
           });
         } else {
-          // Profile saved but not complete - show message and stay on profile screen
           AppSnackbar.show(
-            message:
-                'Please complete all required fields including work history',
+            message: AppTexts.profileIncompleteMessage,
             duration: const Duration(seconds: 3),
           );
         }
