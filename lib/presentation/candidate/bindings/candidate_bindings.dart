@@ -61,7 +61,9 @@ class CandidateBindings extends Bindings {
     );
 
     // Register repositories
-    Get.lazyPut<CandidateAuthRepository>(() => candidateAuthRepo);
+    // Use put instead of lazyPut to ensure immediate availability
+    // This fixes issues with navigation after profile completion
+    Get.put<CandidateAuthRepository>(candidateAuthRepo, permanent: true);
     Get.lazyPut<CandidateProfileRepository>(() => profileRepo);
     Get.lazyPut<JobRepository>(() => jobRepo);
     Get.lazyPut<DocumentRepository>(() => documentRepo);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:ats/presentation/candidate/controllers/profile_controller.dart';
 import 'package:ats/core/widgets/profile/profile.dart';
 
@@ -48,6 +49,29 @@ class ProfileFormState {
 
   ProfileFormState(this.controller) {
     _initializeControllers();
+    // For new users after signup, try to load email from arguments
+    // This is needed because the profile stream may not have data yet
+    _loadSignupEmail();
+  }
+
+  /// Load email from signup arguments for new users
+  void _loadSignupEmail() {
+    // If email is already set, don't override
+    if (emailController.text.trim().isNotEmpty) return;
+    
+    // Try to get from auth first
+    final currentUser = controller.authRepository.getCurrentUser();
+    String userEmail = (currentUser?.email ?? '').trim();
+    
+    // If not available from auth, try signup arguments
+    if (userEmail.isEmpty) {
+      final args = Get.arguments as Map<String, dynamic>?;
+      userEmail = (args?['signupEmail'] as String?)?.trim() ?? '';
+    }
+    
+    if (userEmail.isNotEmpty) {
+      emailController.text = userEmail;
+    }
   }
 
   void _initializeControllers() {
@@ -55,9 +79,14 @@ class ProfileFormState {
     middleNameController = TextEditingController();
     lastNameController = TextEditingController();
 
-    // Get email from current user account (unchangeable)
+    // Get email from current user account (unchangeable).
+    // After signup, use passed signupEmail if auth not yet propagated (avoids empty email).
     final currentUser = controller.authRepository.getCurrentUser();
-    final userEmail = currentUser?.email ?? '';
+    String userEmail = (currentUser?.email ?? '').trim();
+    if (userEmail.isEmpty) {
+      final args = Get.arguments as Map<String, dynamic>?;
+      userEmail = (args?['signupEmail'] as String?)?.trim() ?? '';
+    }
     emailController = TextEditingController(text: userEmail);
 
     address1Controller = TextEditingController();
@@ -81,11 +110,20 @@ class ProfileFormState {
     middleNameController.text = profile.middleName ?? '';
     lastNameController.text = profile.lastName ?? '';
 
-    // Email is always from user account, don't override it
-    // Only set if empty (shouldn't happen, but just in case)
-    if (emailController.text.isEmpty) {
+    // Email is always from user account, don't override it.
+    // Only set if empty (e.g. after signup when auth not yet propagated).
+    if (emailController.text.trim().isEmpty) {
       final currentUser = controller.authRepository.getCurrentUser();
-      emailController.text = currentUser?.email ?? '';
+      final fromAuth = (currentUser?.email ?? '').trim();
+      if (fromAuth.isNotEmpty) {
+        emailController.text = fromAuth;
+      } else {
+        final args = Get.arguments as Map<String, dynamic>?;
+        final signupEmail = (args?['signupEmail'] as String?)?.trim();
+        if (signupEmail != null && signupEmail.isNotEmpty) {
+          emailController.text = signupEmail;
+        }
+      }
     }
 
     // Password field should show masked placeholder (read-only for candidate)

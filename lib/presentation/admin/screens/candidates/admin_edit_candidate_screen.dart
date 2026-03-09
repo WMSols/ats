@@ -135,6 +135,8 @@ class _AdminEditCandidateScreenState extends State<AdminEditCandidateScreen> {
                 passwordController: passwordController,
                 emailEnabled: false, // Email is disabled in admin edit
                 passwordEnabled: false, // Password is disabled in admin edit
+                showEmailField: true, // Show email field for admin
+                showPasswordField: true, // Show password field for admin
                 address1Controller: formState.address1Controller,
                 address2Controller: formState.address2Controller,
                 cityController: formState.cityController,

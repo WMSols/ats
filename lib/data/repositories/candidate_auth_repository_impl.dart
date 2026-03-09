@@ -40,6 +40,9 @@ class CandidateAuthRepositoryImpl implements CandidateAuthRepository {
         return const Left(AuthFailure('User creation failed'));
       }
 
+      // Allow Auth state to propagate (avoids empty currentUser on profile screen, especially on web)
+      await Future.delayed(const Duration(milliseconds: 300));
+
       // Create user document in Firestore with candidate role
       await firestoreDataSource.createUser(
         userId: userId,

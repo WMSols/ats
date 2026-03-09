@@ -78,8 +78,12 @@ class CandidateAuthController extends BaseAuthController {
 
   @override
   void handleSignUpSuccess(UserEntity user) {
-    // Candidate signup redirects to profile screen to complete profile
-    Get.offAllNamed(AppConstants.routeCandidateProfile);
+    // Pass signup user so profile screen shows email even if Firebase Auth
+    // currentUser is not yet propagated (e.g. web persistence race).
+    Get.offAllNamed(
+      AppConstants.routeCandidateProfile,
+      arguments: {'signupEmail': user.email, 'signupUserId': user.userId},
+    );
   }
 
   @override
