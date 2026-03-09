@@ -20,6 +20,8 @@ class CandidateProfileSection extends StatelessWidget {
   passwordController; // Optional, for admin side or candidate side
   final bool emailEnabled; // Controls if email field is editable
   final bool passwordEnabled; // Controls if password field is editable
+  final bool showEmailField; // Controls if email field is shown
+  final bool showPasswordField; // Controls if password field is shown
   final String? Function(String?)? onFirstNameChanged;
   final String? Function(String?)? onLastNameChanged;
   final String? Function(String?)? onEmailChanged;
@@ -55,6 +57,8 @@ class CandidateProfileSection extends StatelessWidget {
     this.passwordController,
     this.emailEnabled = false, // Default to disabled (read-only)
     this.passwordEnabled = false, // Default to disabled (read-only)
+    this.showEmailField = true, // Default to showing email field
+    this.showPasswordField = true, // Default to showing password field
     this.onFirstNameChanged,
     this.onLastNameChanged,
     this.onEmailChanged,
@@ -137,33 +141,35 @@ class CandidateProfileSection extends StatelessWidget {
             ),
           AppSpacing.vertical(context, 0.02),
 
-          // Email
-          AppTextField(
-            controller: emailController,
-            labelText: '${AppTexts.email}(*)',
-            showLabelAbove: true,
-            keyboardType: TextInputType.emailAddress,
-            enabled: emailEnabled, // Controlled by parameter
-            onChanged: onEmailChanged,
-          ),
-          if (emailError != null)
-            Obx(
-              () => emailError!.value != null
-                  ? Padding(
-                      padding: EdgeInsets.only(
-                        top: AppSpacing.vertical(context, 0.01).height!,
-                      ),
-                      child: AppErrorMessage(
-                        message: emailError!.value!,
-                        icon: Iconsax.info_circle,
-                      ),
-                    )
-                  : const SizedBox.shrink(),
+          // Email - Only show if showEmailField is true
+          if (showEmailField) ...[
+            AppTextField(
+              controller: emailController,
+              labelText: '${AppTexts.email}(*)',
+              showLabelAbove: true,
+              keyboardType: TextInputType.emailAddress,
+              enabled: emailEnabled, // Controlled by parameter
+              onChanged: onEmailChanged,
             ),
-          AppSpacing.vertical(context, 0.02),
+            if (emailError != null)
+              Obx(
+                () => emailError!.value != null
+                    ? Padding(
+                        padding: EdgeInsets.only(
+                          top: AppSpacing.vertical(context, 0.01).height!,
+                        ),
+                        child: AppErrorMessage(
+                          message: emailError!.value!,
+                          icon: Iconsax.info_circle,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            AppSpacing.vertical(context, 0.02),
+          ],
 
-          // Password (admin side or candidate side)
-          if (passwordController != null) ...[
+          // Password (admin side or candidate side) - Only show if showPasswordField is true
+          if (showPasswordField && passwordController != null) ...[
             AppTextField(
               controller: passwordController!,
               labelText: '${AppTexts.password}(*)',

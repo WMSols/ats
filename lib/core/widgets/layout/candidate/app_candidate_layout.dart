@@ -201,13 +201,19 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
     try {
       authController = Get.find<CandidateAuthController>();
     } catch (e) {
-      // Controller not found, create it using the repository
-      // Get.find will trigger lazy initialization if repository is registered with lazyPut
-      final authRepo = Get.find<CandidateAuthRepository>();
-      authController = Get.put(
-        CandidateAuthController(authRepo),
-        permanent: false,
-      );
+      // Controller not found, try to create it using the repository
+      try {
+        final authRepo = Get.find<CandidateAuthRepository>();
+        authController = Get.put(
+          CandidateAuthController(authRepo),
+          permanent: false,
+        );
+      } catch (e2) {
+        // Repository not found either - this can happen after profile completion
+        // when navigating between routes. Use a placeholder that will be initialized later.
+        // Return a basic layout without the auth controller
+        return _buildBasicLayout(context);
+      }
     }
 
     // Use cached child to prevent unnecessary rebuilds
@@ -221,6 +227,19 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
     }
     _cachedLayout = _buildLayout(authController, childToUse);
     return _cachedLayout!;
+  }
+
+  /// Build a basic layout when auth is not available (fallback)
+  Widget _buildBasicLayout(BuildContext context) {
+    return AppSideLayout(
+      key: const ValueKey('candidate-layout-basic'),
+      title: widget.title,
+      actions: widget.actions,
+      dashboardRoute: AppConstants.routeCandidateDashboard,
+      onLogout: () {}, // No-op when auth not available
+      navigationItems: _navigationItems ?? _buildNavigationItems(false),
+      child: widget.child,
+    );
   }
 
   AppSideLayout _buildLayout(

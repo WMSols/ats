@@ -15,18 +15,22 @@ class AppFileValidator {
     'image/jpeg',
   ];
 
-  // Resume: max 5MB, PDF, DOCX, JPEG only
+  // Resume: max 5MB, PDF, DOCX, JPEG, PNG, HEIC only
   static const int maxResumeFileSizeBytes = 5 * 1024 * 1024;
   static const List<String> allowedResumeExtensions = [
     'pdf',
     'docx',
     'jpg',
     'jpeg',
+    'png',
+    'heic',
   ];
   static const List<String> allowedResumeMimeTypes = [
     'application/pdf',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'image/jpeg',
+    'image/png',
+    'image/heic',
   ];
 
   /// Validates a file from file picker
@@ -85,12 +89,12 @@ class AppFileValidator {
       return 'File must have a valid extension';
     }
     if (!allowedResumeExtensions.contains(extension.toLowerCase())) {
-      return 'Resume must be PDF, DOCX, or JPEG';
+      return 'Resume must be PDF, DOCX, JPG, JPEG, PNG, or HEIC';
     }
     if (file.extension != null) {
       final mimeType = _getResumeMimeTypeFromExtension(file.extension!);
       if (mimeType != null && !allowedResumeMimeTypes.contains(mimeType)) {
-        return 'Resume must be PDF, DOCX, or JPEG';
+        return 'Resume must be PDF, DOCX, JPG, JPEG, PNG, or HEIC';
       }
     }
     return null;
@@ -180,6 +184,10 @@ class AppFileValidator {
       case 'jpg':
       case 'jpeg':
         return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'heic':
+        return 'image/heic';
       default:
         return null;
     }

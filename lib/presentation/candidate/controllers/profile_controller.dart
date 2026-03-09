@@ -331,13 +331,19 @@ class ProfileController extends GetxController {
     String? licensureState,
     List<Map<String, dynamic>>? phones,
     List<Map<String, dynamic>>? education,
+    bool skipEmailValidation = false, // Skip email validation for candidates (email is from signup)
   }) {
     validateFirstName(firstName);
     validateLastName(lastName);
     validateWorkHistory(workHistory);
 
     // Validate new required fields (always validate, even if empty)
-    validateEmail(email);
+    // Skip email validation for candidates since email is pre-filled from signup
+    if (!skipEmailValidation) {
+      validateEmail(email);
+    } else {
+      emailError.value = null;
+    }
     validateAddress1(address1);
     validateCity(city);
     validateState(state);
@@ -401,9 +407,8 @@ class ProfileController extends GetxController {
     }
 
     // Check new required fields
-    if (currentProfile.email == null || currentProfile.email!.trim().isEmpty) {
-      return false;
-    }
+    // Note: Email is NOT stored in candidate profile - it's only in Firebase Auth and users collection
+    // So we skip email check for profile completion
     if (currentProfile.address1 == null ||
         currentProfile.address1!.trim().isEmpty) {
       return false;
@@ -512,6 +517,7 @@ class ProfileController extends GetxController {
     List<Map<String, dynamic>>? certifications,
   }) async {
     // Validate form
+    // Skip email validation for candidates since email is pre-filled from signup and read-only
     if (!validateProfileForm(
       firstName: firstName,
       lastName: lastName,
@@ -526,6 +532,7 @@ class ProfileController extends GetxController {
       licensureState: licensureState,
       phones: phones,
       education: education,
+      skipEmailValidation: true, // Skip for candidates - email is from signup
     )) {
       errorMessage.value = 'Please fix the validation errors';
       return;

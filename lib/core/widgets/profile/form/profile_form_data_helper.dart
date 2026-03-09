@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:ats/core/widgets/profile/profile.dart';
 import 'package:ats/presentation/candidate/controllers/profile_controller.dart';
 
@@ -88,9 +89,16 @@ class ProfileFormDataHelper {
     );
     final workHistory = getWorkHistoryData(formState.workHistoryEntries);
 
-    // Get email from user account (always use this, not form field)
+    // Prefer account email; if empty (e.g. right after signup), use form or signup argument
     final currentUser = controller.authRepository.getCurrentUser();
-    final userEmail = currentUser?.email ?? '';
+    String userEmail = (currentUser?.email ?? '').trim();
+    if (userEmail.isEmpty) {
+      userEmail = formState.emailController.text.trim();
+    }
+    if (userEmail.isEmpty) {
+      final args = Get.arguments as Map<String, dynamic>?;
+      userEmail = (args?['signupEmail'] as String?)?.trim() ?? '';
+    }
 
     // Validate all fields before saving
     controller.validateFirstName(formState.firstNameController.text);

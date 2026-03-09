@@ -89,15 +89,20 @@ class _CandidateProfileFormState extends State<CandidateProfileForm> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Candidate Profile Section
+        // Note: Email and Password fields are NOT shown for candidates
+        // They are collected during signup and are read-only in the profile
         CandidateProfileSection(
           firstNameController: formState.firstNameController,
           middleNameController: formState.middleNameController,
           lastNameController: formState.lastNameController,
+          // Email and password are NOT included for candidate profile completion
+          // They were collected during signup
           emailController: formState.emailController,
           passwordController: formState.passwordController,
-          emailEnabled: false, // Email is read-only for candidates
-          passwordEnabled:
-              false, // Password is read-only for candidates (prefilled with email)
+          emailEnabled: false,
+          passwordEnabled: false,
+          showEmailField: false, // Hide email field for candidates
+          showPasswordField: false, // Hide password field for candidates
           address1Controller: formState.address1Controller,
           address2Controller: formState.address2Controller,
           cityController: formState.cityController,

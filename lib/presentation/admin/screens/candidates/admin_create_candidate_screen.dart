@@ -46,6 +46,8 @@ class _AdminCreateCandidateScreenState
             passwordController: _controller.passwordController,
             emailEnabled: true, // Email is editable in admin create
             passwordEnabled: true, // Password is editable in admin create
+            showEmailField: true, // Show email field for admin
+            showPasswordField: true, // Show password field for admin
             address1Controller: _controller.formState.address1Controller,
             address2Controller: _controller.formState.address2Controller,
             cityController: _controller.formState.cityController,
