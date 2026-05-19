@@ -158,6 +158,11 @@ class AppTexts {
   static const String documentRequested = "Document requested successfully";
   static const String documentRequestRevoked =
       "Document request revoked successfully";
+  static const String sendReminder = "Send Reminder";
+  static const String reminderEmailSent =
+      "Reminder email sent for all pending documents";
+  static const String noPendingDocumentsToRemind =
+      "No pending requested documents to remind";
   static const String documentTypeUpdated =
       "Document type updated successfully";
   static const String documentTypeDeleted =

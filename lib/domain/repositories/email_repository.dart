@@ -39,4 +39,11 @@ abstract class EmailRepository {
     required String jobTitle,
     required List<Map<String, String>> missingDocuments,
   });
+
+  /// Sends a single combined reminder email for all pending requested documents
+  Future<Either<Failure, void>> sendDocumentRequestReminderEmail({
+    required String candidateEmail,
+    required String candidateName,
+    required List<Map<String, String>> documents,
+  });
 }
