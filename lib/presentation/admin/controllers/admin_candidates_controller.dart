@@ -22,6 +22,7 @@ import 'package:ats/domain/usecases/email/send_document_denial_email_usecase.dar
 import 'package:ats/domain/usecases/email/send_document_request_email_usecase.dart';
 import 'package:ats/domain/usecases/email/send_document_request_revocation_email_usecase.dart';
 import 'package:ats/domain/usecases/email/send_admin_document_upload_email_usecase.dart';
+import 'package:ats/domain/usecases/email/send_document_request_reminder_email_usecase.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ats/domain/usecases/admin/delete_candidate_usecase.dart';
 import 'package:ats/core/constants/app_constants.dart';
@@ -85,6 +86,8 @@ class AdminCandidatesController extends GetxController {
   sendDocumentRequestRevocationEmailUseCase;
   late final SendAdminDocumentUploadEmailUseCase
   sendAdminDocumentUploadEmailUseCase;
+  late final SendDocumentRequestReminderEmailUseCase
+  sendDocumentRequestReminderEmailUseCase;
   late final DeleteCandidateUseCase deleteCandidateUseCase;
 
   // Stream subscriptions
@@ -115,6 +118,8 @@ class AdminCandidatesController extends GetxController {
     sendAdminDocumentUploadEmailUseCase = SendAdminDocumentUploadEmailUseCase(
       Get.find<EmailRepository>(),
     );
+    sendDocumentRequestReminderEmailUseCase =
+        SendDocumentRequestReminderEmailUseCase(Get.find<EmailRepository>());
     deleteCandidateUseCase = DeleteCandidateUseCase(adminRepository);
     loadCandidates();
     loadAvailableAgents();
@@ -306,6 +311,64 @@ class AdminCandidatesController extends GetxController {
     } catch (e) {
       return null;
     }
+  }
+
+  /// Requested document types that have not been uploaded yet (pending)
+  List<DocumentTypeEntity> get pendingRequestedDocumentTypes =>
+      candidateRequestedDocumentTypes
+          .where((dt) => !isRequestedDocumentUploaded(dt.docTypeId))
+          .toList();
+
+  /// Sends a single combined reminder email for all pending requested documents
+  Future<void> sendReminderForAllPendingRequestedDocuments() async {
+    final pending = pendingRequestedDocumentTypes;
+    if (pending.isEmpty) {
+      AppSnackbar.info(AppTexts.noPendingDocumentsToRemind);
+      return;
+    }
+
+    final candidate = selectedCandidate.value;
+    final profile = selectedCandidateProfile.value;
+
+    if (candidate == null) {
+      AppSnackbar.error('Candidate not selected');
+      return;
+    }
+
+    final candidateEmail = candidate.email;
+    final candidateName = profile != null
+        ? AppCandidateProfileFormatters.getFullName(profile)
+        : candidateEmail;
+
+    final documents = pending
+        .map(
+          (dt) => {
+            'documentName': dt.name,
+            'documentDescription': dt.description,
+          },
+        )
+        .toList();
+
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    final result = await sendDocumentRequestReminderEmailUseCase(
+      candidateEmail: candidateEmail,
+      candidateName: candidateName,
+      documents: documents,
+    );
+
+    result.fold(
+      (failure) {
+        errorMessage.value = failure.message;
+        isLoading.value = false;
+        AppSnackbar.error('Failed to send reminder: ${failure.message}');
+      },
+      (_) {
+        isLoading.value = false;
+        AppSnackbar.success(AppTexts.reminderEmailSent);
+      },
+    );
   }
 
   Future<void> updateDocumentStatus({

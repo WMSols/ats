@@ -8,9 +8,6 @@ import 'package:ats/core/utils/app_responsive/app_responsive.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/presentation/candidate/controllers/resume_controller.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
-import 'package:ats/core/widgets/common/forms/app_required_label.dart';
-import 'package:ats/core/widgets/documents/components/app_document_viewer.dart';
-import 'package:ats/core/widgets/common/buttons/app_action_button.dart';
 
 /// Reusable resume block for candidate profile: upload, view, replace, delete.
 class ResumeSection extends StatelessWidget {
@@ -25,8 +22,7 @@ class ResumeSection extends StatelessWidget {
       resumeController.pendingResumeUrl.value;
       resumeController.pendingResumeDelete.value;
       final effectiveUrl = resumeController.effectiveResumeUrl;
-      final hasResume =
-          effectiveUrl != null && effectiveUrl.isNotEmpty;
+      final hasResume = effectiveUrl != null && effectiveUrl.isNotEmpty;
       final fileName =
           resumeController.effectiveResumeFileName ?? AppTexts.resume;
       final isUploading = resumeController.isUploading.value;
@@ -87,10 +83,9 @@ class ResumeSection extends StatelessWidget {
 class _ResumeSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final labelStyle = AppTextStyles.bodyText(context).copyWith(
-      fontWeight: FontWeight.w600,
-      color: AppColors.secondary,
-    );
+    final labelStyle = AppTextStyles.bodyText(
+      context,
+    ).copyWith(fontWeight: FontWeight.w600, color: AppColors.secondary);
     return Row(
       children: [
         Icon(
@@ -99,10 +94,7 @@ class _ResumeSectionHeader extends StatelessWidget {
           color: AppColors.primary,
         ),
         SizedBox(width: AppSpacing.horizontal(context, 0.01).width),
-        AppRequiredLabel(
-          text: AppTexts.resume,
-          style: labelStyle,
-        ),
+        AppRequiredLabel(text: AppTexts.resume, style: labelStyle),
       ],
     );
   }

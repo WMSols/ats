@@ -69,6 +69,13 @@ abstract class FirebaseFunctionsDataSource {
     required String jobTitle,
     required List<Map<String, String>> missingDocuments,
   });
+
+  /// Sends a single combined reminder email for all pending requested documents
+  Future<void> sendDocumentRequestReminderEmail({
+    required String candidateEmail,
+    required String candidateName,
+    required List<Map<String, String>> documents,
+  });
 }
 
 class FirebaseFunctionsDataSourceImpl implements FirebaseFunctionsDataSource {
@@ -268,6 +275,28 @@ class FirebaseFunctionsDataSourceImpl implements FirebaseFunctionsDataSource {
         'candidateName': candidateName,
         'jobTitle': jobTitle,
         'missingDocuments': missingDocuments,
+      });
+    } on FirebaseFunctionsException catch (e) {
+      throw ServerException('Failed to send email: ${e.message}');
+    } catch (e) {
+      throw ServerException('An unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<void> sendDocumentRequestReminderEmail({
+    required String candidateEmail,
+    required String candidateName,
+    required List<Map<String, String>> documents,
+  }) async {
+    try {
+      final callable = firebaseFunctions.httpsCallable(
+        'sendDocumentRequestReminderEmail',
+      );
+      await callable.call({
+        'candidateEmail': candidateEmail,
+        'candidateName': candidateName,
+        'documents': documents,
       });
     } on FirebaseFunctionsException catch (e) {
       throw ServerException('Failed to send email: ${e.message}');

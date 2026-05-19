@@ -30,6 +30,7 @@ class ResumeController extends GetxController {
   final pendingResumeUrl = Rxn<String>();
   final pendingResumeFileName = Rxn<String>();
   final pendingResumeUploadedAt = Rxn<DateTime>();
+
   /// True when user tapped Delete; profile is cleared on Save Profile.
   final pendingResumeDelete = false.obs;
 
@@ -174,7 +175,8 @@ class ResumeController extends GetxController {
     final profileController = Get.find<ProfileController>();
     final profile = profileController.profile.value;
     final hasPending = hasPendingResume;
-    final hasSaved = profile?.resumeUrl != null && profile!.resumeUrl!.isNotEmpty;
+    final hasSaved =
+        profile?.resumeUrl != null && profile!.resumeUrl!.isNotEmpty;
 
     if (!hasPending && !hasSaved) {
       AppSnackbar.info('No resume to delete');
@@ -196,9 +198,7 @@ class ResumeController extends GetxController {
 
     // Saved resume: mark for delete on Save Profile
     pendingResumeDelete.value = true;
-    AppSnackbar.success(
-      'Resume will be removed when you tap "Save Profile".',
-    );
+    AppSnackbar.success('Resume will be removed when you tap "Save Profile".');
   }
 
   /// Applies pending resume or pending delete to the profile. Called when user taps Save Profile.
@@ -220,13 +220,10 @@ class ResumeController extends GetxController {
         resumeUrl: '',
         resumeFileName: '',
       );
-      result.fold(
-        (failure) => AppSnackbar.error(failure.message),
-        (updated) {
-          profileController.profile.value = updated;
-          clearPendingResume();
-        },
-      );
+      result.fold((failure) => AppSnackbar.error(failure.message), (updated) {
+        profileController.profile.value = updated;
+        clearPendingResume();
+      });
       return;
     }
 
@@ -237,13 +234,10 @@ class ResumeController extends GetxController {
         resumeFileName: pendingResumeFileName.value,
         resumeUploadedAt: pendingResumeUploadedAt.value,
       );
-      result.fold(
-        (failure) => AppSnackbar.error(failure.message),
-        (updated) {
-          profileController.profile.value = updated;
-          clearPendingResume();
-        },
-      );
+      result.fold((failure) => AppSnackbar.error(failure.message), (updated) {
+        profileController.profile.value = updated;
+        clearPendingResume();
+      });
     }
   }
 }

@@ -1,4 +1,3 @@
-const functions = require('firebase-functions');
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
@@ -9,10 +8,12 @@ admin.initializeApp();
  * Creates an admin user without automatically signing them in
  * This function uses Firebase Admin SDK to create users without affecting the current session
  */
-exports.createAdmin = functions.https.onCall(async (data, context) => {
+exports.createAdmin = onCall(async (request) => {
+  const {data, auth} = request;
+
   // Verify that the caller is authenticated and is an admin
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
+  if (!auth) {
+    throw new HttpsError(
       'unauthenticated',
       'User must be authenticated to create admin users'
     );
@@ -21,11 +22,11 @@ exports.createAdmin = functions.https.onCall(async (data, context) => {
   // Verify the caller is an admin
   const callerUserDoc = await admin.firestore()
     .collection('users')
-    .doc(context.auth.uid)
+    .doc(auth.uid)
     .get();
 
   if (!callerUserDoc.exists) {
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       'permission-denied',
       'User document not found'
     );
@@ -33,7 +34,7 @@ exports.createAdmin = functions.https.onCall(async (data, context) => {
 
   const callerRole = callerUserDoc.data().role;
   if (callerRole !== 'admin') {
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       'permission-denied',
       'Only admins can create admin users'
     );
@@ -43,7 +44,7 @@ exports.createAdmin = functions.https.onCall(async (data, context) => {
   const { email, password, name, accessLevel } = data;
 
   if (!email || !password || !name || !accessLevel) {
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       'invalid-argument',
       'Missing required fields: email, password, name, accessLevel'
     );
@@ -101,7 +102,7 @@ exports.createAdmin = functions.https.onCall(async (data, context) => {
     };
   } catch (error) {
     console.error('Error creating admin user:', error);
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       'internal',
       `Failed to create admin user: ${error.message}`
     );
@@ -343,10 +344,12 @@ exports.deleteCandidate = onCall(async (request) => {
  * Deletes a user from both Firebase Authentication and Firestore
  * This function uses Firebase Admin SDK to delete any user
  */
-exports.deleteUser = functions.https.onCall(async (data, context) => {
+exports.deleteUser = onCall(async (request) => {
+  const {data, auth} = request;
+
   // Verify that the caller is authenticated and is an admin
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
+  if (!auth) {
+    throw new HttpsError(
       'unauthenticated',
       'User must be authenticated to delete users'
     );
@@ -355,11 +358,11 @@ exports.deleteUser = functions.https.onCall(async (data, context) => {
   // Verify the caller is an admin
   const callerUserDoc = await admin.firestore()
     .collection('users')
-    .doc(context.auth.uid)
+    .doc(auth.uid)
     .get();
 
   if (!callerUserDoc.exists) {
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       'permission-denied',
       'User document not found'
     );
@@ -367,15 +370,15 @@ exports.deleteUser = functions.https.onCall(async (data, context) => {
 
   const callerRole = callerUserDoc.data().role;
   if (callerRole !== 'admin') {
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       'permission-denied',
       'Only admins can delete users'
     );
   }
 
   // Prevent deleting own account
-  if (context.auth.uid === data.userId) {
-    throw new functions.https.HttpsError(
+  if (auth.uid === data.userId) {
+    throw new HttpsError(
       'permission-denied',
       'You cannot delete your own account'
     );
@@ -385,7 +388,7 @@ exports.deleteUser = functions.https.onCall(async (data, context) => {
   const { userId, profileId } = data;
 
   if (!userId || !profileId) {
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       'invalid-argument',
       'Missing required fields: userId, profileId'
     );
@@ -410,7 +413,7 @@ exports.deleteUser = functions.https.onCall(async (data, context) => {
     return { success: true };
   } catch (error) {
     console.error('Error deleting user:', error);
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       'internal',
       `Failed to delete user: ${error.message}`
     );
@@ -499,7 +502,7 @@ exports.sendDocumentDenialEmail = onCall(
     const subject = `Document Denial Notification - ${documentName}`;
 
     // Documents screen URL
-    const documentsUrl = 'https://candidate.maximumhs.com/candidate/documents';
+    const documentsUrl = 'https://ats-maximum-candidate.web.app/candidate/documents';
 
     // Build email body (plain text)
     let emailBody = `Dear ${candidateName},\n\n`;
@@ -635,7 +638,7 @@ exports.sendDocumentRequestEmail = onCall(
     const subject = `Document Request - ${documentName}`;
 
     // Documents screen URL
-    const documentsUrl = 'https://candidate.maximumhs.com/candidate/documents';
+    const documentsUrl = 'https://ats-maximum-candidate.web.app/candidate/documents';
 
     // Build email body (plain text)
     let emailBody = `Dear ${candidateName},\n\n`;
@@ -685,6 +688,127 @@ exports.sendDocumentRequestEmail = onCall(
     );
   }
 });
+
+/**
+ * Sends a single combined reminder email for all pending requested documents
+ * Lists all documents and includes link to candidate documents page
+ */
+exports.sendDocumentRequestReminderEmail = onCall(
+  {},
+  async (request) => {
+    const { data, auth } = request;
+
+    if (!auth) {
+      throw new HttpsError(
+        'unauthenticated',
+        'User must be authenticated to send emails'
+      );
+    }
+
+    const callerUserDoc = await admin.firestore()
+      .collection('users')
+      .doc(auth.uid)
+      .get();
+
+    if (!callerUserDoc.exists) {
+      throw new HttpsError(
+        'permission-denied',
+        'User document not found'
+      );
+    }
+
+    const callerRole = callerUserDoc.data().role;
+    if (callerRole !== 'admin') {
+      throw new HttpsError(
+        'permission-denied',
+        'Only admins can send emails'
+      );
+    }
+
+    const { candidateEmail, candidateName, documents } = data;
+
+    if (!candidateEmail || !candidateName || !documents || !Array.isArray(documents) || documents.length === 0) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Missing required fields: candidateEmail, candidateName, documents (non-empty array)'
+      );
+    }
+
+    try {
+      const host = process.env.SMTP_HOST;
+      const port = process.env.SMTP_PORT || '587';
+      const user = process.env.SMTP_USER;
+      const password = process.env.SMTP_PASSWORD;
+      const fromEmail = process.env.EMAIL_FROM;
+      const fromName = process.env.EMAIL_FROMNAME;
+
+      if (!host || !user || !password) {
+        throw new Error('SMTP configuration is missing. Please set environment variables: SMTP_HOST, SMTP_USER, SMTP_PASSWORD');
+      }
+
+      if (!fromEmail || !fromName) {
+        throw new Error('Email configuration is missing. Please set environment variables: EMAIL_FROM, EMAIL_FROMNAME');
+      }
+
+      const transporter = nodemailer.createTransport({
+        host,
+        port: parseInt(port, 10),
+        secure: port === '465',
+        auth: { user, pass: password },
+      });
+
+      const documentsUrl = 'https://ats-maximum-candidate.web.app/candidate/documents';
+      const subject = `Reminder: Documents still required (${documents.length} document${documents.length === 1 ? '' : 's'})`;
+
+      let emailBody = `Dear ${candidateName},\n\n`;
+      emailBody += `This is a reminder that we are still waiting for the following document(s) to be uploaded:\n\n`;
+      for (let i = 0; i < documents.length; i++) {
+        const d = documents[i];
+        const name = d.documentName || 'Document';
+        const desc = d.documentDescription || '';
+        emailBody += `${i + 1}. ${name}${desc ? ` - ${desc}` : ''}\n`;
+      }
+      emailBody += `\nPlease log in to your account and upload these documents through the "My Documents" section.\n\n`;
+      emailBody += `You can access your documents screen here: ${documentsUrl}\n\n`;
+      emailBody += `If you have any questions, please don't hesitate to contact us.\n\n`;
+      emailBody += `Best regards,\n${fromName}`;
+
+      let htmlBody = `<p>Dear ${candidateName},</p>`;
+      htmlBody += `<p>This is a reminder that we are still waiting for the following document(s) to be uploaded:</p>`;
+      htmlBody += '<ul>';
+      for (let i = 0; i < documents.length; i++) {
+        const d = documents[i];
+        const name = d.documentName || 'Document';
+        const desc = d.documentDescription || '';
+        htmlBody += `<li><strong>${name}</strong>${desc ? ` – ${desc}` : ''}</li>`;
+      }
+      htmlBody += '</ul>';
+      htmlBody += `<p>Please log in to your account and upload these documents through the "My Documents" section.</p>`;
+      htmlBody += `<p><a href="${documentsUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; margin: 10px 0;">Go to My Documents</a></p>`;
+      htmlBody += `<p>Or copy and paste this link: <a href="${documentsUrl}">${documentsUrl}</a></p>`;
+      htmlBody += `<p>If you have any questions, please don't hesitate to contact us.</p>`;
+      htmlBody += `<p>Best regards,<br>${fromName}</p>`;
+
+      const mailOptions = {
+        from: `"${fromName}" <${fromEmail}>`,
+        to: candidateEmail,
+        subject,
+        text: emailBody,
+        html: htmlBody,
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      console.log('Reminder email sent successfully:', info.messageId);
+      return { success: true, messageId: info.messageId };
+    } catch (error) {
+      console.error('Error sending reminder email:', error);
+      throw new HttpsError(
+        'internal',
+        `Failed to send email: ${error.message}`
+      );
+    }
+  }
+);
 
 /**
  * Sends a document request revocation email to a candidate
@@ -767,7 +891,7 @@ exports.sendDocumentRequestRevocationEmail = onCall(
     const subject = `Document Request Revoked - ${documentName}`;
 
     // Documents screen URL
-    const documentsUrl = 'https://candidate.maximumhs.com/candidate/documents';
+    const documentsUrl = 'https://ats-maximum-candidate.web.app/candidate/documents';
 
     // Build email body (plain text)
     let emailBody = `Dear ${candidateName},\n\n`;
@@ -893,7 +1017,7 @@ exports.sendAdminDocumentUploadEmail = onCall(
     const subject = `Document Uploaded on Your Behalf - ${documentName}`;
 
     // Documents screen URL
-    const documentsUrl = 'https://candidate.maximumhs.com/candidate/documents';
+    const documentsUrl = 'https://ats-maximum-candidate.web.app/candidate/documents';
 
     // Build email body (plain text)
     let emailBody = `Dear ${candidateName},\n\n`;
@@ -1000,7 +1124,7 @@ exports.sendMissingDocumentsEmail = onCall(
     const subject = `Missing Documents Required for Job Application - ${jobTitle}`;
 
     // Documents screen URL
-    const documentsUrl = 'https://candidate.maximumhs.com/candidate/documents';
+    const documentsUrl = 'https://ats-maximum-candidate.web.app/candidate/documents';
 
     // Build email body (plain text)
     let emailBody = `Dear ${candidateName},\n\n`;

@@ -331,7 +331,8 @@ class ProfileController extends GetxController {
     String? licensureState,
     List<Map<String, dynamic>>? phones,
     List<Map<String, dynamic>>? education,
-    bool skipEmailValidation = false, // Skip email validation for candidates (email is from signup)
+    bool skipEmailValidation =
+        false, // Skip email validation for candidates (email is from signup)
   }) {
     validateFirstName(firstName);
     validateLastName(lastName);
@@ -480,8 +481,8 @@ class ProfileController extends GetxController {
       if (resumeController.pendingResumeDelete.value) {
         return false;
       }
-      effectiveResumeUrl = resumeController.pendingResumeUrl.value ??
-          currentProfile.resumeUrl;
+      effectiveResumeUrl =
+          resumeController.pendingResumeUrl.value ?? currentProfile.resumeUrl;
     } catch (_) {
       // ResumeController not available, use profile only
     }

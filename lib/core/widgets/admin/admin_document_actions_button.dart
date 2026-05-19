@@ -1,18 +1,22 @@
+import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/utils/app_colors/app_colors.dart';
 import 'package:ats/core/constants/app_constants.dart';
+import 'package:ats/presentation/admin/controllers/admin_candidates_controller.dart';
 import 'package:get/get.dart';
 
-/// Reusable widget for admin document actions (Request Document and Upload Document)
-/// Displays a popup menu button with both options
+/// Reusable widget for admin document actions (Request Document, Upload Document, Send Reminder)
+/// Displays a popup menu button with all options
 class AdminDocumentActionsButton extends StatelessWidget {
   const AdminDocumentActionsButton({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<AdminCandidatesController>();
+
     return PopupMenuButton<String>(
       icon: Container(
         width: 56,
@@ -38,7 +42,12 @@ class AdminDocumentActionsButton extends StatelessWidget {
             children: [
               Icon(Iconsax.document_text, color: AppColors.primary),
               SizedBox(width: AppSpacing.horizontal(context, 0.02).width),
-              Text(AppTexts.requestDocument),
+              Text(
+                AppTexts.requestDocument,
+                style: AppTextStyles.buttonText(
+                  context,
+                ).copyWith(color: AppColors.primary),
+              ),
             ],
           ),
         ),
@@ -48,7 +57,27 @@ class AdminDocumentActionsButton extends StatelessWidget {
             children: [
               Icon(Iconsax.document_upload, color: AppColors.primary),
               SizedBox(width: AppSpacing.horizontal(context, 0.02).width),
-              Text(AppTexts.uploadDocument),
+              Text(
+                AppTexts.uploadDocument,
+                style: AppTextStyles.buttonText(
+                  context,
+                ).copyWith(color: AppColors.primary),
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'reminder',
+          child: Row(
+            children: [
+              Icon(Iconsax.clock, color: AppColors.error),
+              SizedBox(width: AppSpacing.horizontal(context, 0.02).width),
+              Text(
+                AppTexts.sendReminder,
+                style: AppTextStyles.buttonText(
+                  context,
+                ).copyWith(color: AppColors.error),
+              ),
             ],
           ),
         ),
@@ -58,6 +87,8 @@ class AdminDocumentActionsButton extends StatelessWidget {
           Get.toNamed(AppConstants.routeAdminRequestDocument);
         } else if (value == 'upload') {
           Get.toNamed(AppConstants.routeAdminUploadDocument);
+        } else if (value == 'reminder') {
+          controller.sendReminderForAllPendingRequestedDocuments();
         }
       },
     );

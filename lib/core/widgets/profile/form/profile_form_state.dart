@@ -58,17 +58,17 @@ class ProfileFormState {
   void _loadSignupEmail() {
     // If email is already set, don't override
     if (emailController.text.trim().isNotEmpty) return;
-    
+
     // Try to get from auth first
     final currentUser = controller.authRepository.getCurrentUser();
     String userEmail = (currentUser?.email ?? '').trim();
-    
+
     // If not available from auth, try signup arguments
     if (userEmail.isEmpty) {
       final args = Get.arguments as Map<String, dynamic>?;
       userEmail = (args?['signupEmail'] as String?)?.trim() ?? '';
     }
-    
+
     if (userEmail.isNotEmpty) {
       emailController.text = userEmail;
     }
