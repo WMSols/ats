@@ -7,26 +7,37 @@ import 'package:ats/domain/entities/user_entity.dart';
 import 'package:ats/domain/entities/admin_profile_entity.dart';
 import 'package:ats/core/widgets/candidates/components/app_candidate_agent_dropdown.dart';
 import 'package:ats/core/widgets/candidates/table/app_candidate_table_formatters.dart';
+import 'package:ats/core/widgets/candidates/table/app_candidate_table_layout.dart';
 import 'package:ats/core/widgets/common/chips/app_status_chip.dart';
 
 class AppCandidateTableRows {
   AppCandidateTableRows._();
 
+  static Widget _ellipsizedText(BuildContext context, String text) {
+    return Text(
+      text,
+      style: AppTextStyles.bodyText(context),
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
+      softWrap: false,
+    );
+  }
+
   /// Builds a single data cell with clickable text
   static DataCell buildClickableCell(
     BuildContext context,
     String text,
-    VoidCallback onTap,
-  ) {
+    VoidCallback onTap, {
+    required double width,
+  }) {
     return DataCell(
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-        child: InkWell(
-          onTap: onTap,
-          child: Text(
-            text,
-            style: AppTextStyles.bodyText(context),
-            overflow: TextOverflow.ellipsis,
+      SizedBox(
+        width: width,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+          child: InkWell(
+            onTap: onTap,
+            child: _ellipsizedText(context, text),
           ),
         ),
       ),
@@ -42,14 +53,17 @@ class AppCandidateTableRows {
     final formattedStatus = AppCandidateTableFormatters.formatStatus(status);
 
     return DataCell(
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-        child: InkWell(
-          onTap: onTap,
-          child: AppStatusChip(
-            status: status,
-            customText: formattedStatus,
-            showIcon: false,
+      SizedBox(
+        width: AppCandidateTableLayout.status,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+          child: InkWell(
+            onTap: onTap,
+            child: AppStatusChip(
+              status: status,
+              customText: formattedStatus,
+              showIcon: false,
+            ),
           ),
         ),
       ),
@@ -68,24 +82,23 @@ class AppCandidateTableRows {
     VoidCallback onTap,
   ) {
     return DataCell(
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-        child: isSuperAdmin
-            ? AppCandidateAgentDropdown(
-                userId: userId,
-                currentAgentName: agentName,
-                assignedAgentProfileId: assignedAgentProfileId,
-                availableAgents: availableAgents,
-                onAgentChanged: onAgentChanged,
-              )
-            : InkWell(
-                onTap: onTap,
-                child: Text(
-                  agentName,
-                  style: AppTextStyles.bodyText(context),
-                  overflow: TextOverflow.ellipsis,
+      SizedBox(
+        width: AppCandidateTableLayout.agent,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+          child: isSuperAdmin
+              ? AppCandidateAgentDropdown(
+                  userId: userId,
+                  currentAgentName: agentName,
+                  assignedAgentProfileId: assignedAgentProfileId,
+                  availableAgents: availableAgents,
+                  onAgentChanged: onAgentChanged,
+                )
+              : InkWell(
+                  onTap: onTap,
+                  child: _ellipsizedText(context, agentName),
                 ),
-              ),
+        ),
       ),
     );
   }
@@ -98,10 +111,10 @@ class AppCandidateTableRows {
     Function(UserEntity)? onDelete,
   ) {
     return DataCell(
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-        child: SizedBox(
-          width: 120.0, // Ensure Actions column has minimum width
+      SizedBox(
+        width: AppCandidateTableLayout.actions,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -147,17 +160,43 @@ class AppCandidateTableRows {
   }) {
     return DataRow(
       cells: [
-        buildClickableCell(context, name, () => onCandidateTap()),
-        buildClickableCell(context, email, () => onCandidateTap()),
-        buildClickableCell(context, company, () => onCandidateTap()),
-        buildClickableCell(context, position, () => onCandidateTap()),
-        buildClickableCell(context, profession, () => onCandidateTap()),
+        buildClickableCell(
+          context,
+          name,
+          onCandidateTap,
+          width: AppCandidateTableLayout.name,
+        ),
+        buildClickableCell(
+          context,
+          email,
+          onCandidateTap,
+          width: AppCandidateTableLayout.email,
+        ),
+        buildClickableCell(
+          context,
+          company,
+          onCandidateTap,
+          width: AppCandidateTableLayout.company,
+        ),
+        buildClickableCell(
+          context,
+          position,
+          onCandidateTap,
+          width: AppCandidateTableLayout.position,
+        ),
+        buildClickableCell(
+          context,
+          profession,
+          onCandidateTap,
+          width: AppCandidateTableLayout.profession,
+        ),
         buildClickableCell(
           context,
           AppCandidateTableFormatters.formatSpecialties(specialties),
-          () => onCandidateTap(),
+          onCandidateTap,
+          width: AppCandidateTableLayout.specialties,
         ),
-        buildStatusCell(context, status, () => onCandidateTap()),
+        buildStatusCell(context, status, onCandidateTap),
         buildAgentCell(
           context,
           candidate.userId,
@@ -166,7 +205,7 @@ class AppCandidateTableRows {
           isSuperAdmin,
           availableAgents,
           onAgentChanged,
-          () => onCandidateTap(),
+          onCandidateTap,
         ),
         if (isSuperAdmin &&
             (onCandidateEdit != null || onCandidateDelete != null))

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import 'package:ats/domain/repositories/candidate_auth_repository.dart';
 import 'package:ats/domain/repositories/document_repository.dart';
@@ -489,9 +490,12 @@ class DocumentsController extends GetxController {
 
   Future<void> pickFileForUserDocument() async {
     try {
+      errorMessage.value = '';
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.any,
+        type: FileType.custom,
+        allowedExtensions: AppFileValidator.allowedExtensions,
         allowMultiple: false,
+        withData: kIsWeb,
       );
 
       if (result == null || result.files.isEmpty) {
@@ -499,6 +503,14 @@ class DocumentsController extends GetxController {
       }
 
       final file = result.files.first;
+
+      if (kIsWeb && (file.bytes == null || file.bytes!.isEmpty)) {
+        const message =
+            'Could not read file. Please try again or choose a local file.';
+        errorMessage.value = message;
+        AppSnackbar.error(message);
+        return;
+      }
 
       // Validate file
       final validationError = AppFileValidator.validateFile(file);
@@ -522,6 +534,7 @@ class DocumentsController extends GetxController {
     selectedFile.value = null;
     selectedFileName.value = '';
     selectedFileSize.value = '';
+    errorMessage.value = '';
   }
 
   Future<void> deleteDocument(String candidateDocId, String storageUrl) async {

@@ -80,21 +80,28 @@ class AdminBindings extends Bindings {
     Get.lazyPut<CandidateProfileRepository>(() => candidateProfileRepo);
     Get.lazyPut<EmailRepository>(() => emailRepo);
 
-    // Controllers
-    Get.lazyPut(() => AdminAuthController(adminAuthRepo, adminRepo));
+    // Controllers — auth first so profile is loading before list controllers init
+    if (!Get.isRegistered<AdminAuthController>()) {
+      Get.put(AdminAuthController(adminAuthRepo, adminRepo), permanent: true);
+    }
     Get.lazyPut(() => AdminDashboardController(applicationRepo, jobRepo));
     Get.lazyPut(() => AdminJobsController(jobRepo, applicationRepo));
-    Get.lazyPut(
-      () => AdminCandidatesController(
-        adminRepo,
-        applicationRepo,
-        documentRepo,
-        candidateProfileRepo,
-        jobRepo,
-      ),
-    );
+    if (!Get.isRegistered<AdminCandidatesController>()) {
+      Get.put(
+        AdminCandidatesController(
+          adminRepo,
+          applicationRepo,
+          documentRepo,
+          candidateProfileRepo,
+          jobRepo,
+        ),
+        permanent: true,
+      );
+    }
     Get.lazyPut(() => AdminDocumentsController(documentRepo));
-    Get.lazyPut(() => AdminManageAdminsController(adminRepo));
+    if (!Get.isRegistered<AdminManageAdminsController>()) {
+      Get.put(AdminManageAdminsController(adminRepo), permanent: true);
+    }
     Get.lazyPut(() => AdminCreateNewUserController(adminRepo));
     Get.lazyPut(() => AdminCreateCandidateController(adminRepo));
   }

@@ -323,7 +323,7 @@ class AdminCreateCandidateController extends GetxController {
         // Refresh the list in candidates screen
         if (Get.isRegistered<AdminCandidatesController>()) {
           final candidatesController = Get.find<AdminCandidatesController>();
-          candidatesController.loadCandidates();
+          candidatesController.loadCandidates(forceRefresh: true);
         }
       },
     );
