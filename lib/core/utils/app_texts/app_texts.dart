@@ -292,6 +292,7 @@ class AppTexts {
       "At least one work history entry is required";
 
   // Common
+  static const String back = "Back";
   static const String cancel = "Cancel";
   static const String create = "Create";
   static const String update = "Update";
