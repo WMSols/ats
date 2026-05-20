@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ats/domain/repositories/admin_repository.dart';
@@ -47,6 +49,9 @@ class AdminCandidatesController extends GetxController {
   );
 
   final isLoading = false.obs;
+  final isLoadingList = false.obs;
+  bool _candidatesListLoaded = false;
+  bool _agentsLoaded = false;
   final errorMessage = ''.obs;
   final candidates = <UserEntity>[].obs;
   final filteredCandidates = <UserEntity>[].obs;
@@ -97,6 +102,9 @@ class AdminCandidatesController extends GetxController {
   final Map<String, StreamSubscription<List<CandidateDocumentEntity>>>
   _candidateDocumentsSubscriptions = {};
 
+  StreamSubscription<User?>? _authStateSubscription;
+  Worker? _authProfileReadyWorker;
+
   @override
   void onInit() {
     super.onInit();
@@ -121,23 +129,74 @@ class AdminCandidatesController extends GetxController {
     sendDocumentRequestReminderEmailUseCase =
         SendDocumentRequestReminderEmailUseCase(Get.find<EmailRepository>());
     deleteCandidateUseCase = DeleteCandidateUseCase(adminRepository);
-    loadCandidates();
-    loadAvailableAgents();
+    _bindAuthenticatedDataLoading();
 
     // Observe admin profile changes to re-apply filters when profile loads
     try {
       final authController = Get.find<AdminAuthController>();
       ever(authController.currentAdminProfile, (_) {
-        // Re-apply filters when admin profile loads/changes
         _applyFilters();
+        _loadAgentsWhenProfileReady();
       });
     } catch (e) {
       // AdminAuthController not found, continue
     }
   }
 
+  /// Waits for Firebase auth (and admin profile for agents) before Firestore reads.
+  /// Prevents permission-denied errors when permanent controllers init on login/restart.
+  void _bindAuthenticatedDataLoading() {
+    _authStateSubscription?.cancel();
+    _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen(
+      (user) {
+        if (user == null) {
+          _candidatesListLoaded = false;
+          _agentsLoaded = false;
+          return;
+        }
+        _loadListDataWhenAuthenticated();
+      },
+    );
+    _loadListDataWhenAuthenticated();
+  }
+
+  void _loadListDataWhenAuthenticated() {
+    if (FirebaseAuth.instance.currentUser == null) {
+      return;
+    }
+    loadCandidates();
+    _loadAgentsWhenProfileReady();
+  }
+
+  void _loadAgentsWhenProfileReady() {
+    if (FirebaseAuth.instance.currentUser == null) {
+      return;
+    }
+
+    try {
+      final authController = Get.find<AdminAuthController>();
+      if (authController.currentAdminProfile.value != null) {
+        loadAvailableAgents();
+        return;
+      }
+
+      _authProfileReadyWorker?.dispose();
+      _authProfileReadyWorker = ever(authController.currentAdminProfile, (
+        profile,
+      ) {
+        if (profile != null) {
+          loadAvailableAgents();
+        }
+      });
+    } catch (e) {
+      // AdminAuthController not available yet
+    }
+  }
+
   @override
   void onClose() {
+    _authStateSubscription?.cancel();
+    _authProfileReadyWorker?.dispose();
     // Cancel all stream subscriptions to prevent permission errors after sign-out
     _applicationsSubscription?.cancel();
     _documentsSubscription?.cancel();
@@ -155,8 +214,15 @@ class AdminCandidatesController extends GetxController {
     super.onClose();
   }
 
-  void loadCandidates() {
-    isLoading.value = true;
+  void loadCandidates({bool forceRefresh = false}) {
+    if (FirebaseAuth.instance.currentUser == null) {
+      return;
+    }
+    if (!forceRefresh && _candidatesListLoaded && candidates.isNotEmpty) {
+      return;
+    }
+
+    isLoadingList.value = true;
     errorMessage.value = '';
 
     adminRepository
@@ -165,11 +231,12 @@ class AdminCandidatesController extends GetxController {
           result.fold(
             (failure) {
               errorMessage.value = failure.message;
-              isLoading.value = false;
+              isLoadingList.value = false;
             },
             (candidatesList) {
               candidates.value = candidatesList;
-              isLoading.value = false;
+              _candidatesListLoaded = true;
+              isLoadingList.value = false;
               _applyFilters();
 
               // Load profiles and documents for all candidates
@@ -182,7 +249,7 @@ class AdminCandidatesController extends GetxController {
         })
         .catchError((error) {
           errorMessage.value = error.toString();
-          isLoading.value = false;
+          isLoadingList.value = false;
         });
   }
 
@@ -1209,21 +1276,33 @@ class AdminCandidatesController extends GetxController {
   /// These profiles are used to populate the agent dropdown in the candidates table.
   /// Source: adminProfilesCollection in Firestore
   /// Each profile contains: userId, name (firstName + lastName), accessLevel, email
-  void loadAvailableAgents() {
+  void loadAvailableAgents({bool forceRefresh = false}) {
+    if (FirebaseAuth.instance.currentUser == null) {
+      return;
+    }
+    if (!forceRefresh && _agentsLoaded && availableAgents.isNotEmpty) {
+      return;
+    }
+
     adminRepository
         .getAllAdminProfiles()
         .then((result) {
           result.fold(
             (failure) {
-              AppSnackbar.error('Failed to load agents: ${failure.message}');
+              if (forceRefresh) {
+                AppSnackbar.error('Failed to load agents: ${failure.message}');
+              }
             },
             (profiles) {
               availableAgents.value = profiles;
+              _agentsLoaded = true;
             },
           );
         })
         .catchError((error) {
-          AppSnackbar.error('Failed to load agents: $error');
+          if (forceRefresh) {
+            AppSnackbar.error('Failed to load agents: $error');
+          }
         });
   }
 
@@ -1486,7 +1565,7 @@ class AdminCandidatesController extends GetxController {
         _candidateDocumentsSubscriptions.remove(userId);
 
         // Reload candidates list to ensure consistency
-        loadCandidates();
+        loadCandidates(forceRefresh: true);
 
         // If we're on details screen, navigate back
         if (Get.currentRoute == AppConstants.routeAdminCandidateDetails) {
@@ -1619,9 +1698,12 @@ class AdminCandidatesController extends GetxController {
   /// Pick file for admin document upload
   Future<void> pickFileForAdminUpload() async {
     try {
+      errorMessage.value = '';
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.any,
+        type: FileType.custom,
+        allowedExtensions: AppFileValidator.allowedExtensions,
         allowMultiple: false,
+        withData: kIsWeb,
       );
 
       if (result == null || result.files.isEmpty) {
@@ -1629,6 +1711,14 @@ class AdminCandidatesController extends GetxController {
       }
 
       final file = result.files.first;
+
+      if (kIsWeb && (file.bytes == null || file.bytes!.isEmpty)) {
+        const message =
+            'Could not read file. Please try again or choose a local file.';
+        errorMessage.value = message;
+        AppSnackbar.error(message);
+        return;
+      }
 
       // Validate file
       final validationError = AppFileValidator.validateFile(file);
@@ -1653,5 +1743,6 @@ class AdminCandidatesController extends GetxController {
     selectedFile.value = null;
     selectedFileName.value = '';
     selectedFileSize.value = '';
+    errorMessage.value = '';
   }
 }

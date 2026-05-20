@@ -27,6 +27,7 @@ class _AdminUploadDocumentScreenState extends State<AdminUploadDocumentScreen> {
   final selectedDocTypeId = Rxn<String>();
   bool hasNoExpiry = false;
   final expiryError = Rxn<String>();
+  Worker? _fileSelectionWorker;
 
   bool get canSubmit {
     final candidatesController = Get.find<AdminCandidatesController>();
@@ -40,7 +41,9 @@ class _AdminUploadDocumentScreenState extends State<AdminUploadDocumentScreen> {
 
   void _onFieldChanged() {
     _canSubmit.value = canSubmit;
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void validateExpiry() {
@@ -81,15 +84,22 @@ class _AdminUploadDocumentScreenState extends State<AdminUploadDocumentScreen> {
 
     // Observe file selection changes
     final candidatesController = Get.find<AdminCandidatesController>();
-    ever(candidatesController.selectedFile, (_) => _onFieldChanged());
+    candidatesController.clearSelectedFile();
+    _fileSelectionWorker = ever(
+      candidatesController.selectedFile,
+      (_) => _onFieldChanged(),
+    );
   }
 
   @override
   void dispose() {
     titleController.removeListener(_onFieldChanged);
     expiryController.removeListener(validateExpiry);
+    _fileSelectionWorker?.dispose();
     titleController.dispose();
     expiryController.dispose();
+    // Clear after disposing worker so ever() does not call setState on this State
+    Get.find<AdminCandidatesController>().clearSelectedFile();
     super.dispose();
   }
 

@@ -847,18 +847,15 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
           .collection(AppConstants.candidateProfilesCollection)
           .get();
 
-      final candidates = <Map<String, dynamic>>[];
-
-      // For each profile, get the user email from users collection
-      for (var profileDoc in profilesSnapshot.docs) {
+      // Fetch user emails in parallel (was sequential N+1 reads)
+      final candidateFutures = profilesSnapshot.docs.map((profileDoc) async {
         final profileData = profileDoc.data();
         final userId = profileData['userId'] as String?;
 
         if (userId == null || userId.isEmpty) {
-          continue;
+          return null;
         }
 
-        // Get user data to get email
         try {
           final userDoc = await firestore
               .collection(AppConstants.usersCollection)
@@ -866,7 +863,7 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
               .get();
 
           if (!userDoc.exists) {
-            continue;
+            return null;
           }
 
           final userData = userDoc.data();
@@ -874,11 +871,10 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
           final role = userData?['role'] ?? '';
 
           if (role != AppConstants.roleCandidate) {
-            continue;
+            return null;
           }
 
-          // Combine profile and user data
-          final candidateData = {
+          return {
             'userId': userId,
             'email': email,
             'role': role,
@@ -890,12 +886,15 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
             'workHistory': profileData['workHistory'],
             'createdAt': userData?['createdAt'],
           };
-
-          candidates.add(candidateData);
         } catch (e) {
-          continue;
+          return null;
         }
-      }
+      });
+
+      final results = await Future.wait(candidateFutures);
+      final candidates = results
+          .whereType<Map<String, dynamic>>()
+          .toList();
 
       return candidates;
     } catch (e) {

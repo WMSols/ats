@@ -404,6 +404,10 @@ class _AdminCandidatesListScreenState extends State<AdminCandidatesListScreen> {
                 // AdminAuthController not found, continue
               }
 
+              if (_controller.isLoadingList.value) {
+                return const Center(child: AppLoadingIndicator());
+              }
+
               if (_controller.candidates.isEmpty) {
                 return AppEmptyState(
                   message: AppTexts.noCandidatesAvailable,

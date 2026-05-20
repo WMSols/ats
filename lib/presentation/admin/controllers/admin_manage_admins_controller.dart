@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
@@ -12,15 +14,38 @@ class AdminManageAdminsController extends GetxController {
   AdminManageAdminsController(this.adminRepository);
 
   final isLoadingList = false.obs;
+  bool _adminProfilesLoaded = false;
   final adminProfiles = <AdminProfileEntity>[].obs;
   final filteredAdminProfiles = <AdminProfileEntity>[].obs;
   final searchQuery = ''.obs;
   final isChangingRole = <String, bool>{}.obs;
   final isDeletingUser = <String, bool>{}.obs;
 
+  StreamSubscription<User?>? _authStateSubscription;
+
   @override
   void onInit() {
     super.onInit();
+    _bindAuthenticatedDataLoading();
+  }
+
+  @override
+  void onClose() {
+    _authStateSubscription?.cancel();
+    super.onClose();
+  }
+
+  void _bindAuthenticatedDataLoading() {
+    _authStateSubscription?.cancel();
+    _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen(
+      (user) {
+        if (user == null) {
+          _adminProfilesLoaded = false;
+          return;
+        }
+        loadAdminProfiles();
+      },
+    );
     loadAdminProfiles();
   }
 
@@ -40,7 +65,14 @@ class AdminManageAdminsController extends GetxController {
     }
   }
 
-  Future<void> loadAdminProfiles() async {
+  Future<void> loadAdminProfiles({bool forceRefresh = false}) async {
+    if (FirebaseAuth.instance.currentUser == null) {
+      return;
+    }
+    if (!forceRefresh && _adminProfilesLoaded && adminProfiles.isNotEmpty) {
+      return;
+    }
+
     isLoadingList.value = true;
     final result = await adminRepository.getAllAdminProfiles();
     result.fold(
@@ -50,6 +82,7 @@ class AdminManageAdminsController extends GetxController {
       },
       (profiles) {
         adminProfiles.value = profiles;
+        _adminProfilesLoaded = true;
         _applyFilters();
         isLoadingList.value = false;
       },

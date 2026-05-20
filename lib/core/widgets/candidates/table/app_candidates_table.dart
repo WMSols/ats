@@ -4,6 +4,7 @@ import 'package:ats/core/utils/app_colors/app_colors.dart';
 import 'package:ats/domain/entities/user_entity.dart';
 import 'package:ats/domain/entities/admin_profile_entity.dart';
 import 'package:ats/core/widgets/candidates/table/app_candidate_table_columns.dart';
+import 'package:ats/core/widgets/candidates/table/app_candidate_table_layout.dart';
 import 'package:ats/core/widgets/candidates/table/app_candidate_table_rows.dart';
 
 class AppCandidatesTable extends StatelessWidget {
@@ -44,68 +45,63 @@ class AppCandidatesTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate minimum width needed for all columns
-    // Name(200) + Email(280) + Company(200) + Position(200) + Profession(250) + Specialties(280) + Status(150) + Agent(200) + Actions(150) = ~1910
-    // Column spacing: 8 gaps * 20 = 160
-    // Cell padding: ~100
-    // Adding extra padding: ~2200 to ensure all columns are visible, especially Actions column
-    const minTableWidth = 2200.0;
-
     final hasActionsColumn =
         isSuperAdmin && (onCandidateEdit != null || onCandidateDelete != null);
+    final tableWidth = AppCandidateTableLayout.tableWidth(
+      includeActions: hasActionsColumn,
+    );
 
+    // Vertical scroll outside, horizontal inside — otherwise the inner
+    // vertical scroll view is clamped to viewport width and Agent/Actions
+    // columns cannot be reached by horizontal scroll.
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: AppSpacing.padding(
-        context,
-      ).copyWith(left: 0, right: hasActionsColumn ? 16.0 : 0),
+      scrollDirection: Axis.vertical,
+      padding: AppSpacing.padding(context).copyWith(top: 0, bottom: 0),
       child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth: minTableWidth),
-          child: SizedBox(
-            width: minTableWidth,
-            child: DataTable(
-              columnSpacing: 20,
-              headingRowColor: WidgetStateProperty.all(AppColors.lightGrey),
-              columns: AppCandidateTableColumns.buildColumns(
-                context,
-                isSuperAdmin: isSuperAdmin,
-                hasEditOrDelete:
-                    onCandidateEdit != null || onCandidateDelete != null,
-              ),
-              rows: candidates.map((candidate) {
-                final name = getName(candidate.userId);
-                final company = getCompany(candidate.userId);
-                final position = getPosition(candidate.userId);
-                final profession = getProfession(candidate.userId);
-                final specialties = getSpecialties(candidate.userId);
-                final status = getStatus(candidate.userId);
-                final agentName = getAgentName(candidate.userId);
-
-                return AppCandidateTableRows.buildRow(
-                  context,
-                  candidate,
-                  name: name,
-                  email: candidate.email,
-                  company: company,
-                  position: position,
-                  profession: profession,
-                  specialties: specialties,
-                  status: status,
-                  agentName: agentName,
-                  assignedAgentProfileId: getAssignedAgentProfileId(
-                    candidate.userId,
-                  ),
-                  isSuperAdmin: isSuperAdmin,
-                  availableAgents: availableAgents,
-                  onAgentChanged: onAgentChanged,
-                  onCandidateTap: () => onCandidateTap(candidate),
-                  onCandidateEdit: onCandidateEdit,
-                  onCandidateDelete: onCandidateDelete,
-                );
-              }).toList(),
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.only(right: hasActionsColumn ? 16.0 : 0),
+        child: SizedBox(
+          width: tableWidth,
+          child: DataTable(
+            columnSpacing: AppCandidateTableLayout.columnSpacing,
+            headingRowColor: WidgetStateProperty.all(AppColors.lightGrey),
+            columns: AppCandidateTableColumns.buildColumns(
+              context,
+              isSuperAdmin: isSuperAdmin,
+              hasEditOrDelete:
+                  onCandidateEdit != null || onCandidateDelete != null,
             ),
+            rows: candidates.map((candidate) {
+              final name = getName(candidate.userId);
+              final company = getCompany(candidate.userId);
+              final position = getPosition(candidate.userId);
+              final profession = getProfession(candidate.userId);
+              final specialties = getSpecialties(candidate.userId);
+              final status = getStatus(candidate.userId);
+              final agentName = getAgentName(candidate.userId);
+
+              return AppCandidateTableRows.buildRow(
+                context,
+                candidate,
+                name: name,
+                email: candidate.email,
+                company: company,
+                position: position,
+                profession: profession,
+                specialties: specialties,
+                status: status,
+                agentName: agentName,
+                assignedAgentProfileId: getAssignedAgentProfileId(
+                  candidate.userId,
+                ),
+                isSuperAdmin: isSuperAdmin,
+                availableAgents: availableAgents,
+                onAgentChanged: onAgentChanged,
+                onCandidateTap: () => onCandidateTap(candidate),
+                onCandidateEdit: onCandidateEdit,
+                onCandidateDelete: onCandidateDelete,
+              );
+            }).toList(),
           ),
         ),
       ),

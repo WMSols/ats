@@ -60,6 +60,8 @@ class AppDocumentUploadWidget extends StatelessWidget {
                                   context,
                                 ).copyWith(fontWeight: FontWeight.w500),
                                 overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                softWrap: false,
                               ),
                               if (fileSize.isNotEmpty)
                                 Text(
@@ -67,10 +69,11 @@ class AppDocumentUploadWidget extends StatelessWidget {
                                   style: AppTextStyles.bodyText(context)
                                       .copyWith(
                                         fontSize:
-                                            AppTextStyles.bodyText(
-                                              context,
-                                            ).fontSize! *
-                                            0.85,
+                                            (AppTextStyles.bodyText(
+                                                      context,
+                                                    ).fontSize ??
+                                                    14) *
+                                                0.85,
                                         color: AppColors.grey,
                                       ),
                                 ),
@@ -103,7 +106,9 @@ class AppDocumentUploadWidget extends StatelessWidget {
                         'Uploading: ${(uploadProgress * 100).toStringAsFixed(0)}%',
                         style: AppTextStyles.bodyText(context).copyWith(
                           fontSize:
-                              AppTextStyles.bodyText(context).fontSize! * 0.85,
+                              (AppTextStyles.bodyText(context).fontSize ??
+                                  14) *
+                              0.85,
                           color: AppColors.primary,
                           fontWeight: FontWeight.w500,
                         ),
@@ -157,18 +162,23 @@ class AppDocumentUploadWidget extends StatelessWidget {
             ],
           );
         }),
-        if (controller.errorMessage.value.isNotEmpty)
-          Padding(
+        Obx(() {
+          final message = controller.errorMessage.value;
+          if (message.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          return Padding(
             padding: EdgeInsets.only(
               top: AppResponsive.screenHeight(context) * 0.01,
             ),
             child: Text(
-              controller.errorMessage.value,
+              message,
               style: AppTextStyles.bodyText(
                 context,
               ).copyWith(color: AppColors.error),
             ),
-          ),
+          );
+        }),
       ],
     );
   }

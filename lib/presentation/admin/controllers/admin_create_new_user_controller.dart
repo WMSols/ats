@@ -125,7 +125,7 @@ class AdminCreateNewUserController extends GetxController {
         // Refresh the list in manage admins screen
         if (Get.isRegistered<AdminManageAdminsController>()) {
           final manageController = Get.find<AdminManageAdminsController>();
-          manageController.loadAdminProfiles();
+          manageController.loadAdminProfiles(forceRefresh: true);
         }
       },
     );
