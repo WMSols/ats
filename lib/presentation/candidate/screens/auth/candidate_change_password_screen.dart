@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:ats/presentation/candidate/controllers/candidate_auth_controller.dart';
+import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
@@ -32,6 +33,13 @@ class _CandidateChangePasswordScreenState
 
     return AppCandidateLayout(
       title: AppTexts.changePasswordTitle,
+      onBack: () {
+        if (Get.key.currentState?.canPop() ?? false) {
+          Get.back();
+        } else {
+          Get.offNamed(AppConstants.routeCandidateProfile);
+        }
+      },
       child: SingleChildScrollView(
         padding: AppSpacing.padding(context),
         child: Column(

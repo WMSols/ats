@@ -12,12 +12,16 @@ class AppCandidateLayout extends StatefulWidget {
   final Widget child;
   final String? title;
   final List<Widget>? actions;
+  final bool? showBackButton;
+  final VoidCallback? onBack;
 
   const AppCandidateLayout({
     super.key,
     required this.child,
     this.title,
     this.actions,
+    this.showBackButton,
+    this.onBack,
   });
 
   @override
@@ -96,11 +100,15 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
     // Also check if title, actions, or other properties changed
     final titleChanged = oldWidget.title != widget.title;
     final actionsChanged = oldWidget.actions != widget.actions;
+    final backChanged =
+        oldWidget.showBackButton != widget.showBackButton ||
+        oldWidget.onBack != widget.onBack;
 
     if (oldChildType != newChildType ||
         oldChildKey != newChildKey ||
         titleChanged ||
-        actionsChanged) {
+        actionsChanged ||
+        backChanged) {
       if (oldChildType != newChildType || oldChildKey != newChildKey) {
         _cachedChild = widget.child;
       }
@@ -235,6 +243,8 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
       key: const ValueKey('candidate-layout-basic'),
       title: widget.title,
       actions: widget.actions,
+      showBackButton: widget.showBackButton,
+      onBack: widget.onBack,
       dashboardRoute: AppConstants.routeCandidateDashboard,
       onLogout: () {}, // No-op when auth not available
       navigationItems: _navigationItems ?? _buildNavigationItems(false),
@@ -262,6 +272,8 @@ class _AppCandidateLayoutState extends State<AppCandidateLayout> {
       key: const ValueKey('candidate-layout'),
       title: widget.title,
       actions: widget.actions,
+      showBackButton: widget.showBackButton,
+      onBack: widget.onBack,
       dashboardRoute: AppConstants.routeCandidateDashboard,
       onLogout: () => authController.signOut(),
       navigationItems:

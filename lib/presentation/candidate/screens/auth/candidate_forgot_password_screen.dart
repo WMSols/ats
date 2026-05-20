@@ -74,6 +74,14 @@ class _CandidateForgotPasswordScreenState
               : const SizedBox.shrink(),
         ),
         AppSpacing.vertical(context, 0.02),
+        Center(
+          child: AppTextButton(
+            text: AppTexts.backToLogin,
+            textColor: AppColors.white,
+            onPressed: () => Get.offNamed(AppConstants.routeLogin),
+          ),
+        ),
+        AppSpacing.vertical(context, 0.02),
       ],
       errorMessage: Obx(
         () => controller.errorMessage.value.isNotEmpty

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:ats/core/routes/app_route_navigation.dart';
 import 'package:ats/core/utils/app_colors/app_colors.dart';
+import 'package:ats/core/widgets/common/buttons/app_back_button.dart';
 import 'package:ats/core/utils/app_responsive/app_responsive.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/utils/app_styles/app_text_styles.dart';
@@ -18,6 +21,9 @@ class AppSideLayout extends StatefulWidget {
   final List<AppNavigationItemModel> Function()? navigationItemsBuilder;
   final VoidCallback onLogout;
   final String? dashboardRoute;
+  /// When null, back is shown automatically on child routes ([AppRouteNavigation]).
+  final bool? showBackButton;
+  final VoidCallback? onBack;
 
   const AppSideLayout({
     super.key,
@@ -28,6 +34,8 @@ class AppSideLayout extends StatefulWidget {
     this.navigationItemsBuilder,
     required this.onLogout,
     this.dashboardRoute,
+    this.showBackButton,
+    this.onBack,
   }) : assert(
          navigationItems != null || navigationItemsBuilder != null,
          'Either navigationItems or navigationItemsBuilder must be provided',
@@ -61,12 +69,16 @@ class _AppSideLayoutState extends State<AppSideLayout> {
     final actionsChanged = oldWidget.actions != widget.actions;
     final navigationChanged =
         oldWidget.navigationItems != widget.navigationItems;
+    final backChanged =
+        oldWidget.showBackButton != widget.showBackButton ||
+        oldWidget.onBack != widget.onBack;
 
     if (oldChildType != newChildType ||
         oldChildKey != newChildKey ||
         titleChanged ||
         actionsChanged ||
-        navigationChanged) {
+        navigationChanged ||
+        backChanged) {
       if (oldChildType != newChildType || oldChildKey != newChildKey) {
         _cachedChild = widget.child;
       }
@@ -81,10 +93,41 @@ class _AppSideLayoutState extends State<AppSideLayout> {
     return widget.key;
   }
 
+  bool _resolveShowBackButton() {
+    if (widget.showBackButton != null) return widget.showBackButton!;
+    return AppRouteNavigation.shouldShowBackButton(Get.currentRoute);
+  }
+
+  List<Widget> _mobileAppBarActions(
+    BuildContext context,
+    GlobalKey<ScaffoldState> drawerKey,
+    bool showBack,
+  ) {
+    final actions = <Widget>[];
+    if (showBack) {
+      actions.add(
+        IconButton(
+          tooltip: 'Menu',
+          icon: Icon(
+            Iconsax.menu_1,
+            size: AppResponsive.iconSize(context),
+            color: AppColors.white,
+          ),
+          onPressed: () => drawerKey.currentState?.openDrawer(),
+        ),
+      );
+    }
+    if (widget.actions != null) {
+      actions.addAll(widget.actions!);
+    }
+    return actions;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMobile = AppResponsive.isMobile(context);
     final drawerKey = GlobalKey<ScaffoldState>();
+    final showBack = _resolveShowBackButton();
 
     if (isMobile) {
       return Scaffold(
@@ -95,14 +138,16 @@ class _AppSideLayoutState extends State<AppSideLayout> {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
           elevation: 0,
-          leading: IconButton(
-            icon: Icon(
-              Iconsax.menu_1,
-              size: AppResponsive.iconSize(context),
-              color: AppColors.white,
-            ),
-            onPressed: () => drawerKey.currentState?.openDrawer(),
-          ),
+          leading: showBack
+              ? AppBackButton.icon(onPressed: widget.onBack)
+              : IconButton(
+                  icon: Icon(
+                    Iconsax.menu_1,
+                    size: AppResponsive.iconSize(context),
+                    color: AppColors.white,
+                  ),
+                  onPressed: () => drawerKey.currentState?.openDrawer(),
+                ),
           title: widget.title != null
               ? Text(
                   widget.title!,
@@ -112,7 +157,9 @@ class _AppSideLayoutState extends State<AppSideLayout> {
                   ),
                 )
               : null,
-          actions: widget.actions,
+          actions: showBack
+              ? _mobileAppBarActions(context, drawerKey, showBack)
+              : widget.actions,
         ),
         body: Column(
           children: [
@@ -143,7 +190,7 @@ class _AppSideLayoutState extends State<AppSideLayout> {
               child: Column(
                 children: [
                   // Top App Bar with User Profile
-                  _buildTopAppBar(context),
+                  _buildTopAppBar(context, showBack),
                   // Main Content - use KeyedSubtree to keep child stable
                   Expanded(
                     child: RepaintBoundary(
@@ -233,7 +280,7 @@ class _AppSideLayoutState extends State<AppSideLayout> {
     );
   }
 
-  Widget _buildTopAppBar(BuildContext context) {
+  Widget _buildTopAppBar(BuildContext context, bool showBack) {
     final appBarHeight = AppResponsive.screenHeight(context) * 0.08;
 
     return Container(
@@ -241,9 +288,11 @@ class _AppSideLayoutState extends State<AppSideLayout> {
       color: AppColors.primary,
       padding: AppSpacing.symmetric(context, h: 0.03, v: 0.01),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Title
+          if (showBack) ...[
+            AppBackButton.icon(onPressed: widget.onBack),
+            AppSpacing.horizontal(context, 0.01),
+          ],
           if (widget.title != null)
             Expanded(
               child: Text(
@@ -254,9 +303,11 @@ class _AppSideLayoutState extends State<AppSideLayout> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-            ),
-          // Actions and User Profile
+            )
+          else if (!showBack)
+            const Spacer(),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               if (widget.actions != null) ...widget.actions!,
               AppSpacing.horizontal(context, 0.02),

@@ -11,12 +11,16 @@ class AppAdminLayout extends StatelessWidget {
   final Widget child;
   final String? title;
   final List<Widget>? actions;
+  final bool? showBackButton;
+  final VoidCallback? onBack;
 
   const AppAdminLayout({
     super.key,
     required this.child,
     this.title,
     this.actions,
+    this.showBackButton,
+    this.onBack,
   });
 
   @override
@@ -59,6 +63,8 @@ class AppAdminLayout extends StatelessWidget {
       return AppSideLayout(
         title: title,
         actions: actions,
+        showBackButton: showBackButton,
+        onBack: onBack,
         navigationItems: navigationItems,
         dashboardRoute: AppConstants.routeAdminDashboard,
         onLogout: () => authController.signOut(),
