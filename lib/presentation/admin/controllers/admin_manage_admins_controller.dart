@@ -37,15 +37,15 @@ class AdminManageAdminsController extends GetxController {
 
   void _bindAuthenticatedDataLoading() {
     _authStateSubscription?.cancel();
-    _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen(
-      (user) {
-        if (user == null) {
-          _adminProfilesLoaded = false;
-          return;
-        }
-        loadAdminProfiles();
-      },
-    );
+    _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen((
+      user,
+    ) {
+      if (user == null) {
+        _adminProfilesLoaded = false;
+        return;
+      }
+      loadAdminProfiles();
+    });
     loadAdminProfiles();
   }
 

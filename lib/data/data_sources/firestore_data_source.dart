@@ -892,9 +892,7 @@ class FirestoreDataSourceImpl implements FirestoreDataSource {
       });
 
       final results = await Future.wait(candidateFutures);
-      final candidates = results
-          .whereType<Map<String, dynamic>>()
-          .toList();
+      final candidates = results.whereType<Map<String, dynamic>>().toList();
 
       return candidates;
     } catch (e) {

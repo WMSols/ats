@@ -21,6 +21,7 @@ class AppSideLayout extends StatefulWidget {
   final List<AppNavigationItemModel> Function()? navigationItemsBuilder;
   final VoidCallback onLogout;
   final String? dashboardRoute;
+
   /// When null, back is shown automatically on child routes ([AppRouteNavigation]).
   final bool? showBackButton;
   final VoidCallback? onBack;
