@@ -17,7 +17,8 @@ class AppCandidateTableLayout {
 
   /// Total table width for horizontal scrolling (includes Actions when shown).
   static double tableWidth({required bool includeActions}) {
-    var width = name +
+    var width =
+        name +
         email +
         company +
         position +

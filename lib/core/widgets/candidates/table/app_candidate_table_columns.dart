@@ -55,10 +55,9 @@ class AppCandidateTableColumns {
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
           child: Text(
             label,
-            style: AppTextStyles.bodyText(context).copyWith(
-              color: AppColors.secondary,
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTextStyles.bodyText(
+              context,
+            ).copyWith(color: AppColors.secondary, fontWeight: FontWeight.w500),
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
             softWrap: false,

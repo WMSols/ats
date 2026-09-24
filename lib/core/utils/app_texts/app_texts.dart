@@ -60,6 +60,12 @@ class AppTexts {
   static const String number = "Number";
   static const String profession = "Profession";
   static const String specialties = "Specialties";
+  static const String allProfessions = "All Professions";
+  static const String allSpecialties = "All Specialties";
+  static const String allAgents = "All Agents";
+  static const String sortBy = "Sort";
+  static const String sortAscending = "A → Z";
+  static const String sortDescending = "Z → A";
   static const String backgroundHistory = "Background History";
   static const String liabilityAction =
       "Has this candidate ever been named as a defendant in a professional liability action?";
