@@ -8,6 +8,8 @@ import 'package:ats/domain/entities/document_type_entity.dart';
 import 'package:ats/domain/entities/candidate_document_entity.dart';
 import 'package:ats/domain/entities/application_entity.dart';
 import 'package:ats/domain/usecases/document/upload_document_usecase.dart';
+import 'package:ats/domain/usecases/email/send_candidate_document_upload_email_usecase.dart';
+import 'package:ats/domain/repositories/email_repository.dart';
 import 'package:ats/core/utils/app_file_validator/app_file_validator.dart';
 import 'package:ats/core/constants/app_constants.dart';
 import 'package:ats/data/repositories/document_repository_impl.dart';
@@ -48,6 +50,9 @@ class DocumentsController extends GetxController {
     Get.find<DocumentRepository>(),
   );
 
+  late final SendCandidateDocumentUploadEmailUseCase
+  _sendCandidateDocumentUploadEmailUseCase;
+
   // Stream subscriptions
   StreamSubscription<List<DocumentTypeEntity>>? _documentTypesSubscription;
   StreamSubscription<List<CandidateDocumentEntity>>?
@@ -56,6 +61,8 @@ class DocumentsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _sendCandidateDocumentUploadEmailUseCase =
+        SendCandidateDocumentUploadEmailUseCase(Get.find<EmailRepository>());
     // Try to get JobsController if available (may not be initialized yet)
     try {
       _jobsController = Get.find<JobsController>();
@@ -64,6 +71,22 @@ class DocumentsController extends GetxController {
     }
     loadDocumentTypes();
     loadCandidateDocuments();
+  }
+
+  /// Fire-and-forget admin notification; upload success must not depend on email.
+  Future<void> _notifyAdminsOfUpload({
+    required String documentName,
+    String? documentTypeName,
+  }) async {
+    try {
+      final result = await _sendCandidateDocumentUploadEmailUseCase(
+        documentName: documentName,
+        documentTypeName: documentTypeName,
+      );
+      result.fold((_) {}, (_) {});
+    } catch (_) {
+      // Intentionally ignore — email failure must not affect upload UX
+    }
   }
 
   void setJobsController(JobsController jobsController) {
@@ -369,6 +392,11 @@ class DocumentsController extends GetxController {
           }
 
           AppSnackbar.success('Document uploaded successfully');
+          // Notify assigned agent / super admins (non-blocking)
+          _notifyAdminsOfUpload(
+            documentName: documentName,
+            documentTypeName: docTypeName,
+          );
           // Navigate to MyDocumentsScreen after successful upload
           Get.offNamed(AppConstants.routeCandidateDocuments);
         },
@@ -478,6 +506,11 @@ class DocumentsController extends GetxController {
         }
 
         AppSnackbar.success('Document uploaded successfully');
+        // Notify assigned agent / super admins (non-blocking)
+        _notifyAdminsOfUpload(
+          documentName: documentName,
+          documentTypeName: docTypeName,
+        );
         // Reset progress after a short delay
         Future.delayed(const Duration(seconds: 2), () {
           uploadProgress.value = 0.0;
@@ -671,6 +704,10 @@ class DocumentsController extends GetxController {
           uploadProgress.value = 1.0;
           clearSelectedFile();
           AppSnackbar.success('Document created successfully');
+          _notifyAdminsOfUpload(
+            documentName: documentName,
+            documentTypeName: title,
+          );
           // Reset progress after a short delay
           Future.delayed(const Duration(seconds: 2), () {
             uploadProgress.value = 0.0;
