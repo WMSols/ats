@@ -76,6 +76,12 @@ abstract class FirebaseFunctionsDataSource {
     required String candidateName,
     required List<Map<String, String>> documents,
   });
+
+  /// Notifies assigned agent / super admins when a candidate uploads a document
+  Future<void> sendCandidateDocumentUploadEmail({
+    required String documentName,
+    String? documentTypeName,
+  });
 }
 
 class FirebaseFunctionsDataSourceImpl implements FirebaseFunctionsDataSource {
@@ -297,6 +303,27 @@ class FirebaseFunctionsDataSourceImpl implements FirebaseFunctionsDataSource {
         'candidateEmail': candidateEmail,
         'candidateName': candidateName,
         'documents': documents,
+      });
+    } on FirebaseFunctionsException catch (e) {
+      throw ServerException('Failed to send email: ${e.message}');
+    } catch (e) {
+      throw ServerException('An unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<void> sendCandidateDocumentUploadEmail({
+    required String documentName,
+    String? documentTypeName,
+  }) async {
+    try {
+      final callable = firebaseFunctions.httpsCallable(
+        'sendCandidateDocumentUploadEmail',
+      );
+      await callable.call({
+        'documentName': documentName,
+        if (documentTypeName != null && documentTypeName.isNotEmpty)
+          'documentTypeName': documentTypeName,
       });
     } on FirebaseFunctionsException catch (e) {
       throw ServerException('Failed to send email: ${e.message}');

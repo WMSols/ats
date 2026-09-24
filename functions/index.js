@@ -1195,3 +1195,211 @@ exports.sendMissingDocumentsEmail = onCall(
     );
   }
 });
+
+/**
+ * Notifies assigned agent (or all super_admins) when a candidate uploads a document.
+ * Recipient emails are resolved server-side from Firestore.
+ */
+exports.sendCandidateDocumentUploadEmail = onCall(
+  {},
+  async (request) => {
+    const {data, auth} = request;
+
+    if (!auth) {
+      throw new HttpsError(
+        'unauthenticated',
+        'User must be authenticated to send emails'
+      );
+    }
+
+    const callerUserDoc = await admin.firestore()
+      .collection('users')
+      .doc(auth.uid)
+      .get();
+
+    if (!callerUserDoc.exists) {
+      throw new HttpsError(
+        'permission-denied',
+        'User document not found'
+      );
+    }
+
+    const callerRole = callerUserDoc.data().role;
+    if (callerRole !== 'candidate') {
+      throw new HttpsError(
+        'permission-denied',
+        'Only candidates can trigger this notification'
+      );
+    }
+
+    const {documentName, documentTypeName} = data;
+    if (!documentName) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Missing required field: documentName'
+      );
+    }
+
+    try {
+      const host = process.env.SMTP_HOST;
+      const port = process.env.SMTP_PORT || '587';
+      const user = process.env.SMTP_USER;
+      const password = process.env.SMTP_PASSWORD;
+      const fromEmail = process.env.EMAIL_FROM;
+      const fromName = process.env.EMAIL_FROMNAME;
+
+      if (!host || !user || !password) {
+        throw new Error(
+          'SMTP configuration is missing. Please set environment variables: SMTP_HOST, SMTP_USER, SMTP_PASSWORD'
+        );
+      }
+
+      if (!fromEmail || !fromName) {
+        throw new Error(
+          'Email configuration is missing. Please set environment variables: EMAIL_FROM, EMAIL_FROMNAME'
+        );
+      }
+
+      const profilesSnap = await admin.firestore()
+        .collection('candidateProfiles')
+        .where('userId', '==', auth.uid)
+        .limit(1)
+        .get();
+
+      if (profilesSnap.empty) {
+        throw new HttpsError(
+          'not-found',
+          'Candidate profile not found'
+        );
+      }
+
+      const profile = profilesSnap.docs[0].data();
+      const firstName = profile.firstName || '';
+      const lastName = profile.lastName || '';
+      const candidateName = `${firstName} ${lastName}`.trim() ||
+        (callerUserDoc.data().email || 'Candidate');
+      const assignedAgentId = profile.assignedAgentId || null;
+
+      const recipientEmails = new Set();
+
+      if (assignedAgentId) {
+        const agentProfileDoc = await admin.firestore()
+          .collection('adminProfiles')
+          .doc(assignedAgentId)
+          .get();
+
+        if (agentProfileDoc.exists) {
+          const agentUserId = agentProfileDoc.data().userId;
+          if (agentUserId) {
+            const agentUserDoc = await admin.firestore()
+              .collection('users')
+              .doc(agentUserId)
+              .get();
+            const agentEmail = agentUserDoc.exists
+              ? agentUserDoc.data().email
+              : null;
+            if (agentEmail) {
+              recipientEmails.add(agentEmail);
+            }
+          }
+        }
+      }
+
+      if (recipientEmails.size === 0) {
+        const adminProfilesSnap = await admin.firestore()
+          .collection('adminProfiles')
+          .where('accessLevel', '==', 'super_admin')
+          .get();
+
+        for (const doc of adminProfilesSnap.docs) {
+          const adminUserId = doc.data().userId;
+          if (!adminUserId) continue;
+          const adminUserDoc = await admin.firestore()
+            .collection('users')
+            .doc(adminUserId)
+            .get();
+          if (adminUserDoc.exists && adminUserDoc.data().email) {
+            recipientEmails.add(adminUserDoc.data().email);
+          }
+        }
+      }
+
+      if (recipientEmails.size === 0) {
+        console.warn(
+          'No admin recipients found for candidate document upload notification'
+        );
+        return {
+          success: true,
+          skipped: true,
+          reason: 'No admin recipients found',
+        };
+      }
+
+      const transporter = nodemailer.createTransport({
+        host: host,
+        port: parseInt(port, 10),
+        secure: port === '465',
+        auth: {
+          user: user,
+          pass: password,
+        },
+      });
+
+      const displayDocName = documentTypeName
+        ? `${documentTypeName} (${documentName})`
+        : documentName;
+      const adminCandidatesUrl =
+        'https://ats-maximum-admin.web.app/admin/candidates';
+      const subject =
+        `Candidate Document Uploaded - ${candidateName}`;
+
+      let emailBody = `Hello,\n\n`;
+      emailBody += `A candidate has uploaded a document that may need your review:\n\n`;
+      emailBody += `Candidate: ${candidateName}\n`;
+      emailBody += `Document: ${displayDocName}\n\n`;
+      emailBody += `Please review this document in the admin Candidates section:\n`;
+      emailBody += `${adminCandidatesUrl}\n\n`;
+      emailBody += `Best regards,\n${fromName}`;
+
+      let htmlBody = `<p>Hello,</p>`;
+      htmlBody += `<p>A candidate has uploaded a document that may need your review:</p>`;
+      htmlBody += `<p><strong>Candidate:</strong> ${candidateName}<br>`;
+      htmlBody += `<strong>Document:</strong> ${displayDocName}</p>`;
+      htmlBody += `<p><a href="${adminCandidatesUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; margin: 10px 0;">Open Candidates</a></p>`;
+      htmlBody += `<p>Or copy and paste this link: <a href="${adminCandidatesUrl}">${adminCandidatesUrl}</a></p>`;
+      htmlBody += `<p>Best regards,<br>${fromName}</p>`;
+
+      const toList = Array.from(recipientEmails).join(', ');
+      const mailOptions = {
+        from: `"${fromName}" <${fromEmail}>`,
+        to: toList,
+        subject: subject,
+        text: emailBody,
+        html: htmlBody,
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      console.log(
+        'Candidate upload notification sent:',
+        info.messageId,
+        'to',
+        toList
+      );
+
+      return {
+        success: true,
+        messageId: info.messageId,
+        recipients: Array.from(recipientEmails),
+      };
+    } catch (error) {
+      console.error('Error sending candidate upload notification:', error);
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+      throw new HttpsError(
+        'internal',
+        `Failed to send email: ${error.message}`
+      );
+    }
+  }
+);

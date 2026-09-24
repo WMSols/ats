@@ -66,6 +66,151 @@ class _AdminCandidatesListScreenState extends State<AdminCandidatesListScreen> {
     );
   }
 
+  Widget _buildAgentDropdown(String? selectedAgent) {
+    final availableAgents = _controller.availableAgents.toList();
+    return AppDropDownField<String>(
+      value: selectedAgent,
+      labelText: AppTexts.agent,
+      hintText: AppTexts.allAgents,
+      items: [
+        DropdownMenuItem<String>(value: null, child: Text(AppTexts.allAgents)),
+        ...availableAgents.map((agent) {
+          return DropdownMenuItem<String>(
+            value: agent.profileId,
+            child: Text(
+              agent.name.isNotEmpty ? agent.name : 'Unknown Agent',
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }),
+      ],
+      onChanged: (value) => _controller.setAgentFilter(value),
+    );
+  }
+
+  Widget _buildProfessionDropdown(String? selectedProfession) {
+    final availableProfessions = _controller.getAvailableProfessions();
+    return AppDropDownField<String>(
+      value: selectedProfession,
+      labelText: AppTexts.profession,
+      hintText: AppTexts.allProfessions,
+      items: [
+        DropdownMenuItem<String>(
+          value: null,
+          child: Text(AppTexts.allProfessions),
+        ),
+        ...availableProfessions.map((profession) {
+          return DropdownMenuItem<String>(
+            value: profession,
+            child: Text(profession, overflow: TextOverflow.ellipsis),
+          );
+        }),
+      ],
+      onChanged: (value) => _controller.setProfessionFilter(value),
+    );
+  }
+
+  Widget _buildSpecialtyDropdown(String? selectedSpecialty) {
+    final availableSpecialties = _controller.getAvailableSpecialties();
+    return AppDropDownField<String>(
+      value: selectedSpecialty,
+      labelText: AppTexts.specialty,
+      hintText: AppTexts.allSpecialties,
+      items: [
+        DropdownMenuItem<String>(
+          value: null,
+          child: Text(AppTexts.allSpecialties),
+        ),
+        ...availableSpecialties.map((specialty) {
+          return DropdownMenuItem<String>(
+            value: specialty,
+            child: Text(specialty, overflow: TextOverflow.ellipsis),
+          );
+        }),
+      ],
+      onChanged: (value) => _controller.setSpecialtyFilter(value),
+    );
+  }
+
+  Widget _buildSortDropdown(String sortOrder) {
+    return AppDropDownField<String>(
+      value: sortOrder,
+      labelText: AppTexts.sortBy,
+      items: const [
+        DropdownMenuItem<String>(
+          value: 'asc',
+          child: Text(AppTexts.sortAscending),
+        ),
+        DropdownMenuItem<String>(
+          value: 'desc',
+          child: Text(AppTexts.sortDescending),
+        ),
+      ],
+      onChanged: (value) {
+        if (value != null) _controller.setSortOrder(value);
+      },
+    );
+  }
+
+  Widget _buildStatusChips({
+    required String? selectedStatus,
+    required int pendingCount,
+    required int approvedCount,
+    required int deniedCount,
+  }) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        AppStatusChip(
+          status: AppConstants.documentStatusPending,
+          customText: AppTexts.pending,
+          showIcon: false,
+          count: pendingCount,
+          isSelected: selectedStatus == AppConstants.documentStatusPending,
+          isFilter: true,
+          onTap: () {
+            if (selectedStatus == AppConstants.documentStatusPending) {
+              _controller.setStatusFilter(null);
+            } else {
+              _controller.setStatusFilter(AppConstants.documentStatusPending);
+            }
+          },
+        ),
+        AppStatusChip(
+          status: AppConstants.documentStatusApproved,
+          customText: AppTexts.approved,
+          showIcon: false,
+          count: approvedCount,
+          isSelected: selectedStatus == AppConstants.documentStatusApproved,
+          isFilter: true,
+          onTap: () {
+            if (selectedStatus == AppConstants.documentStatusApproved) {
+              _controller.setStatusFilter(null);
+            } else {
+              _controller.setStatusFilter(AppConstants.documentStatusApproved);
+            }
+          },
+        ),
+        AppStatusChip(
+          status: AppConstants.documentStatusDenied,
+          customText: AppTexts.denied,
+          showIcon: false,
+          count: deniedCount,
+          isSelected: selectedStatus == AppConstants.documentStatusDenied,
+          isFilter: true,
+          onTap: () {
+            if (selectedStatus == AppConstants.documentStatusDenied) {
+              _controller.setStatusFilter(null);
+            } else {
+              _controller.setStatusFilter(AppConstants.documentStatusDenied);
+            }
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _cachedContent ??= Builder(
@@ -91,17 +236,18 @@ class _AdminCandidatesListScreenState extends State<AdminCandidatesListScreen> {
             padding: AppSpacing.padding(context).copyWith(top: 0),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // Access reactive variables at the top level so GetX can track them
                 return Obx(() {
                   final selectedAgent = _controller.selectedAgentFilter.value;
                   final selectedStatus = _controller.selectedStatusFilter.value;
                   final selectedProfession =
                       _controller.selectedProfessionFilter.value;
-                  final availableAgents = _controller.availableAgents.toList();
-                  final availableProfessions = _controller
-                      .getAvailableProfessions();
+                  final selectedSpecialty =
+                      _controller.selectedSpecialtyFilter.value;
+                  final sortOrder = _controller.sortOrder.value;
 
-                  // Get status counts
+                  // Track profile map so specialty/profession options refresh
+                  _controller.candidateProfiles.length;
+
                   final pendingCount = _controller.getStatusCount(
                     AppConstants.documentStatusPending,
                   );
@@ -112,8 +258,17 @@ class _AdminCandidatesListScreenState extends State<AdminCandidatesListScreen> {
                     AppConstants.documentStatusDenied,
                   );
 
-                  // Use wrap layout for smaller screens, row for larger screens
+                  final statusChips = _buildStatusChips(
+                    selectedStatus: selectedStatus,
+                    pendingCount: pendingCount,
+                    approvedCount: approvedCount,
+                    deniedCount: deniedCount,
+                  );
+
                   if (constraints.maxWidth < 800) {
+                    final halfWidth = constraints.maxWidth > 400
+                        ? (constraints.maxWidth - 16) / 2
+                        : constraints.maxWidth - 16;
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -121,274 +276,62 @@ class _AdminCandidatesListScreenState extends State<AdminCandidatesListScreen> {
                           spacing: 8,
                           runSpacing: 8,
                           children: [
-                            // Agent Filter
                             SizedBox(
-                              width: constraints.maxWidth > 400
-                                  ? (constraints.maxWidth - 16) / 2
-                                  : constraints.maxWidth - 16,
-                              child: AppDropDownField<String>(
-                                value: selectedAgent,
-                                labelText: AppTexts.agent,
-                                hintText: 'All Agents',
-                                items: [
-                                  DropdownMenuItem<String>(
-                                    value: null,
-                                    child: Text('All Agents'),
-                                  ),
-                                  ...availableAgents.map((agent) {
-                                    return DropdownMenuItem<String>(
-                                      value: agent.profileId,
-                                      child: Text(
-                                        agent.name.isNotEmpty
-                                            ? agent.name
-                                            : 'Unknown Agent',
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    );
-                                  }),
-                                ],
-                                onChanged: (value) =>
-                                    _controller.setAgentFilter(value),
+                              width: halfWidth,
+                              child: _buildAgentDropdown(selectedAgent),
+                            ),
+                            SizedBox(
+                              width: halfWidth,
+                              child: _buildProfessionDropdown(
+                                selectedProfession,
                               ),
                             ),
-                            // Profession Filter
                             SizedBox(
-                              width: constraints.maxWidth - 16,
-                              child: AppDropDownField<String>(
-                                value: selectedProfession,
-                                labelText: AppTexts.profession,
-                                hintText: 'All Professions',
-                                items: [
-                                  DropdownMenuItem<String>(
-                                    value: null,
-                                    child: Text('All Professions'),
-                                  ),
-                                  ...availableProfessions.map((profession) {
-                                    return DropdownMenuItem<String>(
-                                      value: profession,
-                                      child: Text(
-                                        profession,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    );
-                                  }),
-                                ],
-                                onChanged: (value) =>
-                                    _controller.setProfessionFilter(value),
-                              ),
+                              width: halfWidth,
+                              child: _buildSpecialtyDropdown(selectedSpecialty),
+                            ),
+                            SizedBox(
+                              width: halfWidth,
+                              child: _buildSortDropdown(sortOrder),
                             ),
                           ],
                         ),
-                        // Status Filter Chips
                         Padding(
                           padding: EdgeInsets.only(
                             top: AppSpacing.vertical(context, 0.02).height!,
                           ),
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              AppStatusChip(
-                                status: AppConstants.documentStatusPending,
-                                customText: AppTexts.pending,
-                                showIcon: false,
-                                count: pendingCount,
-                                isSelected:
-                                    selectedStatus ==
-                                    AppConstants.documentStatusPending,
-                                isFilter: true,
-                                onTap: () {
-                                  if (selectedStatus ==
-                                      AppConstants.documentStatusPending) {
-                                    _controller.setStatusFilter(null);
-                                  } else {
-                                    _controller.setStatusFilter(
-                                      AppConstants.documentStatusPending,
-                                    );
-                                  }
-                                },
-                              ),
-                              AppStatusChip(
-                                status: AppConstants.documentStatusApproved,
-                                customText: AppTexts.approved,
-                                showIcon: false,
-                                count: approvedCount,
-                                isSelected:
-                                    selectedStatus ==
-                                    AppConstants.documentStatusApproved,
-                                isFilter: true,
-                                onTap: () {
-                                  if (selectedStatus ==
-                                      AppConstants.documentStatusApproved) {
-                                    _controller.setStatusFilter(null);
-                                  } else {
-                                    _controller.setStatusFilter(
-                                      AppConstants.documentStatusApproved,
-                                    );
-                                  }
-                                },
-                              ),
-                              AppStatusChip(
-                                status: AppConstants.documentStatusDenied,
-                                customText: AppTexts.denied,
-                                showIcon: false,
-                                count: deniedCount,
-                                isSelected:
-                                    selectedStatus ==
-                                    AppConstants.documentStatusDenied,
-                                isFilter: true,
-                                onTap: () {
-                                  if (selectedStatus ==
-                                      AppConstants.documentStatusDenied) {
-                                    _controller.setStatusFilter(null);
-                                  } else {
-                                    _controller.setStatusFilter(
-                                      AppConstants.documentStatusDenied,
-                                    );
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  } else {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            // Agent Filter
-                            Expanded(
-                              child: AppDropDownField<String>(
-                                value: selectedAgent,
-                                labelText: AppTexts.agent,
-                                hintText: 'All Agents',
-                                items: [
-                                  DropdownMenuItem<String>(
-                                    value: null,
-                                    child: Text('All Agents'),
-                                  ),
-                                  ...availableAgents.map((agent) {
-                                    return DropdownMenuItem<String>(
-                                      value: agent.profileId,
-                                      child: Text(
-                                        agent.name.isNotEmpty
-                                            ? agent.name
-                                            : 'Unknown Agent',
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    );
-                                  }),
-                                ],
-                                onChanged: (value) =>
-                                    _controller.setAgentFilter(value),
-                              ),
-                            ),
-                            AppSpacing.horizontal(context, 0.02),
-                            // Profession Filter
-                            Expanded(
-                              child: AppDropDownField<String>(
-                                value: selectedProfession,
-                                labelText: AppTexts.profession,
-                                hintText: 'All Professions',
-                                items: [
-                                  DropdownMenuItem<String>(
-                                    value: null,
-                                    child: Text('All Professions'),
-                                  ),
-                                  ...availableProfessions.map((profession) {
-                                    return DropdownMenuItem<String>(
-                                      value: profession,
-                                      child: Text(
-                                        profession,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    );
-                                  }),
-                                ],
-                                onChanged: (value) =>
-                                    _controller.setProfessionFilter(value),
-                              ),
-                            ),
-                          ],
-                        ),
-                        // Status Filter Chips
-                        Padding(
-                          padding: EdgeInsets.only(
-                            top: AppSpacing.vertical(context, 0.02).height!,
-                          ),
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              AppStatusChip(
-                                status: AppConstants.documentStatusPending,
-                                customText: AppTexts.pending,
-                                showIcon: false,
-                                count: pendingCount,
-                                isSelected:
-                                    selectedStatus ==
-                                    AppConstants.documentStatusPending,
-                                isFilter: true,
-                                onTap: () {
-                                  if (selectedStatus ==
-                                      AppConstants.documentStatusPending) {
-                                    _controller.setStatusFilter(null);
-                                  } else {
-                                    _controller.setStatusFilter(
-                                      AppConstants.documentStatusPending,
-                                    );
-                                  }
-                                },
-                              ),
-                              AppStatusChip(
-                                status: AppConstants.documentStatusApproved,
-                                customText: AppTexts.approved,
-                                showIcon: false,
-                                count: approvedCount,
-                                isSelected:
-                                    selectedStatus ==
-                                    AppConstants.documentStatusApproved,
-                                isFilter: true,
-                                onTap: () {
-                                  if (selectedStatus ==
-                                      AppConstants.documentStatusApproved) {
-                                    _controller.setStatusFilter(null);
-                                  } else {
-                                    _controller.setStatusFilter(
-                                      AppConstants.documentStatusApproved,
-                                    );
-                                  }
-                                },
-                              ),
-                              AppStatusChip(
-                                status: AppConstants.documentStatusDenied,
-                                customText: AppTexts.denied,
-                                showIcon: false,
-                                count: deniedCount,
-                                isSelected:
-                                    selectedStatus ==
-                                    AppConstants.documentStatusDenied,
-                                isFilter: true,
-                                onTap: () {
-                                  if (selectedStatus ==
-                                      AppConstants.documentStatusDenied) {
-                                    _controller.setStatusFilter(null);
-                                  } else {
-                                    _controller.setStatusFilter(
-                                      AppConstants.documentStatusDenied,
-                                    );
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
+                          child: statusChips,
                         ),
                       ],
                     );
                   }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(child: _buildAgentDropdown(selectedAgent)),
+                          AppSpacing.horizontal(context, 0.015),
+                          Expanded(
+                            child: _buildProfessionDropdown(selectedProfession),
+                          ),
+                          AppSpacing.horizontal(context, 0.015),
+                          Expanded(
+                            child: _buildSpecialtyDropdown(selectedSpecialty),
+                          ),
+                          AppSpacing.horizontal(context, 0.015),
+                          Expanded(child: _buildSortDropdown(sortOrder)),
+                        ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: AppSpacing.vertical(context, 0.02).height!,
+                        ),
+                        child: statusChips,
+                      ),
+                    ],
+                  );
                 });
               },
             ),

@@ -21,8 +21,7 @@ class AppRouteNavigation {
     AppConstants.routeAdminJobDetails: AppConstants.routeAdminJobs,
     AppConstants.routeAdminJobCreate: AppConstants.routeAdminJobs,
     AppConstants.routeAdminJobEdit: AppConstants.routeAdminJobs,
-    AppConstants.routeAdminCandidateDetails:
-        AppConstants.routeAdminCandidates,
+    AppConstants.routeAdminCandidateDetails: AppConstants.routeAdminCandidates,
     AppConstants.routeAdminCreateCandidate: AppConstants.routeAdminCandidates,
     AppConstants.routeAdminEditCandidate: AppConstants.routeAdminCandidates,
     AppConstants.routeAdminRequestDocument:

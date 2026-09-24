@@ -82,4 +82,5 @@ class AppConstants {
   static const String wmsolsWebsiteUrl = 'https://wmsols.com/';
   static const String candidateWebAppUrl =
       'https://ats-maximum-candidate.web.app/';
+  static const String adminWebAppUrl = 'https://ats-maximum-admin.web.app/';
 }

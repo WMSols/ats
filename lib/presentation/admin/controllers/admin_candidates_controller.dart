@@ -81,7 +81,10 @@ class AdminCandidatesController extends GetxController {
   final selectedAgentFilter = Rxn<String>(); // profileId
   final selectedStatusFilter = Rxn<String>();
   final selectedProfessionFilter = Rxn<String>();
+  final selectedSpecialtyFilter = Rxn<String>();
   final selectedDocumentFilter = Rxn<String>(); // 'all', 'requested', 'missing'
+  /// 'asc' = A→Z (default), 'desc' = Z→A
+  final sortOrder = 'asc'.obs;
 
   late final UpdateApplicationStatusUseCase updateApplicationStatusUseCase;
   late final UpdateDocumentStatusUseCase updateDocumentStatusUseCase;
@@ -147,16 +150,16 @@ class AdminCandidatesController extends GetxController {
   /// Prevents permission-denied errors when permanent controllers init on login/restart.
   void _bindAuthenticatedDataLoading() {
     _authStateSubscription?.cancel();
-    _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen(
-      (user) {
-        if (user == null) {
-          _candidatesListLoaded = false;
-          _agentsLoaded = false;
-          return;
-        }
-        _loadListDataWhenAuthenticated();
-      },
-    );
+    _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen((
+      user,
+    ) {
+      if (user == null) {
+        _candidatesListLoaded = false;
+        _agentsLoaded = false;
+        return;
+      }
+      _loadListDataWhenAuthenticated();
+    });
     _loadListDataWhenAuthenticated();
   }
 
@@ -1053,6 +1056,17 @@ class AdminCandidatesController extends GetxController {
     _applyFilters();
   }
 
+  void setSpecialtyFilter(String? specialty) {
+    selectedSpecialtyFilter.value = specialty;
+    _applyFilters();
+  }
+
+  void setSortOrder(String order) {
+    if (order != 'asc' && order != 'desc') return;
+    sortOrder.value = order;
+    _applyFilters();
+  }
+
   void setDocumentFilter(String? filter) {
     selectedDocumentFilter.value = filter;
   }
@@ -1066,6 +1080,31 @@ class AdminCandidatesController extends GetxController {
       }
     }
     return professions.toList()..sort();
+  }
+
+  /// Unique specialty tokens from all profiles (comma-separated storage).
+  List<String> getAvailableSpecialties() {
+    final specialties = <String>{};
+    for (var profile in candidateProfiles.values) {
+      final raw = profile?.specialties;
+      if (raw == null || raw.trim().isEmpty || raw == 'N/A') continue;
+      for (final part in raw.split(',')) {
+        final token = part.trim();
+        if (token.isNotEmpty) {
+          specialties.add(token);
+        }
+      }
+    }
+    return specialties.toList()..sort();
+  }
+
+  List<String> _parseSpecialtyTokens(String? raw) {
+    if (raw == null || raw.trim().isEmpty || raw == 'N/A') return const [];
+    return raw
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
   }
 
   // Get count of candidates by status
@@ -1121,6 +1160,18 @@ class AdminCandidatesController extends GetxController {
       filtered = filtered.where((candidate) {
         final profession = getCandidateProfession(candidate.userId);
         return profession == selectedProfessionFilter.value;
+      }).toList();
+    }
+
+    // Apply specialty filter (match if candidate has the selected specialty)
+    if (selectedSpecialtyFilter.value != null &&
+        selectedSpecialtyFilter.value!.isNotEmpty) {
+      final selected = selectedSpecialtyFilter.value!.toLowerCase();
+      filtered = filtered.where((candidate) {
+        final tokens = _parseSpecialtyTokens(
+          candidateProfiles[candidate.userId]?.specialties,
+        );
+        return tokens.any((t) => t.toLowerCase() == selected);
       }).toList();
     }
 
@@ -1267,6 +1318,14 @@ class AdminCandidatesController extends GetxController {
         return false;
       }).toList();
     }
+
+    // Sort by candidate display name (A→Z or Z→A)
+    filtered.sort((a, b) {
+      final nameA = getCandidateName(a.userId).toLowerCase();
+      final nameB = getCandidateName(b.userId).toLowerCase();
+      final comparison = nameA.compareTo(nameB);
+      return sortOrder.value == 'desc' ? -comparison : comparison;
+    });
 
     filteredCandidates.value = filtered;
   }

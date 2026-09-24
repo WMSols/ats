@@ -46,4 +46,10 @@ abstract class EmailRepository {
     required String candidateName,
     required List<Map<String, String>> documents,
   });
+
+  /// Notifies assigned agent / super admins when a candidate uploads a document
+  Future<Either<Failure, void>> sendCandidateDocumentUploadEmail({
+    required String documentName,
+    String? documentTypeName,
+  });
 }

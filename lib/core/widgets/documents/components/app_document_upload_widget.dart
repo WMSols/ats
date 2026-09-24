@@ -70,10 +70,10 @@ class AppDocumentUploadWidget extends StatelessWidget {
                                       .copyWith(
                                         fontSize:
                                             (AppTextStyles.bodyText(
-                                                      context,
-                                                    ).fontSize ??
-                                                    14) *
-                                                0.85,
+                                                  context,
+                                                ).fontSize ??
+                                                14) *
+                                            0.85,
                                         color: AppColors.grey,
                                       ),
                                 ),
@@ -106,8 +106,7 @@ class AppDocumentUploadWidget extends StatelessWidget {
                         'Uploading: ${(uploadProgress * 100).toStringAsFixed(0)}%',
                         style: AppTextStyles.bodyText(context).copyWith(
                           fontSize:
-                              (AppTextStyles.bodyText(context).fontSize ??
-                                  14) *
+                              (AppTextStyles.bodyText(context).fontSize ?? 14) *
                               0.85,
                           color: AppColors.primary,
                           fontWeight: FontWeight.w500,
