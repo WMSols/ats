@@ -44,61 +44,70 @@ class AppListCard extends StatelessWidget {
   }
 
   Widget _buildRowLayout(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppResponsive.radius(context)),
-      child: Padding(
-        padding: AppSpacing.all(context),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Row: Icon, Title, Status
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Icon(
-                  icon,
-                  size: AppResponsive.iconSize(context),
-                  color: iconColor ?? AppColors.white,
-                ),
-                AppSpacing.horizontal(context, 0.02),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: AppTextStyles.bodyText(context).copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.white,
+    final radius = BorderRadius.circular(AppResponsive.radius(context));
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        hoverColor: AppColors.white.withValues(alpha: 0.08),
+        splashColor: AppColors.white.withValues(alpha: 0.12),
+        mouseCursor: onTap != null
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        child: Padding(
+          padding: AppSpacing.all(context),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Row: Icon, Title, Status
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Icon(
+                    icon,
+                    size: AppResponsive.iconSize(context),
+                    color: iconColor ?? AppColors.white,
+                  ),
+                  AppSpacing.horizontal(context, 0.02),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: AppTextStyles.bodyText(context).copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.white,
+                      ),
                     ),
                   ),
-                ),
-                if (statusWidget != null) ...[
-                  AppSpacing.horizontal(context, 0.01),
-                  statusWidget!,
+                  if (statusWidget != null) ...[
+                    AppSpacing.horizontal(context, 0.01),
+                    statusWidget!,
+                  ],
                 ],
-              ],
-            ),
-            // Subtitle
-            if (subtitle != null && subtitle!.isNotEmpty) ...[
-              AppSpacing.vertical(context, 0.01),
-              Text(
-                subtitle!,
-                style: AppTextStyles.bodyText(
-                  context,
-                ).copyWith(color: AppColors.white),
               ),
+              // Subtitle
+              if (subtitle != null && subtitle!.isNotEmpty) ...[
+                AppSpacing.vertical(context, 0.01),
+                Text(
+                  subtitle!,
+                  style: AppTextStyles.bodyText(
+                    context,
+                  ).copyWith(color: AppColors.white),
+                ),
+              ],
+              // Content below subtitle (status chips, action buttons)
+              if (contentBelowSubtitle != null) ...[
+                AppSpacing.vertical(context, 0.01),
+                contentBelowSubtitle!,
+              ],
+              // Trailing (Action Buttons)
+              if (trailing != null) ...[
+                AppSpacing.vertical(context, 0.01),
+                trailing!,
+              ],
             ],
-            // Content below subtitle (status chips, action buttons)
-            if (contentBelowSubtitle != null) ...[
-              AppSpacing.vertical(context, 0.01),
-              contentBelowSubtitle!,
-            ],
-            // Trailing (Action Buttons)
-            if (trailing != null) ...[
-              AppSpacing.vertical(context, 0.01),
-              trailing!,
-            ],
-          ],
+          ),
         ),
       ),
     );
@@ -121,76 +130,85 @@ class AppListCard extends StatelessWidget {
   Widget _buildListTileLayout(BuildContext context) {
     final trailingWidget = statusWidget ?? trailing;
     final basePadding = AppSpacing.all(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppResponsive.radius(context)),
-      child: Padding(
-        // Use asymmetric padding: reduce right padding to bring trailing widget closer to edge
-        padding: EdgeInsets.only(
-          left: basePadding.left,
-          top: basePadding.top,
-          bottom: basePadding.bottom,
-          right: basePadding.right * 0.5, // Reduce right padding by half
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Leading Icon
-            Icon(
-              icon,
-              size: AppResponsive.iconSize(context),
-              color: iconColor ?? AppColors.white,
-            ),
-            AppSpacing.horizontal(context, 0.02),
-            // Title and Subtitle (Expanded to take available space)
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.bodyText(context).copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.white,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (subtitle != null && subtitle!.isNotEmpty) ...[
-                    SizedBox(
-                      height: AppResponsive.screenHeight(context) * 0.01,
-                    ),
+    final radius = BorderRadius.circular(AppResponsive.radius(context));
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        hoverColor: AppColors.white.withValues(alpha: 0.08),
+        splashColor: AppColors.white.withValues(alpha: 0.12),
+        mouseCursor: onTap != null
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        child: Padding(
+          // Use asymmetric padding: reduce right padding to bring trailing widget closer to edge
+          padding: EdgeInsets.only(
+            left: basePadding.left,
+            top: basePadding.top,
+            bottom: basePadding.bottom,
+            right: basePadding.right * 0.5, // Reduce right padding by half
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Leading Icon
+              Icon(
+                icon,
+                size: AppResponsive.iconSize(context),
+                color: iconColor ?? AppColors.white,
+              ),
+              AppSpacing.horizontal(context, 0.02),
+              // Title and Subtitle (Expanded to take available space)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Text(
-                      subtitle!,
-                      style: AppTextStyles.bodyText(
-                        context,
-                      ).copyWith(color: AppColors.white),
+                      title,
+                      style: AppTextStyles.bodyText(context).copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.white,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    if (subtitle != null && subtitle!.isNotEmpty) ...[
+                      SizedBox(
+                        height: AppResponsive.screenHeight(context) * 0.01,
+                      ),
+                      Text(
+                        subtitle!,
+                        style: AppTextStyles.bodyText(
+                          context,
+                        ).copyWith(color: AppColors.white),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    // Content below subtitle (status chips, action buttons)
+                    if (contentBelowSubtitle != null) ...[
+                      SizedBox(
+                        height: AppResponsive.screenHeight(context) * 0.01,
+                      ),
+                      contentBelowSubtitle!,
+                    ],
                   ],
-                  // Content below subtitle (status chips, action buttons)
-                  if (contentBelowSubtitle != null) ...[
-                    SizedBox(
-                      height: AppResponsive.screenHeight(context) * 0.01,
-                    ),
-                    contentBelowSubtitle!,
-                  ],
-                ],
-              ),
-            ),
-            // Trailing Widget (Aligned to top-right, far right edge)
-            if (trailingWidget != null) ...[
-              SizedBox(width: basePadding.right * 0.3), // Minimal spacing
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: _getMaxTrailingWidth(context),
                 ),
-                child: trailingWidget,
               ),
+              // Trailing Widget (Aligned to top-right, far right edge)
+              if (trailingWidget != null) ...[
+                SizedBox(width: basePadding.right * 0.3), // Minimal spacing
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: _getMaxTrailingWidth(context),
+                  ),
+                  child: trailingWidget,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

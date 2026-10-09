@@ -50,7 +50,7 @@ class AppFilterTabs extends StatelessWidget {
   }
 }
 
-class _FilterTab extends StatelessWidget {
+class _FilterTab extends StatefulWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
@@ -62,23 +62,65 @@ class _FilterTab extends StatelessWidget {
   });
 
   @override
+  State<_FilterTab> createState() => _FilterTabState();
+}
+
+class _FilterTabState extends State<_FilterTab> {
+  bool _isHovered = false;
+
+  Color get _baseColor =>
+      widget.isSelected ? AppColors.primary : AppColors.lightGrey;
+
+  Color get _backgroundColor {
+    if (!_isHovered) return _baseColor;
+    if (widget.isSelected) {
+      return Color.lerp(AppColors.primary, AppColors.white, 0.16)!;
+    }
+    return Color.lerp(AppColors.lightGrey, AppColors.black, 0.08)!;
+  }
+
+  Color get _labelColor {
+    if (widget.isSelected) return AppColors.white;
+    if (_isHovered) return AppColors.secondary;
+    return AppColors.grey;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: AppSpacing.symmetric(context, h: 0.02, v: 0.015),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.lightGrey,
-          borderRadius: BorderRadius.circular(
-            AppResponsive.radius(context, factor: 5),
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: AppTextStyles.bodyText(context).copyWith(
-              color: isSelected ? AppColors.white : AppColors.grey,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+    final radius = BorderRadius.circular(
+      AppResponsive.radius(context, factor: 5),
+    );
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onTap,
+          borderRadius: radius,
+          hoverColor: Colors.transparent,
+          splashColor: AppColors.primary.withValues(alpha: 0.12),
+          highlightColor: Colors.transparent,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOut,
+            padding: AppSpacing.symmetric(context, h: 0.02, v: 0.015),
+            decoration: BoxDecoration(
+              color: _backgroundColor,
+              borderRadius: radius,
+            ),
+            child: Center(
+              child: Text(
+                widget.label,
+                style: AppTextStyles.bodyText(context).copyWith(
+                  color: _labelColor,
+                  fontWeight: widget.isSelected
+                      ? FontWeight.w700
+                      : FontWeight.normal,
+                ),
+              ),
             ),
           ),
         ),

@@ -154,6 +154,7 @@ class AppTexts {
   static const String documentStatusUpdated = "Document status updated";
   static const String documentName = "Document Name";
   static const String documentTypes = "Document Types";
+  static const String documentType = "Document Type";
   static const String createDocumentType = "Create Document Type";
   static const String requestDocument = "Request Document";
   static const String uploadDocument = "Upload Document";
@@ -190,6 +191,7 @@ class AppTexts {
   // Candidates
   static const String candidate = "Candidate";
   static const String candidates = "Candidates";
+  static const String serialNumber = "#";
   static const String createCandidate = "Create Candidate";
   static const String candidateDetails = "Candidate Details";
   static const String deleteCandidate = "Delete Candidate";
@@ -344,6 +346,7 @@ class AppTexts {
   static const String deleteDocument = "Delete Document";
   static const String areYouSureDeleteDocument =
       "Are you sure you want to delete this document?";
+  static const String documentDeleted = "Document deleted successfully";
   static const String reapply = "Re-apply";
   static const String denyDocument = "Deny Document";
   static const String denyDocumentConfirmation =

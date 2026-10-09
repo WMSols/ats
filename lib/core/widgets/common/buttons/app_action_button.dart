@@ -19,26 +19,66 @@ class AppActionButton extends StatelessWidget {
     this.foregroundColor,
   });
 
+  Color _resolveBackground(Set<WidgetState> states, Color base) {
+    final isLight =
+        ThemeData.estimateBrightnessForColor(base) == Brightness.light;
+    if (states.contains(WidgetState.disabled)) {
+      return base.withValues(alpha: 0.5);
+    }
+    if (states.contains(WidgetState.pressed)) {
+      return Color.lerp(base, AppColors.black, isLight ? 0.1 : 0.12)!;
+    }
+    if (states.contains(WidgetState.hovered)) {
+      return Color.lerp(
+        base,
+        isLight ? AppColors.black : AppColors.white,
+        isLight ? 0.08 : 0.18,
+      )!;
+    }
+    return base;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final baseBg = backgroundColor ?? AppColors.primary;
+    final fg = foregroundColor ?? AppColors.white;
+
     return TextButton(
       onPressed: onPressed,
-      style: TextButton.styleFrom(
-        backgroundColor: backgroundColor,
-        foregroundColor: foregroundColor,
-        padding: AppSpacing.symmetric(context, h: 0.02, v: 0.02),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppResponsive.radius(context)),
-        ),
-        minimumSize: Size.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
+      style:
+          TextButton.styleFrom(
+            foregroundColor: fg,
+            padding: AppSpacing.symmetric(context, h: 0.02, v: 0.02),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                AppResponsive.radius(context),
+              ),
+            ),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ).copyWith(
+            backgroundColor: WidgetStateProperty.resolveWith(
+              (states) => _resolveBackground(states, baseBg),
+            ),
+            overlayColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.hovered) ||
+                  states.contains(WidgetState.pressed)) {
+                return AppColors.white.withValues(alpha: 0.08);
+              }
+              return Colors.transparent;
+            }),
+            mouseCursor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.disabled)) {
+                return SystemMouseCursors.basic;
+              }
+              return SystemMouseCursors.click;
+            }),
+          ),
       child: Text(
         text,
-        style: AppTextStyles.bodyText(context).copyWith(
-          fontWeight: FontWeight.w500,
-          color: foregroundColor ?? AppColors.primary,
-        ),
+        style: AppTextStyles.bodyText(
+          context,
+        ).copyWith(fontWeight: FontWeight.w500, color: fg),
       ),
     );
   }

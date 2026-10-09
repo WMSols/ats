@@ -5,7 +5,7 @@ import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/core/utils/app_colors/app_colors.dart';
 import 'package:ats/core/utils/app_responsive/app_responsive.dart';
 
-class AppStatusChip extends StatelessWidget {
+class AppStatusChip extends StatefulWidget {
   final String status;
   final String? customText;
   final bool showIcon;
@@ -26,40 +26,70 @@ class AppStatusChip extends StatelessWidget {
   });
 
   @override
+  State<AppStatusChip> createState() => _AppStatusChipState();
+}
+
+class _AppStatusChipState extends State<AppStatusChip> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    final statusColor = _getStatusColor(status);
-    final statusIcon = _getStatusIcon(status);
-    final statusText = customText ?? status;
+    final statusColor = _getStatusColor(widget.status);
+    final statusIcon = _getStatusIcon(widget.status);
+    final statusText = widget.customText ?? widget.status;
     final textColor = _getTextColor(statusColor);
+    final isInteractive = widget.onTap != null;
 
     // For filters: use low opacity when unselected, full opacity when selected
     // For normal use: always use full opacity (old style)
-    final backgroundColor = isFilter && !isSelected
+    Color backgroundColor = widget.isFilter && !widget.isSelected
         ? statusColor.withValues(alpha: 0.2)
         : statusColor;
 
-    final iconColor = isFilter && !isSelected ? statusColor : textColor;
-    final labelColor = isFilter && !isSelected ? statusColor : textColor;
-    final countBackgroundColor = isFilter && !isSelected
+    if (isInteractive && _isHovered) {
+      if (widget.isFilter && !widget.isSelected) {
+        backgroundColor = statusColor.withValues(alpha: 0.35);
+      } else {
+        final isLight =
+            ThemeData.estimateBrightnessForColor(statusColor) ==
+            Brightness.light;
+        backgroundColor = Color.lerp(
+          statusColor,
+          isLight ? AppColors.black : AppColors.white,
+          isLight ? 0.08 : 0.14,
+        )!;
+      }
+    }
+
+    final iconColor = widget.isFilter && !widget.isSelected
+        ? statusColor
+        : textColor;
+    final labelColor = widget.isFilter && !widget.isSelected
+        ? statusColor
+        : textColor;
+    final countBackgroundColor = widget.isFilter && !widget.isSelected
         ? statusColor.withValues(alpha: 0.2)
         : textColor.withValues(alpha: 0.3);
-    final countTextColor = isFilter && !isSelected ? statusColor : textColor;
+    final countTextColor = widget.isFilter && !widget.isSelected
+        ? statusColor
+        : textColor;
 
-    Widget chipContent = Container(
+    final radius = BorderRadius.circular(
+      AppResponsive.radius(context, factor: 5),
+    );
+
+    Widget chipContent = AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOut,
       padding: EdgeInsets.symmetric(
         horizontal: AppResponsive.screenWidth(context) * 0.01,
         vertical: AppResponsive.screenHeight(context) * 0.005,
       ),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(
-          AppResponsive.radius(context, factor: 5),
-        ),
-      ),
+      decoration: BoxDecoration(color: backgroundColor, borderRadius: radius),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (showIcon && statusIcon != null) ...[
+          if (widget.showIcon && statusIcon != null) ...[
             Icon(
               statusIcon,
               size: AppResponsive.iconSize(context),
@@ -75,7 +105,7 @@ class AppStatusChip extends StatelessWidget {
               letterSpacing: 0.5,
             ),
           ),
-          if (count != null) ...[
+          if (widget.count != null) ...[
             SizedBox(width: AppResponsive.screenWidth(context) * 0.01),
             Container(
               padding: EdgeInsets.symmetric(
@@ -89,7 +119,7 @@ class AppStatusChip extends StatelessWidget {
                 ),
               ),
               child: Text(
-                count.toString(),
+                widget.count.toString(),
                 style: AppTextStyles.bodyText(context).copyWith(
                   color: countTextColor,
                   fontWeight: FontWeight.w600,
@@ -102,17 +132,26 @@ class AppStatusChip extends StatelessWidget {
       ),
     );
 
-    if (onTap != null) {
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(
-          AppResponsive.radius(context, factor: 5),
-        ),
-        child: chipContent,
-      );
+    if (!isInteractive) {
+      return chipContent;
     }
 
-    return chipContent;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onTap,
+          borderRadius: radius,
+          hoverColor: Colors.transparent,
+          splashColor: statusColor.withValues(alpha: 0.2),
+          highlightColor: Colors.transparent,
+          child: chipContent,
+        ),
+      ),
+    );
   }
 
   Color _getStatusColor(String status) {

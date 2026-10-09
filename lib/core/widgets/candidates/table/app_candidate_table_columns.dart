@@ -14,6 +14,11 @@ class AppCandidateTableColumns {
     required bool hasEditOrDelete,
   }) {
     return [
+      _buildColumn(
+        context,
+        AppTexts.serialNumber,
+        AppCandidateTableLayout.count,
+      ),
       _buildColumn(context, AppTexts.name, AppCandidateTableLayout.name),
       _buildColumn(context, AppTexts.email, AppCandidateTableLayout.email),
       _buildColumn(context, AppTexts.company, AppCandidateTableLayout.company),
@@ -57,7 +62,7 @@ class AppCandidateTableColumns {
             label,
             style: AppTextStyles.bodyText(
               context,
-            ).copyWith(color: AppColors.secondary, fontWeight: FontWeight.w500),
+            ).copyWith(color: AppColors.secondary, fontWeight: FontWeight.w600),
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
             softWrap: false,
