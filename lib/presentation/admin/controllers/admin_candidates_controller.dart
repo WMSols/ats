@@ -28,6 +28,7 @@ import 'package:ats/domain/usecases/email/send_document_request_reminder_email_u
 import 'package:file_picker/file_picker.dart';
 import 'package:ats/domain/usecases/admin/delete_candidate_usecase.dart';
 import 'package:ats/core/constants/app_constants.dart';
+import 'package:ats/core/constants/profile_constants.dart';
 import 'package:ats/core/utils/app_file_validator/app_file_validator.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
@@ -1082,29 +1083,9 @@ class AdminCandidatesController extends GetxController {
     return professions.toList()..sort();
   }
 
-  /// Unique specialty tokens from all profiles (comma-separated storage).
+  /// Unique specialty options for the filter (managed static list).
   List<String> getAvailableSpecialties() {
-    final specialties = <String>{};
-    for (var profile in candidateProfiles.values) {
-      final raw = profile?.specialties;
-      if (raw == null || raw.trim().isEmpty || raw == 'N/A') continue;
-      for (final part in raw.split(',')) {
-        final token = part.trim();
-        if (token.isNotEmpty) {
-          specialties.add(token);
-        }
-      }
-    }
-    return specialties.toList()..sort();
-  }
-
-  List<String> _parseSpecialtyTokens(String? raw) {
-    if (raw == null || raw.trim().isEmpty || raw == 'N/A') return const [];
-    return raw
-        .split(',')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
+    return List<String>.from(ProfileConstants.specialties);
   }
 
   // Get count of candidates by status
@@ -1163,15 +1144,15 @@ class AdminCandidatesController extends GetxController {
       }).toList();
     }
 
-    // Apply specialty filter (match if candidate has the selected specialty)
+    // Apply specialty filter (canonical + alias match; no data rewrite)
     if (selectedSpecialtyFilter.value != null &&
         selectedSpecialtyFilter.value!.isNotEmpty) {
-      final selected = selectedSpecialtyFilter.value!.toLowerCase();
       filtered = filtered.where((candidate) {
-        final tokens = _parseSpecialtyTokens(
-          candidateProfiles[candidate.userId]?.specialties,
+        final raw = candidateProfiles[candidate.userId]?.specialties;
+        return ProfileConstants.specialtyMatchesFilter(
+          raw,
+          selectedSpecialtyFilter.value!,
         );
-        return tokens.any((t) => t.toLowerCase() == selected);
       }).toList();
     }
 
@@ -1548,13 +1529,14 @@ class AdminCandidatesController extends GetxController {
         AppSnackbar.error('Failed to update candidate: ${failure.message}');
       },
       (updatedProfile) {
+        isLoading.value = false;
+        AppSnackbar.success('Candidate updated successfully');
+        // Leave edit route first so its profile worker is disposed before
+        // selectedCandidateProfile is updated (avoids loadFromProfile race).
+        Get.offNamed(AppConstants.routeAdminCandidateDetails);
         selectedCandidateProfile.value = updatedProfile;
         candidateProfiles[profile.userId] = updatedProfile;
         candidateProfiles.refresh();
-        isLoading.value = false;
-        AppSnackbar.success('Candidate updated successfully');
-        // Navigate to candidate details screen
-        Get.offNamed(AppConstants.routeAdminCandidateDetails);
       },
     );
   }
@@ -1752,6 +1734,53 @@ class AdminCandidatesController extends GetxController {
         );
       },
     );
+  }
+
+  /// Delete an uploaded candidate document (Storage + Firestore). Does not revoke the request.
+  Future<void> deleteUploadedDocument({
+    required String candidateDocId,
+    required String storageUrl,
+  }) async {
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    final result = await documentRepository.deleteDocument(
+      candidateDocId: candidateDocId,
+      storageUrl: storageUrl,
+    );
+
+    result.fold(
+      (failure) {
+        errorMessage.value = failure.message;
+        isLoading.value = false;
+        AppSnackbar.error('Failed to delete document: ${failure.message}');
+      },
+      (_) {
+        isLoading.value = false;
+        AppSnackbar.success(AppTexts.documentDeleted);
+        final candidateId = selectedCandidate.value?.userId;
+        if (candidateId != null) {
+          loadCandidateDocuments(candidateId);
+          // Refresh requested types completion status
+          final profile = selectedCandidateProfile.value;
+          if (profile != null) {
+            loadCandidateRequestedDocumentTypes(candidateId);
+          }
+        }
+      },
+    );
+  }
+
+  /// Navigate to upload screen with optional pre-selected document type.
+  void openUploadDocument({String? docTypeId}) {
+    if (docTypeId != null && docTypeId.isNotEmpty) {
+      Get.toNamed(
+        AppConstants.routeAdminUploadDocument,
+        arguments: {'docTypeId': docTypeId},
+      );
+    } else {
+      Get.toNamed(AppConstants.routeAdminUploadDocument);
+    }
   }
 
   /// Pick file for admin document upload

@@ -53,10 +53,36 @@ class CandidateProfileModel extends CandidateProfileEntity {
       zip: data['zip'] as String?,
       ssn: data['ssn'] as String?,
       phones: data['phones'] != null
-          ? List<Map<String, dynamic>>.from(data['phones'])
+          ? List<Map<String, dynamic>>.from(
+              (data['phones'] as List).map((item) {
+                if (item is Map) {
+                  return Map<String, dynamic>.from(
+                    item.map((key, value) => MapEntry(key.toString(), value)),
+                  );
+                }
+                return <String, dynamic>{};
+              }),
+            )
           : null,
       profession: data['profession'] as String?,
-      specialties: data['specialties'] as String?,
+      specialties: () {
+        final raw = data['specialties'];
+        if (raw == null) return null;
+        if (raw is String) {
+          final trimmed = raw.trim();
+          return trimmed.isEmpty ? null : trimmed;
+        }
+        if (raw is List) {
+          final parts = <String>[];
+          for (final item in raw) {
+            final text = item?.toString().trim() ?? '';
+            if (text.isNotEmpty) parts.add(text);
+          }
+          return parts.isEmpty ? null : parts.join(', ');
+        }
+        final asString = raw.toString().trim();
+        return asString.isEmpty ? null : asString;
+      }(),
       liabilityAction: data['liabilityAction'] as String?,
       licenseAction: data['licenseAction'] as String?,
       previouslyTraveled: data['previouslyTraveled'] as String?,

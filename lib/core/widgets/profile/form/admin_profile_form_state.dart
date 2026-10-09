@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:ats/core/constants/profile_constants.dart';
+import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/widgets/profile/profile.dart';
 
 /// Manages all form controllers and state for admin candidate profile creation/editing
@@ -62,62 +64,66 @@ class AdminProfileFormState {
     if (profile == null) return;
 
     // Candidate Profile
-    firstNameController.text = profile.firstName ?? '';
-    middleNameController.text = profile.middleName ?? '';
-    lastNameController.text = profile.lastName ?? '';
-    emailController.text = profile.email ?? '';
-    address1Controller.text = profile.address1 ?? '';
-    address2Controller.text = profile.address2 ?? '';
-    cityController.text = profile.city ?? '';
-    stateController.text = profile.state ?? '';
-    zipController.text = profile.zip ?? '';
-    ssnController.text = profile.ssn ?? '';
+    firstNameController.text = profile.firstName?.toString() ?? '';
+    middleNameController.text = profile.middleName?.toString() ?? '';
+    lastNameController.text = profile.lastName?.toString() ?? '';
+    emailController.text = profile.email?.toString() ?? '';
+    address1Controller.text = profile.address1?.toString() ?? '';
+    address2Controller.text = profile.address2?.toString() ?? '';
+    cityController.text = profile.city?.toString() ?? '';
+    stateController.text = profile.state?.toString() ?? '';
+    zipController.text = profile.zip?.toString() ?? '';
+    ssnController.text = profile.ssn?.toString() ?? '';
 
-    // Phones - Clear existing and reload from profile
+    // Phones
     for (var phone in phoneEntries) {
       phone.countryCodeController.dispose();
       phone.numberController.dispose();
     }
     phoneEntries.clear();
-    if (profile.phones != null && profile.phones!.isNotEmpty) {
-      for (var phone in profile.phones) {
-        phoneEntries.add(
-          PhoneEntry(
-            countryCodeController: TextEditingController(
-              text: phone['countryCode']?.toString() ?? '+1',
-            ),
-            numberController: TextEditingController(
-              text: phone['number']?.toString() ?? '',
-            ),
+    final phones = _asMapList(profile.phones);
+    for (final phone in phones) {
+      phoneEntries.add(
+        PhoneEntry(
+          countryCodeController: TextEditingController(
+            text: phone['countryCode']?.toString().isNotEmpty == true
+                ? phone['countryCode'].toString()
+                : '+1',
           ),
-        );
-      }
+          numberController: TextEditingController(
+            text: phone['number']?.toString() ?? '',
+          ),
+        ),
+      );
     }
 
-    // Specialty
-    selectedProfession = profile.profession;
-    // Load specialties from profile (comma-separated string to list)
+    // Specialty — Firestore may store specialties as String OR List
+    selectedProfession = _matchProfession(profile.profession?.toString());
     selectedSpecialties.clear();
-    if (profile.specialties != null && profile.specialties!.isNotEmpty) {
-      final specialtiesList = profile.specialties!
-          .split(',')
-          .map<String>((String e) => e.trim())
-          .where((String e) => e.isNotEmpty)
-          .toList();
-      selectedSpecialties.addAll(specialtiesList);
+    try {
+      final dynamic specialtiesRaw = (profile as dynamic).specialties;
+      for (final item in _parseSpecialtiesList(specialtiesRaw)) {
+        selectedSpecialties.add(item);
+      }
+    } catch (_) {
+      // Keep empty rather than crashing edit/update flow
     }
 
     // Background History
-    liabilityAction = profile.liabilityAction;
-    licenseAction = profile.licenseAction;
-    previouslyTraveled = profile.previouslyTraveled;
-    terminatedFromAssignment = profile.terminatedFromAssignment;
+    liabilityAction = _normalizeYesNo(profile.liabilityAction?.toString());
+    licenseAction = _normalizeYesNo(profile.licenseAction?.toString());
+    previouslyTraveled = _normalizeYesNo(
+      profile.previouslyTraveled?.toString(),
+    );
+    terminatedFromAssignment = _normalizeYesNo(
+      profile.terminatedFromAssignment?.toString(),
+    );
 
     // Licensure
-    licensureState = profile.licensureState;
-    npiController.text = profile.npi ?? '';
+    licensureState = _matchUsState(profile.licensureState?.toString());
+    npiController.text = profile.npi?.toString() ?? '';
 
-    // Education - Clear existing and reload from profile
+    // Education
     for (var edu in educationEntries) {
       edu.institutionController.dispose();
       edu.degreeController.dispose();
@@ -125,51 +131,50 @@ class AdminProfileFormState {
       edu.toDateController.dispose();
     }
     educationEntries.clear();
-    if (profile.education != null && profile.education!.isNotEmpty) {
-      for (var edu in profile.education) {
-        educationEntries.add(
-          EducationEntry(
-            institutionController: TextEditingController(
-              text: edu['institutionName']?.toString() ?? '',
-            ),
-            degreeController: TextEditingController(
-              text: edu['degree']?.toString() ?? '',
-            ),
-            fromDateController: TextEditingController(
-              text: edu['fromDate']?.toString() ?? '',
-            ),
-            toDateController: TextEditingController(
-              text: edu['toDate']?.toString() ?? '',
-            ),
-            isOngoing: edu['isOngoing'] == true,
+    for (final edu in _asMapList(profile.education)) {
+      educationEntries.add(
+        EducationEntry(
+          institutionController: TextEditingController(
+            text:
+                edu['institutionName']?.toString() ??
+                edu['institution']?.toString() ??
+                '',
           ),
-        );
-      }
+          degreeController: TextEditingController(
+            text: edu['degree']?.toString() ?? '',
+          ),
+          fromDateController: TextEditingController(
+            text: edu['fromDate']?.toString() ?? '',
+          ),
+          toDateController: TextEditingController(
+            text: edu['toDate']?.toString() ?? '',
+          ),
+          isOngoing: edu['isOngoing'] == true,
+        ),
+      );
     }
 
-    // Certifications - Clear existing and reload from profile
+    // Certifications
     for (var cert in certificationEntries) {
       cert.nameController.dispose();
       cert.expiryController.dispose();
     }
     certificationEntries.clear();
-    if (profile.certifications != null && profile.certifications!.isNotEmpty) {
-      for (var cert in profile.certifications) {
-        certificationEntries.add(
-          CertificationEntry(
-            nameController: TextEditingController(
-              text: cert['name']?.toString() ?? '',
-            ),
-            expiryController: TextEditingController(
-              text: cert['expiry']?.toString() ?? '',
-            ),
-            hasNoExpiry: cert['hasNoExpiry'] == true,
+    for (final cert in _asMapList(profile.certifications)) {
+      certificationEntries.add(
+        CertificationEntry(
+          nameController: TextEditingController(
+            text: cert['name']?.toString() ?? '',
           ),
-        );
-      }
+          expiryController: TextEditingController(
+            text: cert['expiry']?.toString() ?? '',
+          ),
+          hasNoExpiry: cert['hasNoExpiry'] == true,
+        ),
+      );
     }
 
-    // Work History - Clear existing and reload from profile
+    // Work History
     for (var work in workHistoryEntries) {
       work.companyController.dispose();
       work.positionController.dispose();
@@ -178,30 +183,70 @@ class AdminProfileFormState {
       work.toDateController.dispose();
     }
     workHistoryEntries.clear();
-    if (profile.workHistory != null && profile.workHistory!.isNotEmpty) {
-      for (var work in profile.workHistory) {
-        workHistoryEntries.add(
-          WorkHistoryEntry(
-            companyController: TextEditingController(
-              text: work['company']?.toString() ?? '',
-            ),
-            positionController: TextEditingController(
-              text: work['position']?.toString() ?? '',
-            ),
-            descriptionController: TextEditingController(
-              text: work['description']?.toString() ?? '',
-            ),
-            fromDateController: TextEditingController(
-              text: work['fromDate']?.toString() ?? '',
-            ),
-            toDateController: TextEditingController(
-              text: work['toDate']?.toString() ?? '',
-            ),
-            isOngoing: work['isOngoing'] == true,
+    for (final work in _asMapList(profile.workHistory)) {
+      workHistoryEntries.add(
+        WorkHistoryEntry(
+          companyController: TextEditingController(
+            text: work['company']?.toString() ?? '',
+          ),
+          positionController: TextEditingController(
+            text: work['position']?.toString() ?? '',
+          ),
+          descriptionController: TextEditingController(
+            text: work['description']?.toString() ?? '',
+          ),
+          fromDateController: TextEditingController(
+            text: work['fromDate']?.toString() ?? '',
+          ),
+          toDateController: TextEditingController(
+            text: work['toDate']?.toString() ?? '',
+          ),
+          isOngoing: work['isOngoing'] == true,
+        ),
+      );
+    }
+  }
+
+  static List<Map<String, dynamic>> _asMapList(dynamic raw) {
+    if (raw == null) return const [];
+    if (raw is! List) return const [];
+    final result = <Map<String, dynamic>>[];
+    for (final item in raw) {
+      if (item is Map) {
+        result.add(
+          Map<String, dynamic>.from(
+            item.map((key, value) => MapEntry(key.toString(), value)),
           ),
         );
       }
     }
+    return result;
+  }
+
+  static List<String> _parseSpecialtiesList(dynamic raw) {
+    if (raw == null) return const [];
+
+    // Normalize List or String into the same comma-separated text first
+    String text;
+    if (raw is List) {
+      final parts = <String>[];
+      for (final item in raw) {
+        final value = item?.toString().trim() ?? '';
+        if (value.isNotEmpty) parts.add(value);
+      }
+      text = parts.join(', ');
+    } else {
+      text = raw.toString();
+    }
+
+    final seen = <String>{};
+    final result = <String>[];
+    for (final token in ProfileConstants.splitSpecialtyTokens(text)) {
+      final label = ProfileConstants.canonicalizeSpecialty(token);
+      if (label.isEmpty) continue;
+      if (seen.add(label)) result.add(label);
+    }
+    return result;
   }
 
   void addPhone() {
@@ -314,5 +359,36 @@ class AdminProfileFormState {
       work.fromDateController.dispose();
       work.toDateController.dispose();
     }
+  }
+
+  static String? _normalizeYesNo(String? value) {
+    if (value == null) return null;
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    final lower = trimmed.toLowerCase();
+    if (lower == 'yes' || lower == 'y' || lower == 'true') return AppTexts.yes;
+    if (lower == 'no' || lower == 'n' || lower == 'false') return AppTexts.no;
+    if (trimmed == AppTexts.yes || trimmed == AppTexts.no) return trimmed;
+    return trimmed;
+  }
+
+  static String? _matchProfession(String? value) {
+    if (value == null) return null;
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    for (final profession in ProfileConstants.professions) {
+      if (profession.toLowerCase() == trimmed.toLowerCase()) return profession;
+    }
+    return trimmed;
+  }
+
+  static String? _matchUsState(String? value) {
+    if (value == null) return null;
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    for (final state in ProfileConstants.usStates) {
+      if (state.toLowerCase() == trimmed.toLowerCase()) return state;
+    }
+    return trimmed;
   }
 }

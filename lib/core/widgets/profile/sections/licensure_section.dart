@@ -24,6 +24,14 @@ class LicensureSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final states = List<String>.from(ProfileConstants.usStates);
+    final current = selectedState?.trim();
+    if (current != null &&
+        current.isNotEmpty &&
+        !states.any((s) => s.toLowerCase() == current.toLowerCase())) {
+      states.add(current);
+    }
+
     return AppExpandableSection(
       title: AppTexts.licensure,
       hasError: hasError,
@@ -35,7 +43,7 @@ class LicensureSection extends StatelessWidget {
             value: selectedState,
             labelText: '${AppTexts.state}(*)',
             showLabelAbove: true,
-            items: ProfileConstants.usStates
+            items: states
                 .map(
                   (state) => DropdownMenuItem<String>(
                     value: state,
