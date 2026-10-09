@@ -187,7 +187,9 @@ class _CandidateProfileFormState extends State<CandidateProfileForm> {
         Obx(
           () => SpecialtySection(
             selectedProfession: formState.selectedProfession,
-            selectedSpecialties: formState.selectedSpecialties,
+            selectedSpecialties: List<String>.from(
+              formState.selectedSpecialties,
+            ),
             onProfessionChanged: (value) {
               setState(() {
                 formState.selectedProfession = value;
@@ -199,7 +201,6 @@ class _CandidateProfileFormState extends State<CandidateProfileForm> {
                 formState.selectedSpecialties.clear();
                 formState.selectedSpecialties.addAll(specialties);
               });
-              // Validate as comma-separated string for validation
               final specialtiesString = specialties.join(', ');
               controller.validateSpecialties(specialtiesString);
             },

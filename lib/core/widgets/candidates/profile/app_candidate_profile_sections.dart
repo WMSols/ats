@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ats/core/constants/profile_constants.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/domain/entities/admin_profile_entity.dart';
@@ -232,7 +233,9 @@ class AppCandidateProfileSections {
           AppCandidateProfileDataRow.buildDataRow(
             context,
             AppTexts.specialties,
-            profile.specialties!,
+            ProfileConstants.formatSpecialtiesCanonicalFull(
+              profile.specialties,
+            ),
           ),
         );
       }

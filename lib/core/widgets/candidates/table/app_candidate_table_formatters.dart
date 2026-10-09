@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ats/core/constants/app_constants.dart';
+import 'package:ats/core/constants/profile_constants.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_colors/app_colors.dart';
 import 'package:ats/domain/entities/candidate_document_entity.dart';
@@ -34,25 +35,9 @@ class AppCandidateTableFormatters {
     }
   }
 
-  /// Formats specialties to show first 2 with dots if more exist
+  /// Formats specialties using canonical labels (merges aliases / casing).
   static String formatSpecialties(String specialties) {
-    if (specialties.isEmpty || specialties == 'N/A') {
-      return 'N/A';
-    }
-    // Split by comma and take first 2
-    final specialtiesList = specialties
-        .split(',')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
-    if (specialtiesList.isEmpty) {
-      return 'N/A';
-    }
-    if (specialtiesList.length <= 2) {
-      return specialtiesList.join(', ');
-    }
-    // Show first 2 with dots
-    return '${specialtiesList.take(2).join(', ')}...';
+    return ProfileConstants.formatSpecialtiesCanonical(specialties);
   }
 
   /// Formats expiry status for a document

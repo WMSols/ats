@@ -661,7 +661,7 @@ class AdminRepositoryImpl implements AdminRepository {
       ssn: data['ssn'] as String?,
       phones: _parseListOfMaps(data['phones']),
       profession: data['profession'] as String?,
-      specialties: data['specialties'] as String?,
+      specialties: _parseSpecialtiesField(data['specialties']),
       liabilityAction: data['liabilityAction'] as String?,
       licenseAction: data['licenseAction'] as String?,
       previouslyTraveled: data['previouslyTraveled'] as String?,
@@ -671,6 +671,25 @@ class AdminRepositoryImpl implements AdminRepository {
       education: _parseListOfMaps(data['education']),
       certifications: _parseListOfMaps(data['certifications']),
     );
+  }
+
+  /// specialties may be stored as a comma-separated String or a List.
+  String? _parseSpecialtiesField(dynamic value) {
+    if (value == null) return null;
+    if (value is String) {
+      final trimmed = value.trim();
+      return trimmed.isEmpty ? null : trimmed;
+    }
+    if (value is List) {
+      final parts = <String>[];
+      for (final item in value) {
+        final text = item?.toString().trim() ?? '';
+        if (text.isNotEmpty) parts.add(text);
+      }
+      return parts.isEmpty ? null : parts.join(', ');
+    }
+    final asString = value.toString().trim();
+    return asString.isEmpty ? null : asString;
   }
 
   // Helper method to parse work history
