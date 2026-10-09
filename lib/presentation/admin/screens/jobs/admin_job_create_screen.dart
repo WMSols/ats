@@ -46,46 +46,51 @@ class _AdminJobCreateScreenState extends State<AdminJobCreateScreen> {
 
     return AppAdminLayout(
       title: AppTexts.createJob,
-      child: SingleChildScrollView(
-        padding: AppSpacing.padding(context),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AppJobFormFields(
-                titleController: titleController,
-                descriptionController: descriptionController,
-                requirementsController: requirementsController,
+      child: Obx(
+        () => AppLoadingOverlay(
+          isLoading: jobsController.isLoading.value,
+          child: SingleChildScrollView(
+            padding: AppSpacing.padding(context),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppJobFormFields(
+                    titleController: titleController,
+                    descriptionController: descriptionController,
+                    requirementsController: requirementsController,
+                  ),
+                  AppSpacing.vertical(context, 0.02),
+                  Text(
+                    AppTexts.requiredDocuments,
+                    style: AppTextStyles.bodyText(
+                      context,
+                    ).copyWith(fontWeight: FontWeight.w500),
+                  ),
+                  AppSpacing.vertical(context, 0.01),
+                  _buildDocumentSelector(context, documentsController),
+                  AppSpacing.vertical(context, 0.03),
+                  Obx(
+                    () => AppButton(
+                      text: AppTexts.createJob,
+                      icon: Iconsax.add,
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          jobsController.createJob(
+                            title: titleController.text.trim(),
+                            description: descriptionController.text.trim(),
+                            requirements: requirementsController.text.trim(),
+                            requiredDocumentIds: selectedDocumentIds.toList(),
+                          );
+                        }
+                      },
+                      isLoading: jobsController.isLoading.value,
+                    ),
+                  ),
+                ],
               ),
-              AppSpacing.vertical(context, 0.02),
-              Text(
-                AppTexts.requiredDocuments,
-                style: AppTextStyles.bodyText(
-                  context,
-                ).copyWith(fontWeight: FontWeight.w500),
-              ),
-              AppSpacing.vertical(context, 0.01),
-              _buildDocumentSelector(context, documentsController),
-              AppSpacing.vertical(context, 0.03),
-              Obx(
-                () => AppButton(
-                  text: AppTexts.createJob,
-                  icon: Iconsax.add,
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      jobsController.createJob(
-                        title: titleController.text.trim(),
-                        description: descriptionController.text.trim(),
-                        requirements: requirementsController.text.trim(),
-                        requiredDocumentIds: selectedDocumentIds.toList(),
-                      );
-                    }
-                  },
-                  isLoading: jobsController.isLoading.value,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_spacing/app_spacing.dart';
 import 'package:ats/core/widgets/app_widgets.dart';
+import 'package:ats/presentation/candidate/controllers/profile_controller.dart';
 
 class CandidateProfileScreen extends StatefulWidget {
   const CandidateProfileScreen({super.key});
@@ -30,7 +32,13 @@ class _CandidateProfileScreenState extends State<CandidateProfileScreen> {
     return AppCandidateLayout(
       key: const ValueKey('candidate-profile-screen-layout'),
       title: AppTexts.profile,
-      child: _cachedScrollView!,
+      child: Obx(() {
+        final controller = Get.find<ProfileController>();
+        return AppLoadingOverlay(
+          isLoading: controller.isLoading.value,
+          child: _cachedScrollView!,
+        );
+      }),
     );
   }
 }

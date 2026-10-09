@@ -15,18 +15,30 @@ import 'dart:ui_web' as ui_web if (dart.library.ui_web) 'dart:ui_web';
 
 class AppDocumentViewer extends StatefulWidget {
   final String documentUrl;
+  /// Display title shown in the dialog header (may have no extension).
   final String? documentName;
+  /// Storage / original file name used for extension detection (e.g. `uid_type_file.pdf`).
+  final String? fileName;
 
   const AppDocumentViewer({
     super.key,
     required this.documentUrl,
     this.documentName,
+    this.fileName,
   });
 
   /// Shows the document viewer in a dialog
-  static void show({required String documentUrl, String? documentName}) {
+  static void show({
+    required String documentUrl,
+    String? documentName,
+    String? fileName,
+  }) {
     Get.dialog(
-      AppDocumentViewer(documentUrl: documentUrl, documentName: documentName),
+      AppDocumentViewer(
+        documentUrl: documentUrl,
+        documentName: documentName,
+        fileName: fileName,
+      ),
       barrierDismissible: true,
       barrierColor: Colors.black54,
     );
@@ -50,16 +62,65 @@ class _AppDocumentViewerState extends State<AppDocumentViewer> {
   String? _iframeViewId;
   bool _uiWebAvailable = false;
 
-  static bool _isViewableInIframe(String? documentName) {
-    if (documentName == null || documentName.isEmpty) return true;
-    final ext = documentName.split('.').last.toLowerCase();
-    return _viewableInIframeExtensions.contains(ext);
+  /// Extracts a file extension from a display name, storage name, or URL.
+  static String? _extensionFrom(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+
+    var candidate = value.trim();
+
+    try {
+      final uri = Uri.parse(candidate);
+      if (uri.hasScheme &&
+          (uri.scheme == 'http' ||
+              uri.scheme == 'https' ||
+              uri.scheme == 'gs')) {
+        var path = uri.path;
+        // Firebase Storage: .../o/<url-encoded-object-path>
+        if (path.contains('/o/')) {
+          path = Uri.decodeComponent(path.split('/o/').last);
+        } else {
+          path = Uri.decodeComponent(path);
+        }
+        candidate = path.split('/').last;
+      }
+    } catch (_) {
+      // Not a URL — treat as a plain file/display name.
+    }
+
+    candidate = candidate.split('?').first.split('#').first;
+    final dot = candidate.lastIndexOf('.');
+    if (dot < 0 || dot == candidate.length - 1) return null;
+    final ext = candidate.substring(dot + 1).toLowerCase();
+    // Ignore nonsense "extensions" from titles like "SSN Card"
+    if (ext.length > 5 || ext.contains(' ')) return null;
+    return ext;
   }
+
+  /// Prefer real file name / URL extension over display title (often has no ext).
+  static bool _isViewableInIframe({
+    required String documentUrl,
+    String? documentName,
+    String? fileName,
+  }) {
+    for (final source in [fileName, documentUrl, documentName]) {
+      final ext = _extensionFrom(source);
+      if (ext == null) continue;
+      return _viewableInIframeExtensions.contains(ext);
+    }
+    // Unknown type — attempt iframe (uploads are PDF/JPG by default).
+    return true;
+  }
+
+  bool get _canPreviewInIframe => _isViewableInIframe(
+    documentUrl: widget.documentUrl,
+    documentName: widget.documentName,
+    fileName: widget.fileName,
+  );
 
   @override
   void initState() {
     super.initState();
-    if (kIsWeb && _isViewableInIframe(widget.documentName)) {
+    if (kIsWeb && _canPreviewInIframe) {
       _createIframe();
     }
   }
@@ -183,7 +244,7 @@ class _AppDocumentViewerState extends State<AppDocumentViewer> {
 
   Widget _buildContentView(BuildContext context) {
     // DOCX and other non-iframe types: show open/download options
-    if (kIsWeb && !_isViewableInIframe(widget.documentName)) {
+    if (kIsWeb && !_canPreviewInIframe) {
       return _buildOpenDownloadPlaceholder(context);
     }
 

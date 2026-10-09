@@ -58,6 +58,7 @@ class ResumeSection extends StatelessWidget {
                 AppDocumentViewer.show(
                   documentUrl: url,
                   documentName: fileName,
+                  fileName: fileName,
                 );
               }
             },

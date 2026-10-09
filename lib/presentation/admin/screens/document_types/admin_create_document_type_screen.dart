@@ -88,46 +88,52 @@ class _AdminCreateDocumentTypeScreenState
 
     return AppAdminLayout(
       title: AppTexts.createDocumentType,
-      child: SingleChildScrollView(
-        padding: AppSpacing.padding(context),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AppDocumentFormFields(
-                titleController: titleController,
-                descriptionController: descriptionController,
-                onTitleChanged: (value) {
-                  validateTitle(value);
-                },
-                onDescriptionChanged: (value) {
-                  validateDescription(value);
-                },
-                titleError: titleError,
-                descriptionError: descriptionError,
+      child: Obx(
+        () => AppLoadingOverlay(
+          isLoading: controller.isLoading.value,
+          child: SingleChildScrollView(
+            padding: AppSpacing.padding(context),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppDocumentFormFields(
+                    titleController: titleController,
+                    descriptionController: descriptionController,
+                    onTitleChanged: (value) {
+                      validateTitle(value);
+                    },
+                    onDescriptionChanged: (value) {
+                      validateDescription(value);
+                    },
+                    titleError: titleError,
+                    descriptionError: descriptionError,
+                  ),
+                  AppSpacing.vertical(context, 0.03),
+                  Obx(() {
+                    final isLoading = controller.isLoading.value;
+                    return AppButton(
+                      text: AppTexts.create,
+                      icon: Iconsax.add,
+                      onPressed: _canSubmit.value && !isLoading
+                          ? () {
+                              if (_validateForm()) {
+                                controller.createDocumentType(
+                                  name: titleController.text.trim(),
+                                  description: descriptionController.text
+                                      .trim(),
+                                  isRequired: false,
+                                );
+                              }
+                            }
+                          : null,
+                      isLoading: isLoading,
+                    );
+                  }),
+                ],
               ),
-              AppSpacing.vertical(context, 0.03),
-              Obx(() {
-                final isLoading = controller.isLoading.value;
-                return AppButton(
-                  text: AppTexts.create,
-                  icon: Iconsax.add,
-                  onPressed: _canSubmit.value && !isLoading
-                      ? () {
-                          if (_validateForm()) {
-                            controller.createDocumentType(
-                              name: titleController.text.trim(),
-                              description: descriptionController.text.trim(),
-                              isRequired: false,
-                            );
-                          }
-                        }
-                      : null,
-                  isLoading: isLoading,
-                );
-              }),
-            ],
+            ),
           ),
         ),
       ),

@@ -110,7 +110,12 @@ class _AdminDocumentTypesScreenState extends State<AdminDocumentTypesScreen> {
 
     return AppAdminLayout(
       title: AppTexts.documentTypes,
-      child: _cachedContent!,
+      child: Obx(
+        () => AppLoadingOverlay(
+          isLoading: _controller.isLoading.value,
+          child: _cachedContent!,
+        ),
+      ),
     );
   }
 }

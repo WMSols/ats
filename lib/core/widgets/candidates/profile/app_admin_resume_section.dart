@@ -53,6 +53,7 @@ class AppAdminResumeSection {
                         AppDocumentViewer.show(
                           documentUrl: profile.resumeUrl!,
                           documentName: fileName,
+                          fileName: fileName,
                         );
                       },
                       backgroundColor: AppColors.primary,

@@ -13,6 +13,7 @@ class AdminManageAdminsController extends GetxController {
 
   AdminManageAdminsController(this.adminRepository);
 
+  final isLoading = false.obs;
   final isLoadingList = false.obs;
   bool _adminProfilesLoaded = false;
   final adminProfiles = <AdminProfileEntity>[].obs;
@@ -118,6 +119,7 @@ class AdminManageAdminsController extends GetxController {
         ? AppConstants.accessLevelRecruiter
         : AppConstants.accessLevelSuperAdmin;
 
+    isLoading.value = true;
     isChangingRole[profile.profileId] = true;
 
     final result = await adminRepository.updateAdminProfileAccessLevel(
@@ -126,6 +128,7 @@ class AdminManageAdminsController extends GetxController {
     );
 
     isChangingRole[profile.profileId] = false;
+    isLoading.value = false;
 
     result.fold(
       (failure) {
@@ -153,6 +156,7 @@ class AdminManageAdminsController extends GetxController {
       return;
     }
 
+    isLoading.value = true;
     isDeletingUser[profile.profileId] = true;
 
     final result = await adminRepository.deleteUser(
@@ -161,6 +165,7 @@ class AdminManageAdminsController extends GetxController {
     );
 
     isDeletingUser[profile.profileId] = false;
+    isLoading.value = false;
 
     result.fold(
       (failure) {

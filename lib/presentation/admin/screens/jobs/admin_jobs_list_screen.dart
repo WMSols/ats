@@ -132,7 +132,15 @@ class _AdminJobsListScreenState extends State<AdminJobsListScreen> {
       ),
     );
 
-    return AppAdminLayout(title: AppTexts.jobs, child: _cachedContent!);
+    return AppAdminLayout(
+      title: AppTexts.jobs,
+      child: Obx(
+        () => AppLoadingOverlay(
+          isLoading: _controller.isLoading.value,
+          child: _cachedContent!,
+        ),
+      ),
+    );
   }
 
   void _showDeleteConfirmation(

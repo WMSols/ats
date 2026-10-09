@@ -146,16 +146,22 @@ class _AdminCreateCandidateScreenState
           Obx(
             () => SpecialtySection(
               selectedProfession: _controller.formState.selectedProfession,
-              selectedSpecialties: _controller.formState.selectedSpecialties,
+              selectedSpecialties: List<String>.from(
+                _controller.formState.selectedSpecialties,
+              ),
               professionError: _controller.professionError,
               specialtiesError: _controller.specialtiesError,
               onProfessionChanged: (value) {
-                _controller.formState.selectedProfession = value;
+                setState(() {
+                  _controller.formState.selectedProfession = value;
+                });
                 _controller.validateProfession(value);
               },
               onSpecialtiesChanged: (specialties) {
-                _controller.formState.selectedSpecialties.clear();
-                _controller.formState.selectedSpecialties.addAll(specialties);
+                setState(() {
+                  _controller.formState.selectedSpecialties.clear();
+                  _controller.formState.selectedSpecialties.addAll(specialties);
+                });
                 _controller.validateSpecialties(specialties.join(', '));
               },
               hasError:
@@ -363,6 +369,14 @@ class _AdminCreateCandidateScreenState
       ),
     );
 
-    return AppAdminLayout(title: AppTexts.createCandidate, child: _cachedForm!);
+    return AppAdminLayout(
+      title: AppTexts.createCandidate,
+      child: Obx(
+        () => AppLoadingOverlay(
+          isLoading: _controller.isLoading.value,
+          child: _cachedForm!,
+        ),
+      ),
+    );
   }
 }

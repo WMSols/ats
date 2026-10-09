@@ -225,4 +225,34 @@ class AppFileValidator {
     // Remove the first segment (userId) and join the rest
     return parts.sublist(1).join('_');
   }
+
+  /// Display-only: strip common file extensions from a document name.
+  static String stripFileExtension(String name) {
+    if (name.isEmpty) return name;
+    final lower = name.toLowerCase();
+    const extensions = [
+      '.pdf',
+      '.docx',
+      '.doc',
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.heic',
+      '.webp',
+    ];
+    for (final ext in extensions) {
+      if (lower.endsWith(ext)) {
+        return name.substring(0, name.length - ext.length);
+      }
+    }
+    return name;
+  }
+
+  /// Admin-facing document title: prefer [title], else original file name, without extension.
+  static String displayDocumentName({String? title, String? documentName}) {
+    final raw = (title != null && title.trim().isNotEmpty)
+        ? title.trim()
+        : extractOriginalFileName(documentName ?? '');
+    return stripFileExtension(raw);
+  }
 }

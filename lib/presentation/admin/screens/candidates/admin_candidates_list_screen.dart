@@ -437,6 +437,14 @@ class _AdminCandidatesListScreenState extends State<AdminCandidatesListScreen> {
       ),
     );
 
-    return AppAdminLayout(title: AppTexts.candidates, child: _cachedContent!);
+    return AppAdminLayout(
+      title: AppTexts.candidates,
+      child: Obx(
+        () => AppLoadingOverlay(
+          isLoading: _controller.isLoading.value,
+          child: _cachedContent!,
+        ),
+      ),
+    );
   }
 }

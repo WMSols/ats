@@ -152,7 +152,15 @@ class _AdminManageAdminsScreenState extends State<AdminManageAdminsScreen> {
       ),
     );
 
-    return AppAdminLayout(title: AppTexts.manageAdmins, child: _cachedContent!);
+    return AppAdminLayout(
+      title: AppTexts.manageAdmins,
+      child: Obx(
+        () => AppLoadingOverlay(
+          isLoading: _controller.isLoading.value,
+          child: _cachedContent!,
+        ),
+      ),
+    );
   }
 
   void _showChangeRoleConfirmation(

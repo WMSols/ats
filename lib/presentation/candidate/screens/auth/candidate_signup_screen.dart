@@ -28,6 +28,7 @@ class CandidateSignUpScreen extends StatelessWidget {
         AppTextField(
           controller: controller.emailController,
           labelText: AppTexts.email,
+          labelColor: AppColors.white,
           prefixIcon: Iconsax.sms,
           keyboardType: TextInputType.emailAddress,
           onChanged: (value) {
@@ -49,6 +50,7 @@ class CandidateSignUpScreen extends StatelessWidget {
         AppTextField(
           controller: controller.passwordController,
           labelText: AppTexts.password,
+          labelColor: AppColors.white,
           prefixIcon: Iconsax.lock,
           obscureText: true,
           onChanged: (value) {

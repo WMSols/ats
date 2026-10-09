@@ -21,6 +21,9 @@ class AppTextField extends StatefulWidget {
   final bool showLabelAbove;
   final bool enabled;
 
+  /// When set (e.g. white on auth screens), overrides the default label color.
+  final Color? labelColor;
+
   const AppTextField({
     super.key,
     this.controller,
@@ -34,8 +37,9 @@ class AppTextField extends StatefulWidget {
     this.keyboardType,
     this.validator,
     this.onChanged,
-    this.showLabelAbove = false,
+    this.showLabelAbove = true,
     this.enabled = true,
+    this.labelColor,
   });
 
   @override
@@ -86,6 +90,18 @@ class _AppTextFieldState extends State<AppTextField> {
       // Controller is disposed, return null
       return null;
     }
+  }
+
+  String? get _defaultHint {
+    if (widget.hintText != null) return widget.hintText;
+    final label = widget.labelText;
+    if (label == null || label.isEmpty) return null;
+    final clean = label.endsWith('(*)')
+        ? label.substring(0, label.length - 3).trim()
+        : label.trim();
+    if (clean.isEmpty) return null;
+    if (widget.obscureText) return 'Enter $clean';
+    return 'Enter $clean';
   }
 
   @override
@@ -158,13 +174,13 @@ class _AppTextFieldState extends State<AppTextField> {
         },
         onChanged: widget.onChanged,
         decoration: InputDecoration(
-          hintText: widget.hintText,
+          hintText: widget.hintText ?? _defaultHint,
           filled: true,
           fillColor: AppColors.white,
           hintStyle: AppTextStyles.hintText(context),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
-              AppResponsive.radius(context, factor: 1.5),
+              AppResponsive.radius(context, factor: 5),
             ),
             borderSide: BorderSide(
               color: AppColors.primary.withValues(alpha: 0.5),
@@ -172,7 +188,7 @@ class _AppTextFieldState extends State<AppTextField> {
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
-              AppResponsive.radius(context, factor: 1.5),
+              AppResponsive.radius(context, factor: 5),
             ),
             borderSide: BorderSide(
               color: AppColors.primary.withValues(alpha: 0.5),
@@ -180,7 +196,7 @@ class _AppTextFieldState extends State<AppTextField> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
-              AppResponsive.radius(context, factor: 1.5),
+              AppResponsive.radius(context, factor: 5),
             ),
             borderSide: const BorderSide(color: AppColors.primary),
           ),
@@ -220,18 +236,17 @@ class _AppTextFieldState extends State<AppTextField> {
           ? widget.labelText!.substring(0, widget.labelText!.length - 3)
           : widget.labelText!;
 
+      final labelStyle = AppTextStyles.bodyText(
+        context,
+      ).copyWith(fontWeight: FontWeight.w500, color: widget.labelColor);
+
       result = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           isRequired
-              ? AppRequiredLabel(text: labelText)
-              : Text(
-                  labelText,
-                  style: AppTextStyles.bodyText(
-                    context,
-                  ).copyWith(fontWeight: FontWeight.w500),
-                ),
+              ? AppRequiredLabel(text: labelText, style: labelStyle)
+              : Text(labelText, style: labelStyle),
           textField,
         ],
       );

@@ -17,6 +17,8 @@ class AppRequestedDocumentsList extends StatelessWidget {
   final Function(String candidateDocId, String status)? onStatusUpdate;
   final Function(String candidateDocId, String status, String? denialReason)?
   onDeny;
+  final Function(String docTypeId)? onUpload;
+  final Function(String candidateDocId, String storageUrl)? onDelete;
 
   const AppRequestedDocumentsList({
     super.key,
@@ -26,6 +28,8 @@ class AppRequestedDocumentsList extends StatelessWidget {
     this.onView,
     this.onStatusUpdate,
     this.onDeny,
+    this.onUpload,
+    this.onDelete,
   });
 
   /// Check if a requested document has been uploaded
@@ -191,12 +195,38 @@ class AppRequestedDocumentsList extends StatelessWidget {
                         backgroundColor: AppColors.information,
                         foregroundColor: AppColors.white,
                       ),
+                    if (onDelete != null && uploadedDoc != null)
+                      AppActionButton(
+                        text: AppTexts.delete,
+                        onPressed: () {
+                          AppAlertDialog.show(
+                            title: AppTexts.deleteDocument,
+                            subtitle: AppTexts.areYouSureDeleteDocument,
+                            primaryButtonText: AppTexts.delete,
+                            secondaryButtonText: AppTexts.cancel,
+                            primaryButtonColor: AppColors.error,
+                            onPrimaryPressed: () => onDelete!(
+                              uploadedDoc.candidateDocId,
+                              uploadedDoc.storageUrl,
+                            ),
+                            onSecondaryPressed: () {},
+                          );
+                        },
+                        backgroundColor: AppColors.error,
+                        foregroundColor: AppColors.white,
+                      ),
                   ] else ...[
                     AppStatusChip(
                       status: AppConstants.documentStatusPending,
                       customText: 'NOT UPLOADED',
                     ),
-                    // Show revoke button only when document is not uploaded
+                    if (onUpload != null)
+                      AppActionButton(
+                        text: AppTexts.uploadDocument,
+                        onPressed: () => onUpload!(docType.docTypeId),
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.white,
+                      ),
                     AppActionButton(
                       text: AppTexts.revoke,
                       onPressed: () => onRevoke(docType.docTypeId),

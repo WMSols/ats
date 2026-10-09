@@ -57,6 +57,7 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
         final assignedAgentProfileId = controller.getAssignedAgentProfileId(
           candidate.userId,
         );
+        final isLoading = controller.isLoading.value;
 
         final jobTitles = <String, String>{};
         for (var app in controller.candidateApplications) {
@@ -66,253 +67,228 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
           }
         }
 
-        return DefaultTabController(
-          length: 3,
-          child: Column(
-            children: [
-              TabBar(
-                dividerColor: AppColors.primary,
-                labelStyle: AppTextStyles.bodyText(context).copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.secondary,
+        return AppLoadingOverlay(
+          isLoading: isLoading,
+          child: DefaultTabController(
+            length: 3,
+            child: Column(
+              children: [
+                TabBar(
+                  dividerColor: AppColors.primary,
+                  labelStyle: AppTextStyles.bodyText(context).copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.secondary,
+                  ),
+                  unselectedLabelStyle: AppTextStyles.bodyText(
+                    context,
+                  ).copyWith(color: AppColors.primary),
+                  tabs: [
+                    Tab(text: AppTexts.profile),
+                    Tab(text: AppTexts.documents),
+                    Tab(text: AppTexts.applications),
+                  ],
                 ),
-                unselectedLabelStyle: AppTextStyles.bodyText(
-                  context,
-                ).copyWith(color: AppColors.primary),
-                tabs: [
-                  Tab(text: AppTexts.profile),
-                  Tab(text: AppTexts.documents),
-                  Tab(text: AppTexts.applications),
-                ],
-              ),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    // Profile Tab with Edit Button at Bottom
-                    Column(
-                      children: [
-                        Expanded(
-                          child: AppCandidateProfileTable(
-                            profile: profile,
-                            fallbackEmail: candidate.email,
-                            documentsCount: documentsCount,
-                            applicationsCount: applicationsCount,
-                            agentName: agentName,
-                            isSuperAdmin: controller.isSuperAdmin,
-                            availableAgents: availableAgents,
-                            assignedAgentProfileId: assignedAgentProfileId,
-                            onAgentChanged: controller.isSuperAdmin
-                                ? (agentProfileId) =>
-                                      controller.updateCandidateAgent(
-                                        userId: candidate.userId,
-                                        agentId: agentProfileId,
-                                      )
-                                : null,
-                            userId: candidate.userId,
-                          ),
-                        ),
-                        if (controller.isSuperAdmin)
-                          Padding(
-                            padding: AppSpacing.padding(context),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: AppButton(
-                                    text: AppTexts.edit,
-                                    icon: Iconsax.edit,
-                                    onPressed: () {
-                                      Get.toNamed(
-                                        AppConstants.routeAdminEditCandidate,
-                                      );
-                                    },
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: AppSpacing.horizontal(
-                                    context,
-                                    0.02,
-                                  ).width,
-                                ),
-                                Expanded(
-                                  child: AppButton(
-                                    text: AppTexts.deleteCandidate,
-                                    icon: Iconsax.trash,
-                                    onPressed: () {
-                                      final profileName = profile != null
-                                          ? AppCandidateProfileFormatters.getFullName(
-                                              profile,
-                                            )
-                                          : 'N/A';
-                                      _showDeleteConfirmation(
-                                        context,
-                                        controller,
-                                        profileName,
-                                      );
-                                    },
-                                    backgroundColor: AppColors.error,
-                                  ),
-                                ),
-                              ],
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      // Profile Tab with Edit Button at Bottom
+                      Column(
+                        children: [
+                          Expanded(
+                            child: AppCandidateProfileTable(
+                              profile: profile,
+                              fallbackEmail: candidate.email,
+                              documentsCount: documentsCount,
+                              applicationsCount: applicationsCount,
+                              agentName: agentName,
+                              isSuperAdmin: controller.isSuperAdmin,
+                              availableAgents: availableAgents,
+                              assignedAgentProfileId: assignedAgentProfileId,
+                              onAgentChanged: controller.isSuperAdmin
+                                  ? (agentProfileId) =>
+                                        controller.updateCandidateAgent(
+                                          userId: candidate.userId,
+                                          agentId: agentProfileId,
+                                        )
+                                  : null,
+                              userId: candidate.userId,
                             ),
                           ),
-                      ],
-                    ),
-                    // Documents Tab with FAB
-                    Stack(
-                      children: [
-                        Obx(() {
-                          final requestedDocs = controller
-                              .candidateRequestedDocumentTypes
-                              .toList();
-                          final allCandidateDocs = controller.candidateDocuments
-                              .toList();
-                          final selectedFilter =
-                              controller.selectedDocumentFilter.value ?? 'all';
-
-                          // Filter out documents that are from requested document types
-                          // to avoid showing them twice (once in requested section, once in regular section)
-                          final requestedDocTypeIds = requestedDocs
-                              .map((docType) => docType.docTypeId)
-                              .toSet();
-                          final regularDocs = allCandidateDocs
-                              .where(
-                                (doc) => !requestedDocTypeIds.contains(
-                                  doc.docTypeId,
-                                ),
-                              )
-                              .toList();
-
-                          return FutureBuilder<
-                            Map<String, Map<String, dynamic>>
-                          >(
-                            future: controller
-                                .getMissingDocumentsForApplications(),
-                            builder: (context, snapshot) {
-                              final missingDocs = snapshot.data ?? {};
-
-                              // Determine what to show based on filter
-                              final showMissing =
-                                  selectedFilter == 'all' ||
-                                  selectedFilter == 'missing';
-                              final showRequested =
-                                  selectedFilter == 'all' ||
-                                  selectedFilter == 'requested';
-                              final showRegular = selectedFilter == 'all';
-
-                              return CustomScrollView(
-                                slivers: [
-                                  // Filter Dropdown
-                                  SliverToBoxAdapter(
-                                    child: Padding(
-                                      padding: AppSpacing.padding(
-                                        context,
-                                      ).copyWith(bottom: 0),
-                                      child: AppDropDownField<String>(
-                                        value: selectedFilter,
-                                        labelText: 'Filter Documents',
-                                        hintText: 'All Documents',
-                                        items: [
-                                          DropdownMenuItem<String>(
-                                            value: 'all',
-                                            child: Text('All Documents'),
-                                          ),
-                                          DropdownMenuItem<String>(
-                                            value: 'requested',
-                                            child: Text('Requested Documents'),
-                                          ),
-                                          DropdownMenuItem<String>(
-                                            value: 'missing',
-                                            child: Text('Missing Documents'),
-                                          ),
-                                        ],
-                                        onChanged: (value) =>
-                                            controller.setDocumentFilter(value),
-                                      ),
+                          if (controller.isSuperAdmin)
+                            Padding(
+                              padding: AppSpacing.padding(context),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: AppButton(
+                                      text: AppTexts.edit,
+                                      icon: Iconsax.edit,
+                                      onPressed: () {
+                                        Get.toNamed(
+                                          AppConstants.routeAdminEditCandidate,
+                                        );
+                                      },
                                     ),
                                   ),
-                                  // Missing Documents Section (for applications)
-                                  if (showMissing && missingDocs.isNotEmpty)
-                                    SliverToBoxAdapter(
-                                      child: AppMissingDocumentsList(
-                                        missingDocuments: missingDocs,
-                                        onRequest: (docTypeId) {
-                                          controller.requestMissingDocument(
-                                            docTypeId: docTypeId,
-                                          );
-                                        },
-                                      ),
+                                  SizedBox(
+                                    width: AppSpacing.horizontal(
+                                      context,
+                                      0.02,
+                                    ).width,
+                                  ),
+                                  Expanded(
+                                    child: AppButton(
+                                      text: AppTexts.deleteCandidate,
+                                      icon: Iconsax.trash,
+                                      onPressed: () {
+                                        final profileName = profile != null
+                                            ? AppCandidateProfileFormatters.getFullName(
+                                                profile,
+                                              )
+                                            : 'N/A';
+                                        _showDeleteConfirmation(
+                                          context,
+                                          controller,
+                                          profileName,
+                                        );
+                                      },
+                                      backgroundColor: AppColors.error,
                                     ),
-                                  // Requested Documents Section
-                                  if (showRequested && requestedDocs.isNotEmpty)
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                      // Documents Tab with FAB
+                      Stack(
+                        children: [
+                          Obx(() {
+                            final requestedDocs = controller
+                                .candidateRequestedDocumentTypes
+                                .toList();
+                            final allCandidateDocs = controller
+                                .candidateDocuments
+                                .toList();
+                            final selectedFilter =
+                                controller.selectedDocumentFilter.value ??
+                                'all';
+
+                            // Filter out documents that are from requested document types
+                            // to avoid showing them twice (once in requested section, once in regular section)
+                            final requestedDocTypeIds = requestedDocs
+                                .map((docType) => docType.docTypeId)
+                                .toSet();
+                            final regularDocs = allCandidateDocs
+                                .where(
+                                  (doc) => !requestedDocTypeIds.contains(
+                                    doc.docTypeId,
+                                  ),
+                                )
+                                .toList();
+
+                            return FutureBuilder<
+                              Map<String, Map<String, dynamic>>
+                            >(
+                              future: controller
+                                  .getMissingDocumentsForApplications(),
+                              builder: (context, snapshot) {
+                                final missingDocs = snapshot.data ?? {};
+
+                                // Determine what to show based on filter
+                                final showMissing =
+                                    selectedFilter == 'all' ||
+                                    selectedFilter == 'missing';
+                                final showRequested =
+                                    selectedFilter == 'all' ||
+                                    selectedFilter == 'requested';
+                                final showRegular = selectedFilter == 'all';
+
+                                return CustomScrollView(
+                                  slivers: [
+                                    // Filter Dropdown
                                     SliverToBoxAdapter(
-                                      child: AppRequestedDocumentsList(
-                                        requestedDocuments: requestedDocs,
-                                        candidateDocuments: allCandidateDocs,
-                                        onRevoke: (docTypeId) {
-                                          controller.revokeDocumentRequest(
-                                            docTypeId,
-                                          );
-                                        },
-                                        onView: (storageUrl) {
-                                          // Find the document name for display
-                                          String? documentName;
-                                          try {
-                                            final document = allCandidateDocs
-                                                .firstWhere(
-                                                  (doc) =>
-                                                      doc.storageUrl ==
-                                                      storageUrl,
-                                                );
-                                            documentName =
-                                                document.title ??
-                                                AppFileValidator.extractOriginalFileName(
-                                                  document.documentName,
-                                                );
-                                          } catch (e) {
-                                            // Document not found, use default name
-                                            documentName = null;
-                                          }
-                                          AppDocumentViewer.show(
-                                            documentUrl: storageUrl,
-                                            documentName: documentName,
-                                          );
-                                        },
-                                        onStatusUpdate:
-                                            (candidateDocId, status) {
-                                              controller.updateDocumentStatus(
-                                                candidateDocId: candidateDocId,
-                                                status: status,
-                                              );
-                                            },
-                                        onDeny:
-                                            (
-                                              candidateDocId,
-                                              status,
-                                              denialReason,
-                                            ) {
-                                              controller.denyDocumentWithEmail(
-                                                candidateDocId: candidateDocId,
-                                                status: status,
-                                                denialReason: denialReason,
-                                              );
-                                            },
-                                      ),
-                                    ),
-                                  // Regular Documents List (excluding requested documents)
-                                  if (showRegular) ...[
-                                    if (regularDocs.isEmpty &&
-                                        requestedDocs.isEmpty &&
-                                        missingDocs.isEmpty)
-                                      SliverFillRemaining(
-                                        child: AppEmptyState(
-                                          message: AppTexts.noDocumentsFound,
-                                          icon: Iconsax.document_text,
+                                      child: Padding(
+                                        padding: AppSpacing.padding(
+                                          context,
+                                        ).copyWith(bottom: 0),
+                                        child: AppDropDownField<String>(
+                                          value: selectedFilter,
+                                          labelText: 'Filter Documents',
+                                          hintText: 'All Documents',
+                                          items: [
+                                            DropdownMenuItem<String>(
+                                              value: 'all',
+                                              child: Text('All Documents'),
+                                            ),
+                                            DropdownMenuItem<String>(
+                                              value: 'requested',
+                                              child: Text(
+                                                'Requested Documents',
+                                              ),
+                                            ),
+                                            DropdownMenuItem<String>(
+                                              value: 'missing',
+                                              child: Text('Missing Documents'),
+                                            ),
+                                          ],
+                                          onChanged: (value) => controller
+                                              .setDocumentFilter(value),
                                         ),
-                                      )
-                                    else if (regularDocs.isNotEmpty)
+                                      ),
+                                    ),
+                                    // Missing Documents Section (for applications)
+                                    if (showMissing && missingDocs.isNotEmpty)
                                       SliverToBoxAdapter(
-                                        child: AppCandidateDocumentsList(
-                                          documents: regularDocs,
+                                        child: AppMissingDocumentsList(
+                                          missingDocuments: missingDocs,
+                                          onRequest: (docTypeId) {
+                                            controller.requestMissingDocument(
+                                              docTypeId: docTypeId,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    // Requested Documents Section
+                                    if (showRequested &&
+                                        requestedDocs.isNotEmpty)
+                                      SliverToBoxAdapter(
+                                        child: AppRequestedDocumentsList(
+                                          requestedDocuments: requestedDocs,
+                                          candidateDocuments: allCandidateDocs,
+                                          onRevoke: (docTypeId) {
+                                            controller.revokeDocumentRequest(
+                                              docTypeId,
+                                            );
+                                          },
+                                          onView: (storageUrl) {
+                                            // Find the document name for display
+                                            String? documentName;
+                                            String? fileName;
+                                            try {
+                                              final document = allCandidateDocs
+                                                  .firstWhere(
+                                                    (doc) =>
+                                                        doc.storageUrl ==
+                                                        storageUrl,
+                                                  );
+                                              documentName =
+                                                  AppFileValidator.displayDocumentName(
+                                                    title: document.title,
+                                                    documentName:
+                                                        document.documentName,
+                                                  );
+                                              fileName = document.documentName;
+                                            } catch (e) {
+                                              // Document not found, use default name
+                                              documentName = null;
+                                            }
+                                            AppDocumentViewer.show(
+                                              documentUrl: storageUrl,
+                                              documentName: documentName,
+                                              fileName: fileName,
+                                            );
+                                          },
                                           onStatusUpdate:
                                               (candidateDocId, status) {
                                                 controller.updateDocumentStatus(
@@ -336,67 +312,137 @@ class AdminCandidateDetailsScreen extends StatelessWidget {
                                                           denialReason,
                                                     );
                                               },
-                                          onView: (storageUrl) {
-                                            // Find the document name for display
-                                            String? documentName;
-                                            try {
-                                              final document = allCandidateDocs
-                                                  .firstWhere(
-                                                    (doc) =>
-                                                        doc.storageUrl ==
-                                                        storageUrl,
-                                                  );
-                                              documentName =
-                                                  document.title ??
-                                                  AppFileValidator.extractOriginalFileName(
-                                                    document.documentName,
-                                                  );
-                                            } catch (e) {
-                                              // Document not found, use default name
-                                              documentName = null;
-                                            }
-                                            AppDocumentViewer.show(
-                                              documentUrl: storageUrl,
-                                              documentName: documentName,
+                                          onUpload: (docTypeId) {
+                                            controller.openUploadDocument(
+                                              docTypeId: docTypeId,
                                             );
                                           },
+                                          onDelete:
+                                              (candidateDocId, storageUrl) {
+                                                controller
+                                                    .deleteUploadedDocument(
+                                                      candidateDocId:
+                                                          candidateDocId,
+                                                      storageUrl: storageUrl,
+                                                    );
+                                              },
                                         ),
                                       ),
-                                  ] else if (!showMissing &&
-                                      !showRequested &&
-                                      regularDocs.isEmpty)
-                                    SliverFillRemaining(
-                                      child: AppEmptyState(
-                                        message: AppTexts.noDocumentsFound,
-                                        icon: Iconsax.document_text,
+                                    // Regular Documents List (excluding requested documents)
+                                    if (showRegular) ...[
+                                      if (regularDocs.isEmpty &&
+                                          requestedDocs.isEmpty &&
+                                          missingDocs.isEmpty)
+                                        SliverFillRemaining(
+                                          child: AppEmptyState(
+                                            message: AppTexts.noDocumentsFound,
+                                            icon: Iconsax.document_text,
+                                          ),
+                                        )
+                                      else if (regularDocs.isNotEmpty)
+                                        SliverToBoxAdapter(
+                                          child: AppCandidateDocumentsList(
+                                            documents: regularDocs,
+                                            onStatusUpdate:
+                                                (candidateDocId, status) {
+                                                  controller
+                                                      .updateDocumentStatus(
+                                                        candidateDocId:
+                                                            candidateDocId,
+                                                        status: status,
+                                                      );
+                                                },
+                                            onDeny:
+                                                (
+                                                  candidateDocId,
+                                                  status,
+                                                  denialReason,
+                                                ) {
+                                                  controller
+                                                      .denyDocumentWithEmail(
+                                                        candidateDocId:
+                                                            candidateDocId,
+                                                        status: status,
+                                                        denialReason:
+                                                            denialReason,
+                                                      );
+                                                },
+                                            onDelete:
+                                                (candidateDocId, storageUrl) {
+                                                  controller
+                                                      .deleteUploadedDocument(
+                                                        candidateDocId:
+                                                            candidateDocId,
+                                                        storageUrl: storageUrl,
+                                                      );
+                                                },
+                                            onView: (storageUrl) {
+                                              // Find the document name for display
+                                              String? documentName;
+                                              String? fileName;
+                                              try {
+                                                final document =
+                                                    allCandidateDocs.firstWhere(
+                                                      (doc) =>
+                                                          doc.storageUrl ==
+                                                          storageUrl,
+                                                    );
+                                                documentName =
+                                                    AppFileValidator.displayDocumentName(
+                                                      title: document.title,
+                                                      documentName:
+                                                          document.documentName,
+                                                    );
+                                                fileName =
+                                                    document.documentName;
+                                              } catch (e) {
+                                                // Document not found, use default name
+                                                documentName = null;
+                                              }
+                                              AppDocumentViewer.show(
+                                                documentUrl: storageUrl,
+                                                documentName: documentName,
+                                                fileName: fileName,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                    ] else if (!showMissing &&
+                                        !showRequested &&
+                                        regularDocs.isEmpty)
+                                      SliverFillRemaining(
+                                        child: AppEmptyState(
+                                          message: AppTexts.noDocumentsFound,
+                                          icon: Iconsax.document_text,
+                                        ),
                                       ),
-                                    ),
-                                ],
-                              );
-                            },
+                                  ],
+                                );
+                              },
+                            );
+                          }),
+                          Positioned(
+                            bottom: 16,
+                            right: 16,
+                            child: AdminDocumentActionsButton(),
+                          ),
+                        ],
+                      ),
+                      AppCandidateApplicationsList(
+                        applications: controller.candidateApplications,
+                        jobTitles: jobTitles,
+                        onStatusUpdate: (applicationId, status) {
+                          controller.updateApplicationStatus(
+                            applicationId: applicationId,
+                            status: status,
                           );
-                        }),
-                        Positioned(
-                          bottom: 16,
-                          right: 16,
-                          child: AdminDocumentActionsButton(),
-                        ),
-                      ],
-                    ),
-                    AppCandidateApplicationsList(
-                      applications: controller.candidateApplications,
-                      jobTitles: jobTitles,
-                      onStatusUpdate: (applicationId, status) {
-                        controller.updateApplicationStatus(
-                          applicationId: applicationId,
-                          status: status,
-                        );
-                      },
-                    ),
-                  ],
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       }),

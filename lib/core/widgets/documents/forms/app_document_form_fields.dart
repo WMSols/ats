@@ -41,17 +41,10 @@ class AppDocumentFormFields extends StatelessWidget {
         AppTextField(
           controller: titleController,
           labelText: AppTexts.documentTitle,
+          hintText: 'Optional custom name',
+          showLabelAbove: true,
           prefixIcon: Iconsax.document_text,
           onChanged: onTitleChanged,
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return AppTexts.documentTitleRequired;
-            }
-            if (value.trim().length < 3) {
-              return AppTexts.documentTitleMinLength;
-            }
-            return null;
-          },
         ),
         if (titleError != null)
           Obx(
@@ -71,6 +64,8 @@ class AppDocumentFormFields extends StatelessWidget {
         AppTextField(
           controller: descriptionController,
           labelText: AppTexts.description,
+          hintText: 'Enter a short description',
+          showLabelAbove: true,
           prefixIcon: Iconsax.document_text_1,
           maxLines: 5,
           onChanged: onDescriptionChanged,
