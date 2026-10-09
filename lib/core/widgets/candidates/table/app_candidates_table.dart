@@ -63,15 +63,28 @@ class AppCandidatesTable extends StatelessWidget {
         child: SizedBox(
           width: tableWidth,
           child: DataTable(
+            showCheckboxColumn: false,
             columnSpacing: AppCandidateTableLayout.columnSpacing,
             headingRowColor: WidgetStateProperty.all(AppColors.lightGrey),
+            dataRowColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.hovered)) {
+                return AppColors.primary.withValues(alpha: 0.08);
+              }
+              if (states.contains(WidgetState.pressed) ||
+                  states.contains(WidgetState.selected)) {
+                return AppColors.primary.withValues(alpha: 0.12);
+              }
+              return null;
+            }),
             columns: AppCandidateTableColumns.buildColumns(
               context,
               isSuperAdmin: isSuperAdmin,
               hasEditOrDelete:
                   onCandidateEdit != null || onCandidateDelete != null,
             ),
-            rows: candidates.map((candidate) {
+            rows: candidates.asMap().entries.map((entry) {
+              final index = entry.key + 1;
+              final candidate = entry.value;
               final name = getName(candidate.userId);
               final company = getCompany(candidate.userId);
               final position = getPosition(candidate.userId);
@@ -83,6 +96,7 @@ class AppCandidatesTable extends StatelessWidget {
               return AppCandidateTableRows.buildRow(
                 context,
                 candidate,
+                index: index,
                 name: name,
                 email: candidate.email,
                 company: company,

@@ -3,6 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:ats/core/utils/app_texts/app_texts.dart';
 import 'package:ats/core/utils/app_styles/app_text_styles.dart';
 import 'package:ats/core/utils/app_colors/app_colors.dart';
+import 'package:ats/core/utils/app_responsive/app_responsive.dart';
 import 'package:ats/domain/entities/user_entity.dart';
 import 'package:ats/domain/entities/admin_profile_entity.dart';
 import 'package:ats/core/widgets/candidates/components/app_candidate_agent_dropdown.dart';
@@ -23,7 +24,7 @@ class AppCandidateTableRows {
     );
   }
 
-  /// Builds a single data cell with clickable text
+  /// Builds a single data cell with text (row handles tap/hover)
   static DataCell buildClickableCell(
     BuildContext context,
     String text,
@@ -35,7 +36,7 @@ class AppCandidateTableRows {
         width: width,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-          child: InkWell(onTap: onTap, child: _ellipsizedText(context, text)),
+          child: _ellipsizedText(context, text),
         ),
       ),
     );
@@ -54,13 +55,10 @@ class AppCandidateTableRows {
         width: AppCandidateTableLayout.status,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-          child: InkWell(
-            onTap: onTap,
-            child: AppStatusChip(
-              status: status,
-              customText: formattedStatus,
-              showIcon: false,
-            ),
+          child: AppStatusChip(
+            status: status,
+            customText: formattedStatus,
+            showIcon: false,
           ),
         ),
       ),
@@ -91,10 +89,43 @@ class AppCandidateTableRows {
                   availableAgents: availableAgents,
                   onAgentChanged: onAgentChanged,
                 )
-              : InkWell(
-                  onTap: onTap,
-                  child: _ellipsizedText(context, agentName),
-                ),
+              : _ellipsizedText(context, agentName),
+        ),
+      ),
+    );
+  }
+
+  static const double _actionButtonSize = 36;
+  static const double _actionIconSize = 18;
+  static const double _actionButtonGap = 8;
+
+  static Widget _buildActionButton({
+    required BuildContext context,
+    required IconData icon,
+    required Color backgroundColor,
+    required VoidCallback onPressed,
+    required String tooltip,
+  }) {
+    final radius = BorderRadius.circular(
+      AppResponsive.radius(context, factor: 5),
+    );
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: backgroundColor,
+        borderRadius: radius,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: radius,
+          hoverColor: AppColors.white.withValues(alpha: 0.12),
+          mouseCursor: SystemMouseCursors.click,
+          child: SizedBox(
+            width: _actionButtonSize,
+            height: _actionButtonSize,
+            child: Center(
+              child: Icon(icon, size: _actionIconSize, color: AppColors.white),
+            ),
+          ),
         ),
       ),
     );
@@ -114,16 +145,23 @@ class AppCandidateTableRows {
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
           child: Row(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (onEdit != null)
-                IconButton(
-                  icon: const Icon(Iconsax.edit, color: AppColors.secondary),
+                _buildActionButton(
+                  context: context,
+                  icon: Iconsax.edit,
+                  backgroundColor: AppColors.secondary,
                   onPressed: () => onEdit(candidate),
                   tooltip: AppTexts.edit,
                 ),
+              if (onEdit != null && onDelete != null)
+                const SizedBox(width: _actionButtonGap),
               if (onDelete != null)
-                IconButton(
-                  icon: const Icon(Iconsax.trash, color: AppColors.error),
+                _buildActionButton(
+                  context: context,
+                  icon: Iconsax.trash,
+                  backgroundColor: AppColors.error,
                   onPressed: () => onDelete(candidate),
                   tooltip: AppTexts.deleteCandidate,
                 ),
@@ -134,10 +172,29 @@ class AppCandidateTableRows {
     );
   }
 
+  /// Builds the serial/count cell
+  static DataCell buildCountCell(BuildContext context, int index) {
+    return DataCell(
+      SizedBox(
+        width: AppCandidateTableLayout.count,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+          child: Text(
+            '$index',
+            style: AppTextStyles.bodyText(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600, color: AppColors.secondary),
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Builds a complete data row for a candidate
   static DataRow buildRow(
     BuildContext context,
     UserEntity candidate, {
+    required int index,
     required String name,
     required String email,
     required String company,
@@ -156,7 +213,10 @@ class AppCandidateTableRows {
     Function(UserEntity)? onCandidateDelete,
   }) {
     return DataRow(
+      mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
+      onSelectChanged: (_) => onCandidateTap(),
       cells: [
+        buildCountCell(context, index),
         buildClickableCell(
           context,
           name,

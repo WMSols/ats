@@ -48,3 +48,6 @@ app.*.map.json
 functions/node_modules/
 functions/.env
 functions/*.log
+
+# Documentation
+documentation/

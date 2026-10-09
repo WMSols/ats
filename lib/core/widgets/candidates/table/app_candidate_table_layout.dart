@@ -2,6 +2,7 @@
 class AppCandidateTableLayout {
   AppCandidateTableLayout._();
 
+  static const double count = 56;
   static const double name = 150;
   static const double email = 240;
   static const double company = 160;
@@ -10,7 +11,7 @@ class AppCandidateTableLayout {
   static const double specialties = 220;
   static const double status = 140;
   static const double agent = 200;
-  static const double actions = 120;
+  static const double actions = 100;
 
   static const double columnSpacing = 20;
   static const double horizontalPadding = 32;
@@ -18,6 +19,7 @@ class AppCandidateTableLayout {
   /// Total table width for horizontal scrolling (includes Actions when shown).
   static double tableWidth({required bool includeActions}) {
     var width =
+        count +
         name +
         email +
         company +
@@ -30,8 +32,8 @@ class AppCandidateTableLayout {
     if (includeActions) {
       width += actions;
     }
-    const columnCountWithActions = 9;
-    final columnCount = includeActions ? columnCountWithActions : 8;
+    const columnCountWithActions = 10;
+    final columnCount = includeActions ? columnCountWithActions : 9;
     width += (columnCount - 1) * columnSpacing;
     return width;
   }
