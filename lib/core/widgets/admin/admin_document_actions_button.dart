@@ -86,7 +86,7 @@ class AdminDocumentActionsButton extends StatelessWidget {
         if (value == 'request') {
           Get.toNamed(AppConstants.routeAdminRequestDocument);
         } else if (value == 'upload') {
-          Get.toNamed(AppConstants.routeAdminUploadDocument);
+          controller.openUploadDocument();
         } else if (value == 'reminder') {
           controller.sendReminderForAllPendingRequestedDocuments();
         }

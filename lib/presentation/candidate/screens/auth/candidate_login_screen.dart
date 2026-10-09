@@ -87,6 +87,7 @@ class _CandidateLoginScreenState extends State<CandidateLoginScreen> {
           key: const ValueKey('candidate-login-email'),
           controller: _emailController,
           labelText: AppTexts.email,
+          labelColor: AppColors.white,
           prefixIcon: Iconsax.sms,
           keyboardType: TextInputType.emailAddress,
           onChanged: (value) {
@@ -109,6 +110,7 @@ class _CandidateLoginScreenState extends State<CandidateLoginScreen> {
           key: const ValueKey('candidate-login-password'),
           controller: _passwordController,
           labelText: AppTexts.password,
+          labelColor: AppColors.white,
           prefixIcon: Iconsax.lock,
           obscureText: true,
           onChanged: (value) {

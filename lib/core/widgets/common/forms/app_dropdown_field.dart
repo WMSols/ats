@@ -26,7 +26,7 @@ class AppDropDownField<T> extends StatelessWidget {
     required this.onChanged,
     this.validator,
     this.errorText,
-    this.showLabelAbove = false,
+    this.showLabelAbove = true,
   });
 
   @override
@@ -39,8 +39,16 @@ class AppDropDownField<T> extends StatelessWidget {
           )
         : defaultPadding;
 
+    // DropdownButtonFormField only applies [initialValue] on first mount.
+    // Remount when the resolved value changes so loaded profile data appears.
+    final itemValues = items.map((item) => item.value).toSet();
+    final T? effectiveValue = value != null && itemValues.contains(value)
+        ? value
+        : null;
+
     final dropdown = DropdownButtonFormField<T>(
-      initialValue: value,
+      key: ValueKey<Object?>('dropdown-$effectiveValue'),
+      initialValue: effectiveValue,
       decoration: InputDecoration(
         labelText: showLabelAbove ? null : labelText,
         hintText: hintText,
@@ -55,7 +63,7 @@ class AppDropDownField<T> extends StatelessWidget {
         fillColor: AppColors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(
-            AppResponsive.radius(context, factor: 1.5),
+            AppResponsive.radius(context, factor: 5),
           ),
           borderSide: BorderSide(
             color: AppColors.primary.withValues(alpha: 0.5),
@@ -63,7 +71,7 @@ class AppDropDownField<T> extends StatelessWidget {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(
-            AppResponsive.radius(context, factor: 1.5),
+            AppResponsive.radius(context, factor: 5),
           ),
           borderSide: BorderSide(
             color: AppColors.primary.withValues(alpha: 0.5),
@@ -71,19 +79,19 @@ class AppDropDownField<T> extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(
-            AppResponsive.radius(context, factor: 1.5),
+            AppResponsive.radius(context, factor: 5),
           ),
           borderSide: const BorderSide(color: AppColors.primary),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(
-            AppResponsive.radius(context, factor: 1.5),
+            AppResponsive.radius(context, factor: 5),
           ),
           borderSide: const BorderSide(color: AppColors.error, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(
-            AppResponsive.radius(context, factor: 1.5),
+            AppResponsive.radius(context, factor: 5),
           ),
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),

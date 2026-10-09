@@ -307,6 +307,8 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                                           documentUrl:
                                               currentDocument!.storageUrl,
                                           documentName: currentDocType.name,
+                                          fileName:
+                                              currentDocument.documentName,
                                         );
                                       },
                                       backgroundColor: AppColors.information,
@@ -411,6 +413,7 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
                                         AppFileValidator.extractOriginalFileName(
                                           userDoc.documentName,
                                         ),
+                                    fileName: userDoc.documentName,
                                   );
                                 },
                                 backgroundColor: AppColors.information,
@@ -462,7 +465,12 @@ class _MyDocumentsScreenState extends State<MyDocumentsScreen> {
 
     return AppCandidateLayout(
       title: AppTexts.myDocuments,
-      child: _cachedContent!,
+      child: Obx(
+        () => AppLoadingOverlay(
+          isLoading: _controller.isLoading.value,
+          child: _cachedContent!,
+        ),
+      ),
     );
   }
 }

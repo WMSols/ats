@@ -94,79 +94,84 @@ class _MyDocumentUploadScreenState extends State<MyDocumentUploadScreen> {
 
     return AppCandidateLayout(
       title: 'Upload ${widget.docTypeName}',
-      child: SingleChildScrollView(
-        padding: AppSpacing.padding(context),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Expiry Date Section
-              AppDocumentExpirySection(
-                expiryController: expiryController,
-                hasNoExpiry: hasNoExpiry,
-                onNoExpiryChanged: (value) {
-                  setState(() {
-                    hasNoExpiry = value;
-                    if (value) {
-                      expiryController.clear();
-                    }
-                    validateExpiry();
-                  });
-                },
-                onExpiryChanged: () {
-                  validateExpiry();
-                },
-                expiryError: expiryError,
-              ),
-              AppSpacing.vertical(context, 0.03),
-              // Document Upload Widget
-              AppDocumentUploadWidget(controller: controller),
-              AppSpacing.vertical(context, 0.03),
-              // Upload Button
-              Obx(() {
-                final hasFile = controller.selectedFile.value != null;
-                final hasExpiry =
-                    hasNoExpiry || expiryController.text.trim().isNotEmpty;
-                final hasNoErrors = expiryError.value == null;
-                final canUpload = hasFile && hasExpiry && hasNoErrors;
+      child: Obx(
+        () => AppLoadingOverlay(
+          isLoading: controller.isLoading.value,
+          child: SingleChildScrollView(
+            padding: AppSpacing.padding(context),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Expiry Date Section
+                  AppDocumentExpirySection(
+                    expiryController: expiryController,
+                    hasNoExpiry: hasNoExpiry,
+                    onNoExpiryChanged: (value) {
+                      setState(() {
+                        hasNoExpiry = value;
+                        if (value) {
+                          expiryController.clear();
+                        }
+                        validateExpiry();
+                      });
+                    },
+                    onExpiryChanged: () {
+                      validateExpiry();
+                    },
+                    expiryError: expiryError,
+                  ),
+                  AppSpacing.vertical(context, 0.03),
+                  // Document Upload Widget
+                  AppDocumentUploadWidget(controller: controller),
+                  AppSpacing.vertical(context, 0.03),
+                  // Upload Button
+                  Obx(() {
+                    final hasFile = controller.selectedFile.value != null;
+                    final hasExpiry =
+                        hasNoExpiry || expiryController.text.trim().isNotEmpty;
+                    final hasNoErrors = expiryError.value == null;
+                    final canUpload = hasFile && hasExpiry && hasNoErrors;
 
-                return AppButton(
-                  text: AppTexts.upload,
-                  icon: Iconsax.document_upload,
-                  onPressed: canUpload && !controller.isLoading.value
-                      ? () {
-                          if (_validateForm()) {
-                            // Parse expiry date if provided
-                            DateTime? expiryDate;
-                            if (!hasNoExpiry &&
-                                expiryController.text.isNotEmpty) {
-                              try {
-                                final format = DateFormat('MM/yyyy');
-                                expiryDate = format.parse(
-                                  expiryController.text,
+                    return AppButton(
+                      text: AppTexts.upload,
+                      icon: Iconsax.document_upload,
+                      onPressed: canUpload && !controller.isLoading.value
+                          ? () {
+                              if (_validateForm()) {
+                                // Parse expiry date if provided
+                                DateTime? expiryDate;
+                                if (!hasNoExpiry &&
+                                    expiryController.text.isNotEmpty) {
+                                  try {
+                                    final format = DateFormat('MM/yyyy');
+                                    expiryDate = format.parse(
+                                      expiryController.text,
+                                    );
+                                  } catch (e) {
+                                    AppSnackbar.error(
+                                      'Invalid expiry date format. Please use MM/YYYY',
+                                    );
+                                    return;
+                                  }
+                                }
+
+                                controller.uploadDocumentWithSelectedFile(
+                                  docTypeId: widget.docTypeId,
+                                  docTypeName: widget.docTypeName,
+                                  expiryDate: expiryDate,
+                                  hasNoExpiry: hasNoExpiry,
                                 );
-                              } catch (e) {
-                                AppSnackbar.error(
-                                  'Invalid expiry date format. Please use MM/YYYY',
-                                );
-                                return;
                               }
                             }
-
-                            controller.uploadDocumentWithSelectedFile(
-                              docTypeId: widget.docTypeId,
-                              docTypeName: widget.docTypeName,
-                              expiryDate: expiryDate,
-                              hasNoExpiry: hasNoExpiry,
-                            );
-                          }
-                        }
-                      : null,
-                  isLoading: controller.isLoading.value,
-                );
-              }),
-            ],
+                          : null,
+                      isLoading: controller.isLoading.value,
+                    );
+                  }),
+                ],
+              ),
+            ),
           ),
         ),
       ),

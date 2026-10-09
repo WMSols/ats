@@ -53,6 +53,7 @@ class _CandidateForgotPasswordScreenState
         AppTextField(
           controller: controller.forgotPasswordEmailController,
           labelText: AppTexts.email,
+          labelColor: AppColors.white,
           prefixIcon: Iconsax.sms,
           keyboardType: TextInputType.emailAddress,
           onChanged: (value) {

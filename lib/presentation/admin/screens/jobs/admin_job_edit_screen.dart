@@ -51,6 +51,7 @@ class _AdminJobEditScreenState extends State<AdminJobEditScreen> {
       title: AppTexts.editJob,
       child: Obx(() {
         final job = jobsController.selectedJob.value;
+        final isLoading = jobsController.isLoading.value;
         if (job == null) {
           return AppEmptyState(
             message: AppTexts.jobNotFound,
@@ -83,7 +84,10 @@ class _AdminJobEditScreenState extends State<AdminJobEditScreen> {
           _selectionVersion++; // Increment version to force rebuild
         }
 
-        return _buildForm(context, documentsController, jobsController, job);
+        return AppLoadingOverlay(
+          isLoading: isLoading,
+          child: _buildForm(context, documentsController, jobsController, job),
+        );
       }),
     );
   }

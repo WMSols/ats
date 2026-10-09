@@ -15,6 +15,7 @@ class AppCandidateDocumentsList extends StatelessWidget {
   final Function(String candidateDocId, String status, String? denialReason)?
   onDeny;
   final Function(String storageUrl)? onView;
+  final Function(String candidateDocId, String storageUrl)? onDelete;
 
   const AppCandidateDocumentsList({
     super.key,
@@ -22,7 +23,15 @@ class AppCandidateDocumentsList extends StatelessWidget {
     required this.onStatusUpdate,
     this.onDeny,
     this.onView,
+    this.onDelete,
   });
+
+  String _displayName(CandidateDocumentEntity doc) {
+    return AppFileValidator.displayDocumentName(
+      title: doc.title,
+      documentName: doc.documentName,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,12 +55,11 @@ class AppCandidateDocumentsList extends StatelessWidget {
         final expiryStatus = AppCandidateTableFormatters.formatExpiryStatus(
           doc,
         );
+        final displayName = _displayName(doc);
 
         return AppListCard(
           key: ValueKey('document_${doc.candidateDocId}'),
-          title:
-              doc.title ??
-              AppFileValidator.extractOriginalFileName(doc.documentName),
+          title: displayName,
           subtitle: '${AppTexts.status}: ${doc.status}',
           icon: Iconsax.document_text,
           trailing: null,
@@ -59,14 +67,12 @@ class AppCandidateDocumentsList extends StatelessWidget {
             spacing: AppResponsive.screenWidth(context) * 0.01,
             runSpacing: AppResponsive.screenHeight(context) * 0.005,
             children: [
-              // Expiry Status Chip (always show if document has expiry info)
               if (expiryStatus != null)
                 AppStatusChip(
                   status: 'expiry',
                   customText: expiryStatus,
                   showIcon: false,
                 ),
-              // Show view/approve/deny buttons when document is pending
               if (isPending) ...[
                 AppActionButton(
                   text: AppTexts.view,
@@ -90,13 +96,8 @@ class AppCandidateDocumentsList extends StatelessWidget {
                 AppActionButton(
                   text: AppTexts.deny,
                   onPressed: () {
-                    final documentName =
-                        doc.title ??
-                        AppFileValidator.extractOriginalFileName(
-                          doc.documentName,
-                        );
                     AppDocumentDenialDialog.show(
-                      documentName: documentName,
+                      documentName: displayName,
                       onConfirm: (reason) {
                         if (onDeny != null) {
                           onDeny!(
@@ -111,16 +112,13 @@ class AppCandidateDocumentsList extends StatelessWidget {
                           );
                         }
                       },
-                      onCancel: () {
-                        // User cancelled, do nothing
-                      },
+                      onCancel: () {},
                     );
                   },
                   backgroundColor: AppColors.error,
                   foregroundColor: AppColors.white,
                 ),
               ],
-              // Show view button, status chip, and deny button when document is approved
               if (isApproved) ...[
                 AppActionButton(
                   text: AppTexts.view,
@@ -136,13 +134,8 @@ class AppCandidateDocumentsList extends StatelessWidget {
                 AppActionButton(
                   text: AppTexts.deny,
                   onPressed: () {
-                    final documentName =
-                        doc.title ??
-                        AppFileValidator.extractOriginalFileName(
-                          doc.documentName,
-                        );
                     AppDocumentDenialDialog.show(
-                      documentName: documentName,
+                      documentName: displayName,
                       onConfirm: (reason) {
                         if (onDeny != null) {
                           onDeny!(
@@ -157,16 +150,13 @@ class AppCandidateDocumentsList extends StatelessWidget {
                           );
                         }
                       },
-                      onCancel: () {
-                        // User cancelled, do nothing
-                      },
+                      onCancel: () {},
                     );
                   },
                   backgroundColor: AppColors.error,
                   foregroundColor: AppColors.white,
                 ),
               ],
-              // Show view button, status chip, and approve button when document is denied
               if (isRejected) ...[
                 AppActionButton(
                   text: AppTexts.view,
@@ -189,6 +179,24 @@ class AppCandidateDocumentsList extends StatelessWidget {
                   foregroundColor: AppColors.white,
                 ),
               ],
+              if (onDelete != null)
+                AppActionButton(
+                  text: AppTexts.delete,
+                  onPressed: () {
+                    AppAlertDialog.show(
+                      title: AppTexts.deleteDocument,
+                      subtitle: AppTexts.areYouSureDeleteDocument,
+                      primaryButtonText: AppTexts.delete,
+                      secondaryButtonText: AppTexts.cancel,
+                      primaryButtonColor: AppColors.error,
+                      onPrimaryPressed: () =>
+                          onDelete!(doc.candidateDocId, doc.storageUrl),
+                      onSecondaryPressed: () {},
+                    );
+                  },
+                  backgroundColor: AppColors.error,
+                  foregroundColor: AppColors.white,
+                ),
             ],
           ),
           onTap: null,

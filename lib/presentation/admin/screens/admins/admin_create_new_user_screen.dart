@@ -187,6 +187,14 @@ class _AdminCreateNewUserScreenState extends State<AdminCreateNewUserScreen> {
       ),
     );
 
-    return AppAdminLayout(title: AppTexts.createNewUser, child: _cachedForm!);
+    return AppAdminLayout(
+      title: AppTexts.createNewUser,
+      child: Obx(
+        () => AppLoadingOverlay(
+          isLoading: _controller.isLoading.value,
+          child: _cachedForm!,
+        ),
+      ),
+    );
   }
 }

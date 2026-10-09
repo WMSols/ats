@@ -297,10 +297,9 @@ class AdminCreateCandidateController extends GetxController {
       (candidateProfile) {
         isLoading.value = false;
         errorMessage.value = '';
-        // Clear form
-        formState.dispose();
-        formState = AdminProfileFormState();
-        passwordController.clear();
+        // Do not dispose/recreate formState here — the create screen is still
+        // mounted (cached fields) and would use disposed controllers.
+        // Controllers are disposed in onClose after navigation.
         firstNameError.value = null;
         lastNameError.value = null;
         emailError.value = null;
@@ -316,11 +315,10 @@ class AdminCreateCandidateController extends GetxController {
         phoneErrors.clear();
         educationError.value = null;
         workHistoryError.value = null;
+        passwordController.clear();
 
         AppSnackbar.success('Candidate created successfully');
-        // Navigate to AdminCandidatesListScreen
         Get.offNamed(AppConstants.routeAdminCandidates);
-        // Refresh the list in candidates screen
         if (Get.isRegistered<AdminCandidatesController>()) {
           final candidatesController = Get.find<AdminCandidatesController>();
           candidatesController.loadCandidates(forceRefresh: true);

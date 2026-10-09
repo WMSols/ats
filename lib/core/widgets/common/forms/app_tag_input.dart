@@ -20,7 +20,7 @@ class AppTagInput extends StatefulWidget {
     required this.onTagsChanged,
     this.labelText,
     this.hintText,
-    this.showLabelAbove = false,
+    this.showLabelAbove = true,
   });
 
   @override
